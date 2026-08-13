@@ -31,37 +31,30 @@
   p.lead b{font-weight:600}
   .sec{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:36px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--hair)}
   .mblock{margin:16px 0;overflow-x:auto}
-  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:14px 0}
-  @media(max-width:620px){.grid3{grid-template-columns:1fr}}
-  .card{border:1px solid var(--hair);border-radius:10px;padding:12px 14px;background:var(--panel)}
-  .card h4{margin:0 0 6px;font-size:13px;font-family:var(--mono);color:var(--accent)}
-  .card .math{font-size:12.5px}
-  .card p{margin:6px 0 0;font-size:12.5px;color:var(--muted)}
   .glo{list-style:none;padding:0;margin:14px 0 0}
   .glo li{display:flex;gap:14px;padding:9px 0;border-top:1px solid var(--hair);align-items:baseline}
   .glo li:first-child{border-top:none}
-  .glo .sym{flex:0 0 74px;text-align:right;padding-top:2px}
+  .glo .sym{flex:0 0 92px;text-align:right;padding-top:2px}
   .glo .def{font-size:14.5px}.glo .def .n{color:var(--muted)}
   .step{font-size:14.5px;color:var(--muted);margin:10px 0}
   .panel{background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:20px;margin:14px 0}
-  .seg{display:inline-flex;border:1px solid var(--hair2);border-radius:8px;overflow:hidden;margin:0 0 12px;flex-wrap:wrap}
-  .seg button{font-family:var(--mono);font-size:12.5px;padding:7px 12px;border:none;border-right:1px solid var(--hair2);background:var(--panel);color:var(--muted);cursor:pointer}
-  .seg button:last-child{border-right:none}.seg button.on{background:var(--accent);color:#fff}
   .row{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start}
-  canvas{border:1px solid var(--hair2);border-radius:8px;cursor:crosshair;max-width:100%}
   .ctrls{display:flex;flex-wrap:wrap;gap:16px 26px;align-items:flex-end;margin:12px 0 6px}
-  .field{display:flex;flex-direction:column;gap:6px;min-width:150px;flex:1}
+  .field{display:flex;flex-direction:column;gap:6px;min-width:170px;flex:1}
   .field label{font-size:12px;color:var(--muted);font-family:var(--mono);letter-spacing:.03em;display:flex;justify-content:space-between}
   .field label b{color:var(--ink);font-weight:600}
   input[type=range]{width:100%;accent-color:var(--accent);height:20px}
   svg{max-width:100%;height:auto;display:block}
+  button.ghost{background:var(--panel);border:1px solid var(--hair2);color:var(--ink);font-family:var(--mono);font-size:12.5px;padding:7px 12px;border-radius:8px;cursor:pointer}
+  button.ghost:hover{border-color:var(--accent)}
   .legend{display:flex;flex-wrap:wrap;gap:16px;margin:8px 0 2px;font-size:12.5px;color:var(--muted);font-family:var(--mono)}
   .legend span{display:inline-flex;align-items:center;gap:6px}
   .sw{width:16px;height:0;border-top-width:3px;border-top-style:solid;display:inline-block}
   .tally{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0 2px}
-  .stat{flex:1;min-width:104px;background:var(--paper);border-radius:9px;padding:8px 11px}
-  .stat .k{font-size:11px;font-family:var(--mono);color:var(--muted);text-transform:uppercase}
+  .stat{flex:1;min-width:118px;background:var(--paper);border-radius:9px;padding:8px 11px}
+  .stat .k{font-size:11px;font-family:var(--mono);letter-spacing:.04em;color:var(--muted);text-transform:uppercase}
   .stat .v{font-size:16px;font-weight:600;font-family:var(--mono);margin-top:2px}
+  .stat .v.a{color:var(--accent)}.stat .v.g{color:var(--ok)}
   .callout{font-size:14px;color:var(--muted);border-left:2px solid var(--accent);padding:2px 0 2px 14px;margin:14px 0 2px;min-height:1.4em}
   .theorem{background:var(--accent-bg);border-radius:12px;padding:18px 20px;margin:16px 0}
   .theorem .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
@@ -94,100 +87,163 @@
 <div class="wrap">
   <p class="eyebrow">Lesson 09 · Wing II — the optimization engine</p>
   <h1>Gradient descent → SGD → momentum → Adam<span class="chip" id="chip"></span></h1>
-  <p class="sub">Training is just rolling downhill on a loss surface — the whole art is <i>how</i> you roll.</p>
+  <p class="sub">Training is rolling downhill on a loss surface — the whole art is <i>how</i> you roll.</p>
   <div class="levels">
     <span class="lk">Level</span>
-    <span class="pill"><b>US</b> Advanced undergrad → graduate · ML optimization</span>
-    <span class="pill"><b>FR</b> Master M1–M2 · ENSAE 2A–3A</span>
+    <span class="pill"><b>US</b> Advanced undergrad → graduate</span>
+    <span class="pill"><b>FR</b> M1–M2 · ENSAE 2A–3A</span>
   </div>
 
-  <p class="lead">Every model is trained by minimizing a loss L(θ) over millions of parameters. The gradient ∇L points uphill, so you step the other way. That one idea — <b>θ ← θ − η∇L</b> — becomes the entire optimizer family once you ask three questions: how big a step (learning rate), do you use the whole dataset or a sample (SGD), and do you remember past gradients (momentum, Adam). Below you'll watch all three race down the same surface and see exactly why the fancy ones win.</p>
+  <p class="lead">Every frontier model — and every calibration your desk runs — is trained the same way. Write down a <b>loss</b>: one number saying how bad the current parameters are. Compute the <b>gradient</b>: the arrow in parameter space along which the loss climbs fastest. Step the opposite way, scaled by a <b>learning rate</b> η — how far you dare to move on purely local information. That single line, w ← w − η∇f(w), is the engine. The rest of the optimizer zoo answers its two failures. First, the valley you descend is <b>stretched</b> — steep across, nearly flat along — and the stretch is measured by the condition number κ from Lessons&nbsp;6 and 8, reborn here as a speed limit. Second, the exact gradient over a full dataset is too expensive, so you swap in a noisy <b>estimate</b> from a random <b>minibatch</b> — an estimator with variance, exactly the object of Lessons&nbsp;1–3. <b>Momentum</b> fixes the stretch by remembering past gradients; <b>Adam</b> rescales each coordinate by its own gradient history; <b>SGD</b> lives with the noise and shrinks it by averaging. We run the whole family on an honest markets loss: the variance of a two-futures overlay, whose flat valley direction is literally Lesson&nbsp;5's collinear spread.</p>
 
-  <div class="sec">The four updates</div>
-  <div class="grid3">
-    <div class="card"><h4>Gradient descent</h4><div class="math" data-tex="\theta \leftarrow \theta - \eta\,\nabla L(\theta)"></div><p>Step downhill. Simple, but slow in stretched valleys and sensitive to η.</p></div>
-    <div class="card"><h4>Momentum (heavy ball)</h4><div class="math" data-tex="v \leftarrow \beta v + \nabla L,\quad \theta \leftarrow \theta - \eta v"></div><p>Accumulate velocity; cancels oscillation, accelerates on consistent slopes.</p></div>
-    <div class="card"><h4>SGD</h4><div class="math" data-tex="\mathbb{E}[\nabla L_{B}] = \nabla L"></div><p>Gradient on a minibatch B — a noisy but unbiased estimate of the true gradient.</p></div>
-  </div>
-  <div class="card" style="margin:0 0 6px"><h4>Adam — per-parameter adaptive rate</h4>
-    <div class="math mblock" data-tex="m\leftarrow\beta_1 m+(1-\beta_1)g,\quad s\leftarrow\beta_2 s+(1-\beta_2)g^2,\quad \hat m=\tfrac{m}{1-\beta_1^t},\ \hat s=\tfrac{s}{1-\beta_2^t},\quad \theta\leftarrow\theta-\eta\,\tfrac{\hat m}{\sqrt{\hat s}+\epsilon}" data-display="1"></div>
-    <p style="margin-top:8px">Divides each coordinate's step by its own gradient scale (√ of the running mean square) — so it self-corrects for a stretched, ill-conditioned landscape. m is momentum; s is the per-parameter variance; the hats are bias correction.</p>
-  </div>
+  <div class="sec">The loss surface — a valley made of risk</div>
+  <p class="step"><b>The setting in plain words.</b> You run a two-asset overlay: active weights w = (w₁, w₂) on two index futures with equal daily vol σ = 1% and return correlation ρ. The loss is the overlay's variance — hold risk, pay pain — so the risk-minimizing active book is flat, w★ = 0, and the optimizer's job is to walk any starting book down to it. (An alpha term moves w★ off zero — the second interactive does exactly that — but it never changes the <i>shape</i> of the valley: the Hessian stays Σ.)</p>
+  <div class="mblock math" data-tex="f(w)\;=\;\tfrac12\,w^{\top}\Sigma\,w,\qquad \nabla f(w)=\Sigma\,w,\qquad w^{\star}=\arg\min_{w} f(w)=\mathbf 0" data-display="1"></div>
   <ul class="glo">
-    <li><span class="sym math" data-tex="\nabla L"></span><span class="def">the <b>gradient</b>: steepest-ascent direction. <span class="n">−∇L is steepest descent, in the current coordinate metric.</span></span></li>
-    <li><span class="sym math" data-tex="\eta"></span><span class="def">the <b>learning rate</b>: step size. <span class="n">The single most important hyperparameter — too small crawls, too big diverges.</span></span></li>
-    <li><span class="sym math" data-tex="\beta,\,v"></span><span class="def"><b>momentum</b> coefficient and velocity. <span class="n">β≈0.9 keeps ~10 steps of memory.</span></span></li>
-    <li><span class="sym math" data-tex="\hat s"></span><span class="def">Adam's <b>second moment</b>. <span class="n">Big-gradient coordinates get small steps, and vice-versa — automatic preconditioning.</span></span></li>
+    <li><span class="sym math" data-tex="w"></span><span class="def">the two <b>active weights</b>, in units of the book. <span class="n">This is parameter space: a point is a portfolio; training a model walks the same kind of space with 10⁹ coordinates.</span></span></li>
+    <li><span class="sym math" data-tex="\Sigma"></span><span class="def"><b>covariance</b> of the two daily returns (in %² per day). <span class="n">It is also the Hessian ∇²f — the curvature of the valley is the risk model itself.</span></span></li>
+    <li><span class="sym math" data-tex="\nabla f=\Sigma w"></span><span class="def">the <b>gradient</b>: the vector of marginal risk contributions. <span class="n">The ½ in f is cosmetic — it makes the gradient exactly Σw.</span></span></li>
+  </ul>
+  <p class="step"><b>The geometry in plain words.</b> A quadratic loss is a bowl whose curvature along each principal axis is an eigenvalue of Σ (Lesson&nbsp;6). For an equal-vol pair the axes sit at ±45°: the both-long direction (1,1)/√2 carries variance σ²(1+ρ) — steep; the long–short spread (1,−1)/√2 carries σ²(1−ρ) — almost nothing when the futures are near-substitutes. The bowl becomes a canyon, and its stretch is the <b>condition number</b>:</p>
+  <div class="mblock math" data-tex="\Sigma=\sigma^{2}\!\begin{pmatrix}1&amp;\rho\\ \rho&amp;1\end{pmatrix},\qquad \lambda_{1,2}=\sigma^{2}(1\pm\rho),\qquad e_{1}=\tfrac{1}{\sqrt2}\!\begin{pmatrix}1\\ 1\end{pmatrix},\; e_{2}=\tfrac{1}{\sqrt2}\!\begin{pmatrix}1\\ -1\end{pmatrix},\qquad \kappa=\frac{\lambda_{1}}{\lambda_{2}}=\frac{1+\rho}{1-\rho}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="\lambda_1,\,e_1"></span><span class="def">the <b>steep axis</b>: the market factor, both futures moving together. <span class="n">Largest curvature — this axis limits how big a step is safe.</span></span></li>
+    <li><span class="sym math" data-tex="\lambda_2,\,e_2"></span><span class="def">the <b>flat axis</b>: the spread w₁−w₂. <span class="n">As ρ→1 it carries no risk — this is Lesson&nbsp;5's collinear direction, and it will be the slowest to converge.</span></span></li>
+    <li><span class="sym math" data-tex="\kappa"></span><span class="def">the <b>condition number</b> of Lessons&nbsp;6 and 8. <span class="n">ρ = 0.9 → κ = 19; ρ = 0.98 → κ = 99. Watch it throttle every optimizer below.</span></span></li>
   </ul>
 
-  <div class="sec">See it — three optimizers, one surface</div>
+  <div class="sec">One step downhill — and the edge of stability</div>
+  <p class="step"><b>Plain words first.</b> A gradient-descent step on a quadratic is a linear map on the error: written in the eigenbasis, each component is simply multiplied by 1 − ηλᵢ every step. All of plain GD is in that number. |1−ηλᵢ| &lt; 1 shrinks the component geometrically; |1−ηλᵢ| &gt; 1 amplifies it geometrically. One η must serve both axes at once — that tension <i>is</i> the conditioning problem.</p>
+  <div class="mblock math" data-tex="w_{t+1}=w_{t}-\eta\,\nabla f(w_{t}),\qquad c_{i,t+1}=(1-\eta\lambda_{i})\,c_{i,t}\;\Longrightarrow\;|c_{i,t}|=|1-\eta\lambda_{i}|^{\,t}\,|c_{i,0}|" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="\eta"></span><span class="def">the <b>learning rate</b> (step size). <span class="n">The single most consequential hyperparameter in deep learning; every knob below exists to tame it.</span></span></li>
+    <li><span class="sym math" data-tex="c_i"></span><span class="def">error component along eigenvector eᵢ. <span class="n">Coordinates decouple in the eigenbasis — the optimizer is running two independent 1-D problems.</span></span></li>
+    <li><span class="sym math" data-tex="|1-\eta\lambda_i|"></span><span class="def">per-step <b>contraction factor</b> of axis i. <span class="n">Divergence happens exactly when η &gt; 2/λ₁: the steep axis flips sign and grows. The slider below lets you cross that edge.</span></span></li>
+  </ul>
+  <p class="step">Why is a small step always <i>safe</i>? Because a gradient can only mislead you as fast as it can change. <b>Smoothness</b> caps that: the gradient's rate of change is at most L (for our quadratic, L = λ₁). Smoothness buys the <b>descent lemma</b> — a guaranteed loss decrease per step whenever η &lt; 2/L:</p>
+  <div class="mblock math" data-tex="\lVert\nabla f(x)-\nabla f(y)\rVert\le L\,\lVert x-y\rVert\;\;\Longrightarrow\;\; f\!\big(w-\eta\nabla f(w)\big)\;\le\; f(w)-\eta\Big(1-\tfrac{\eta L}{2}\Big)\lVert\nabla f(w)\rVert^{2}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="L"></span><span class="def"><b>smoothness constant</b>: the largest curvature anywhere. <span class="n">For quadratics, L = λ₁ exactly; for deep nets it is the top Hessian eigenvalue, changing as you train.</span></span></li>
+    <li><span class="sym math" data-tex="1-\tfrac{\eta L}{2}"></span><span class="def">the safety margin. <span class="n">Positive iff η &lt; 2/L — the same edge as the eigen-axis picture, now derived without eigenvectors, for any smooth f.</span></span></li>
+  </ul>
+
+  <div class="sec">Memory and rescaling — momentum and Adam</div>
+  <p class="step"><b>Momentum in plain words:</b> the heavy ball. Keep a running velocity; feed each gradient into it. Across the canyon the gradient flips sign every step, so successive contributions cancel inside v; along the canyon they always agree, so v accumulates speed. Oscillation damped, crawl accelerated — with a single extra number per parameter.</p>
+  <div class="mblock math" data-tex="v_{t+1}=\beta\,v_{t}+\nabla f(w_{t}),\qquad w_{t+1}=w_{t}-\eta\,v_{t+1}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="\beta"></span><span class="def"><b>momentum coefficient</b> (0.9 throughout this lesson). <span class="n">Memory horizon ≈ 1/(1−β) = 10 steps of gradient history.</span></span></li>
+    <li><span class="sym math" data-tex="v"></span><span class="def">the <b>velocity</b>: an exponentially-weighted sum of past gradients. <span class="n">The "heavy ball" — inertia carries it through the zigzag.</span></span></li>
+  </ul>
+  <p class="step"><b>Adam in plain words:</b> don't just remember direction — <i>rescale each coordinate</i>. Track two exponential moving averages per parameter: m (the mean of recent gradients) and v (the mean of recent squared gradients). Step by m divided by √v: steep coordinates with big gradients get shrunk, flat coordinates with tiny gradients get boosted. It is a diagonal preconditioner learned on the fly — an automatic attempt to divide κ away. The full update, nothing omitted:</p>
+  <div class="mblock math" data-tex="m_{t}=\beta_{1}m_{t-1}+(1-\beta_{1})\,g_{t},\quad v_{t}=\beta_{2}v_{t-1}+(1-\beta_{2})\,g_{t}^{\odot 2},\quad \hat m_{t}=\frac{m_{t}}{1-\beta_{1}^{t}},\quad \hat v_{t}=\frac{v_{t}}{1-\beta_{2}^{t}},\quad w_{t+1}=w_{t}-\eta\,\frac{\hat m_{t}}{\sqrt{\hat v_{t}}+\epsilon}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="g_t"></span><span class="def">the gradient at step t (possibly a minibatch estimate). <span class="n">g<sub>t</sub><sup>⊙2</sup> squares it elementwise — each coordinate keeps its own history.</span></span></li>
+    <li><span class="sym math" data-tex="\beta_1,\beta_2"></span><span class="def">decay rates of the two averages (defaults 0.9 and 0.999). <span class="n">First moment forgets in ~10 steps; second moment in ~1000 — the step-size scale moves much more slowly than the direction.</span></span></li>
+    <li><span class="sym math" data-tex="m_t,\,v_t"></span><span class="def">EMAs of the gradient and squared gradient. <span class="n">m is momentum's velocity in disguise; v estimates each coordinate's gradient scale.</span></span></li>
+    <li><span class="sym math" data-tex="\hat m_t,\hat v_t"></span><span class="def"><b>bias-corrected</b> moments. <span class="n">m and v start at 0, so early EMAs underestimate; dividing by 1−β₁ᵗ and 1−β₂ᵗ (which →1 as t grows) rescales exactly the missing mass. Without it the first steps divide by a far-too-small √v̂.</span></span></li>
+    <li><span class="sym math" data-tex="\epsilon"></span><span class="def">a floor (10⁻⁸) so flat coordinates never divide by zero. <span class="n">Numerical guard, not mathematics.</span></span></li>
+  </ul>
+
+  <div class="sec">See it — three optimizers race down one canyon</div>
   <div class="panel">
-    <div class="seg" id="surf">
-      <button data-s="bowl" class="on">Ill-conditioned bowl</button>
-      <button data-s="rosen">Rosenbrock valley</button>
-      <button data-s="well">Double well (non-convex)</button>
-    </div>
-    <div class="row">
-      <canvas id="cv" width="360" height="300"></canvas>
-      <div style="flex:1;min-width:220px">
-        <svg id="loss" viewBox="0 0 300 220" role="img" aria-label="Loss versus step for each optimizer"></svg>
-        <div class="legend">
-          <span><i class="sw" style="border-color:var(--gd)"></i>GD</span>
-          <span><i class="sw" style="border-color:var(--mom)"></i>momentum</span>
-          <span><i class="sw" style="border-color:var(--adam)"></i>Adam</span>
-        </div>
-      </div>
+    <svg id="cplot" viewBox="0 0 360 360" role="img" aria-label="Contour plot of the portfolio variance with GD, momentum and Adam trajectories"></svg>
+    <div class="legend">
+      <span><i class="sw" style="border-color:var(--gd)"></i>GD</span>
+      <span><i class="sw" style="border-color:var(--mom)"></i>momentum β=0.9</span>
+      <span><i class="sw" style="border-color:var(--adam)"></i>Adam</span>
     </div>
     <div class="ctrls">
-      <div class="field"><label>learning rate η <b id="lrOut">0.030</b></label><input type="range" id="lr" min="-3" max="-0.7" value="-1.52" step="0.02" /></div>
-      <div class="field"><label>momentum β <b id="beOut">0.90</b></label><input type="range" id="be" min="0" max="0.97" value="0.9" step="0.01" /></div>
+      <div class="field" style="min-width:230px;flex:0 1 auto"><label>walk the three methods <b>steps shown: <span id="tOut">25</span></b></label>
+        <div style="display:flex;gap:8px"><button class="ghost" id="b1">step ×1</button><button class="ghost" id="b10">step ×10</button><button class="ghost" id="b0">reset</button></div></div>
+      <div class="field"><label>correlation ρ <b id="rhoOut">0.95</b></label><input type="range" id="rho" min="0" max="0.99" value="0.95" step="0.01" /></div>
+      <div class="field"><label>learning rate η <b id="etaOut">0.30</b></label><input type="range" id="eta" min="0.02" max="1.60" value="0.30" step="0.02" /></div>
     </div>
     <div class="tally">
-      <div class="stat"><div class="k">final loss · GD</div><div class="v" id="fgd" style="color:var(--gd)">—</div></div>
-      <div class="stat"><div class="k">final loss · momentum</div><div class="v" id="fmom" style="color:var(--mom)">—</div></div>
-      <div class="stat"><div class="k">final loss · Adam</div><div class="v" id="fadam" style="color:var(--adam)">—</div></div>
+      <div class="stat"><div class="k">κ = λ₁/λ₂</div><div class="v a" id="sK">—</div></div>
+      <div class="stat"><div class="k">GD · steps to 10⁻³</div><div class="v" id="sGD" style="color:var(--gd)">—</div></div>
+      <div class="stat"><div class="k">momentum · steps</div><div class="v" id="sMOM" style="color:var(--mom)">—</div></div>
+      <div class="stat"><div class="k">Adam · steps</div><div class="v" id="sADAM" style="color:var(--adam)">—</div></div>
     </div>
-    <p class="callout" id="cnote">Click anywhere on the surface to drop the starting point. Darker = lower loss; the ✕ is the minimum.</p>
+    <div class="tally">
+      <div class="stat"><div class="k">optimal η★=2/(λ₁+λ₂)</div><div class="v" id="sETA">—</div></div>
+      <div class="stat"><div class="k">GD rate @ η★ (=ρ)</div><div class="v" id="sRATE">—</div></div>
+      <div class="stat"><div class="k">√κ speed limit</div><div class="v g" id="sLIM">—</div></div>
+      <div class="stat"><div class="k">GD edge 2/λ₁</div><div class="v" id="sEDGE">—</div></div>
+    </div>
+    <p class="callout" id="cnote1"></p>
+    <p class="step" style="margin-bottom:0">All three start at w₀ = (1.15, −0.35); tolerance 10⁻³, cap 600 steps; β = 0.9, Adam (β₁, β₂, ε) = (0.9, 0.999, 10⁻⁸). Everything is deterministic — same picture on every load.</p>
   </div>
 
-  <div class="sec">The learning-rate knife-edge &amp; SGD noise</div>
-  <p class="step">Strip it to one dimension, L(θ)=θ². GD becomes θ ← θ(1−2η): it converges only while |1−2η| &lt; 1. Past that it oscillates, then explodes. And a minibatch adds gradient noise, so SGD can't settle exactly — it hovers in a noise floor around the minimum.</p>
-  <div class="panel">
-    <div class="ctrls">
-      <div class="field"><label>learning rate η <b id="lr2Out">0.30</b></label><input type="range" id="lr2" min="0.02" max="1.15" value="0.3" step="0.01" /></div>
-      <div class="field"><label>minibatch noise (SGD) <b id="ngOut">0.00</b></label><input type="range" id="ng" min="0" max="1.2" value="0" step="0.02" /></div>
-    </div>
-    <svg id="oned" viewBox="0 0 660 200" role="img" aria-label="1D gradient descent trajectory under different learning rates and noise"></svg>
-    <p class="callout" id="c2note"></p>
-  </div>
-
+  <div class="sec">How fast can gradient descent be?</div>
+  <p class="step">The canyon generalizes. <b>Strongly convex</b> means curvature at least μ everywhere — no perfectly flat floor; <b>smooth</b> means at most L. For our quadratic, μ = λ₂ and L = λ₁. The best fixed step balances the two extremes: η★ = 2/(μ+L) makes the steep-axis factor and the flat-axis factor equal in size, and that shared size is the whole story of GD's speed. This is the theorem the first interactive has been acting out:</p>
   <div class="theorem">
     <p class="lbl">The precise statement</p>
-    <p>Gradient descent θ_{t+1} = θ_t − η∇L(θ_t) converges on a smooth convex L for η &lt; 2/L_smooth; on a quadratic with Hessian condition number κ, plain GD's rate degrades like (κ−1)/(κ+1) per step — slow when κ is large. Momentum improves the dependence to roughly √κ. SGD replaces ∇L with an unbiased minibatch estimate whose variance sets a noise floor unless η decays. Adam rescales each coordinate by its running RMS gradient, approximating a diagonal preconditioner that removes much of the κ-dependence.</p>
+    <p>Let f be L-smooth and μ-strongly convex (μ &gt; 0) with minimizer w★, and let κ = L/μ. Gradient descent w<sub>t+1</sub> = w<sub>t</sub> − η∇f(w<sub>t</sub>) with the optimal constant step η★ = 2/(μ+L) satisfies ‖w<sub>t</sub> − w★‖ ≤ ((κ−1)/(κ+1))<sup>t</sup> ‖w₀ − w★‖. For any 0 &lt; η &lt; 2/L the convergence is linear with factor max{|1−ημ|, |1−ηL|}, and on quadratics these factors are attained exactly, not merely bounded. Steps-to-accuracy therefore grows like κ: conditioning is not a nuisance term — it is the rate.</p>
+  </div>
+  <p class="step">For an equal-vol pair the algebra collapses: λ₁+λ₂ = 2σ², so η★ = 1/σ² exactly — independent of ρ — and (κ−1)/(κ+1) simplifies to ρ itself. <b>The correlation of your two futures is literally optimally-tuned GD's per-step error retention.</b> At ρ = 0.95, the best possible fixed step still keeps 95% of the remaining error every step. Drag ρ in the panel above and watch the second tally row track it one-for-one.</p>
+
+  <div class="sec">The gradient becomes an estimator — SGD</div>
+  <p class="step"><b>Plain words.</b> So far the gradient was exact. But a training loss — and a realized portfolio variance — is an <i>average over data</i>: one term per day. The exact gradient costs a full pass over every day; SGD grabs B random days and averages their gradients instead. That average is a sample mean, exactly the estimator of Lessons&nbsp;1–3: unbiased, with variance shrinking like 1/B. Here each day contributes the gradient of its own mean–variance objective ½(rᵗw)² − rᵗw — that day's risk leg minus that day's PnL leg:</p>
+  <div class="mblock math" data-tex="g_{t}(w)=(r_{t}^{\top}w)\,r_{t}-r_{t},\qquad \hat g_{B}=\frac1B\sum_{t\in\mathcal B}g_{t}(w),\qquad \mathbb E[\hat g_{B}]=\nabla f(w)=\widehat\Sigma\,w-\widehat\mu,\qquad \operatorname{Cov}(\hat g_{B})=\frac{C(w)}{B}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="r_t"></span><span class="def">the day-t return pair (in %). <span class="n">(r<sub>t</sub><sup>⊤</sup>w)r<sub>t</sub> is the gradient of that day's squared PnL; −r<sub>t</sub> is the gradient of that day's alpha leg.</span></span></li>
+    <li><span class="sym math" data-tex="\mathcal B,\;B"></span><span class="def">the <b>minibatch</b>: B days sampled with replacement from the panel. <span class="n">With replacement, so even B = 250 keeps some noise — a full pass would not.</span></span></li>
+    <li><span class="sym math" data-tex="\mathbb E[\hat g_B]"></span><span class="def"><b>unbiasedness</b>: on average the minibatch gradient is the true gradient. <span class="n">Σ̂, μ̂ are the panel's (uncentered) covariance and mean — SGD needs no correction, only patience.</span></span></li>
+    <li><span class="sym math" data-tex="C(w)/B"></span><span class="def">the estimator's <b>covariance</b>. <span class="n">The 1/B is the whole economics of batch size: quadruple B, halve the gradient noise (in RMS).</span></span></li>
+  </ul>
+  <p class="step">Constant η plus noise means SGD cannot settle: contraction pulls w toward w★ geometrically, noise kicks it back out, and the two balance at a stationary <b>noise ball</b> whose radius obeys a clean scaling law:</p>
+  <div class="mblock math" data-tex="\mathbb E\big\lVert w_{\infty}-w^{\star}\big\rVert^{2}\;\approx\;\sum_{i=1}^{2}\frac{\eta^{2}c_{i}}{1-(1-\eta\lambda_{i})^{2}}\;=\;\Theta\!\Big(\frac{\eta}{B}\Big)\qquad\Longrightarrow\qquad \mathrm{RMS}\;=\;\Theta\big(\sqrt{\eta/B}\,\big)" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="c_i"></span><span class="def">gradient-noise variance along eigen-axis i, ∝ 1/B. <span class="n">Computed from the panel's per-day gradients at w★; the denominator is the same 1−(contraction)² geometry as above.</span></span></li>
+    <li><span class="sym math" data-tex="\Theta(\sqrt{\eta/B})"></span><span class="def">the <b>scaling law</b> the demo measures. <span class="n">Halve η → radius ÷ √2; quadruple B → radius ÷ 2. This is why learning rates are decayed late in training.</span></span></li>
+  </ul>
+
+  <div class="sec">See it — the noise ball on a 250-day panel</div>
+  <p class="step">A seeded panel: 250 trading days of the two futures, unit daily vol, correlation 0.6, small positive drifts baked in (0.08 and 0.05 %/day). Everything below — Σ̂, μ̂, w★ = Σ̂⁻¹μ̂, both floors — is computed live from that panel. One estimator lesson comes free: a 250-day sample mean has standard error 1/√250 ≈ 0.063 %/day, the same order as the drift itself — check the callout for the sign μ̂ actually came out with.</p>
+  <div class="panel">
+    <div class="row">
+      <figure style="margin:0;flex:0 1 280px"><svg id="tplot" viewBox="0 0 280 280" role="img" aria-label="SGD trajectory in weight space"></svg>
+        <figcaption style="font-family:var(--mono);font-size:12px;color:var(--muted)">trajectory in (w₁,w₂) · + = w★</figcaption></figure>
+      <figure style="margin:0;flex:1 1 240px;min-width:240px"><svg id="dplot" viewBox="0 0 340 230" role="img" aria-label="Distance to optimum versus step, log scale"></svg>
+        <figcaption style="font-family:var(--mono);font-size:12px;color:var(--muted)">‖w−w★‖ per step (log) · dashed = predicted floor</figcaption></figure>
+    </div>
+    <div class="ctrls">
+      <div class="field"><label>batch size B <b id="bOut">10</b></label><input type="range" id="bs" min="1" max="250" value="10" step="1" /></div>
+      <div class="field"><label>learning rate η <b id="eta2Out">0.10</b></label><input type="range" id="eta2" min="0.01" max="0.40" value="0.10" step="0.01" /></div>
+      <div class="field" style="flex:0 1 auto;min-width:130px"><label>&nbsp;</label><button class="ghost" id="decay">decay η ÷ 2</button></div>
+    </div>
+    <div class="tally">
+      <div class="stat"><div class="k">measured RMS floor</div><div class="v a" id="rmsOut">—</div></div>
+      <div class="stat"><div class="k">predicted floor</div><div class="v" id="predOut">—</div></div>
+      <div class="stat"><div class="k">floor at 4×B</div><div class="v" id="rms4Out">—</div></div>
+      <div class="stat"><div class="k">ratio (√4 = 2)</div><div class="v g" id="ratioOut">—</div></div>
+    </div>
+    <p class="callout" id="cnote2"></p>
   </div>
 
   <div class="twist">
-    <p class="lbl">The twist — the valley <i>is</i> collinearity, and non-convexity mostly doesn't bite</p>
-    <p>The stretched bowl that makes GD zig-zag is an <b>ill-conditioned Hessian</b> — the exact κ = λ_max/λ_min from Lessons 5–6 and 8, now in parameter space. That's why plain GD staggers and why Adam (a diagonal preconditioner) and momentum (√κ acceleration) win: they're fighting the same conditioning problem you met in regression. Two deeper surprises hold in real training. First, the loss of a deep net is wildly <b>non-convex</b> — countless minima and far more saddle points — yet SGD reliably finds <i>good</i> minima, because in high dimensions almost all critical points are saddles (escapable) and most minima generalize comparably; its noise even helps escape sharp ones. Second, the learning rate sits on a genuine knife-edge (the "edge of stability"), which is why LR schedules and warmup exist. Optimization theory here is less "find the global min" and more "the geometry is forgiving if you precondition and add a little noise."</p>
+    <p class="lbl">The twist — a hard speed limit, and a workhorse without a warranty</p>
+    <p>Two facts upgrade the standard telling. <b>First, the speed limit.</b> Nesterov proved a lower bound: no method whose iterates are built from gradients and past gradients — GD, heavy ball, anything in that family — can beat a per-step factor of (√κ−1)/(√κ+1) on smooth strongly-convex problems. Momentum methods <i>attain</i> it: heavy ball on quadratics, Nesterov's accelerated gradient in general. So momentum isn't a heuristic nudge — it is optimal, and it turns κ into √κ: a canyon 100× worse-conditioned costs only 10× more steps. That exchange rate is the entire business case for momentum. <b>Second, Adam is not a descent method.</b> There are convex problems — the AMSGrad counterexample of Reddi, Kale &amp; Kumar (2018) — on which Adam with standard hyperparameters provably fails to converge: its rescaling can systematically forget the rare, informative gradients. The fix (AMSGrad: never let v̂ decrease) restores the guarantee and is barely used in practice. The field's default optimizer ships with no convergence guarantee on your loss — it is used because it works, not because it is proven.</p>
   </div>
 
   <div class="vol">
     <p class="lbl">Why this matters · volarixs</p>
-    <p>Every gradient-trained model you run — the XGBoost objective's Newton steps, any neural forecaster, a logistic signal — is doing exactly this descent, almost always with <b>Adam</b>. The reason Adam is the default is the twist above: your features are correlated, so the loss Hessian is ill-conditioned, and a plain fixed learning rate would crawl down the narrow valley — Adam's per-parameter rescaling is preconditioning that collinearity away.</p>
-    <p>Two carry-overs: the <b>minibatch gradient is an estimator</b> (Lessons 1–3) — its variance is why small batches train noisier and why the learning rate and batch size trade off; and if a model won't converge, suspect the <b>learning rate</b> first (the knife-edge) before the architecture. Preconditioning, warmup, and LR schedules are all fighting conditioning, not a bug in your code.</p>
+    <p>Every calibration inside volarixs that fits parameters by minimizing a loss runs on this engine: smile fits, curve fits, the M-step inside the regime HMM's EM loop. Each is "gradient (or Newton) steps on an objective", and each inherits this lesson's failure modes — a stretched valley when parameters are near-redundant, a knife-edge step size, noisy gradients whenever the objective is a sample average over days.</p>
+    <p>And the canyon itself is a markets object: an ill-conditioned Σ̂ is exactly why naive mean–variance weights explode along the small-eigenvalue direction — computing Σ̂⁻¹μ̂ divides by λ₂ ≈ 0, Lesson&nbsp;5's sausage again, now in weight space. That is the case for sizing risk in <code>pca_factors</code> space and for distrusting any weight vector that loads heavily on the spread between two near-substitutes.</p>
   </div>
 
   <div class="sec">Check yourself</div>
-  <div class="q" id="q1"><p class="stem">The update θ ← θ − η∇L moves θ in the direction of:</p><div class="opts"></div><p class="fb"></p></div>
-  <div class="q" id="q2"><p class="stem">In a stretched, ill-conditioned valley, plain gradient descent:</p><div class="opts"></div><p class="fb"></p></div>
-  <div class="q" id="q3"><p class="stem">A minibatch gradient ∇L_B is:</p><div class="opts"></div><p class="fb"></p></div>
-  <div class="q" id="q4"><p class="stem">Adam adapts each parameter's step size by dividing by:</p><div class="opts"></div><p class="fb"></p></div>
-  <div class="q" id="q5"><p class="stem">On L(θ)=θ², if the learning rate η is too large, gradient descent:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q1"><p class="stem">You push η up until the GD trajectory starts flipping across the canyon and exploding. The stability condition it violated is:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q2"><p class="stem">The condition number κ = λ₁/λ₂ of the risk Hessian controls:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q3"><p class="stem">Momentum upgrades the κ-dependence of first-order optimization to:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q4"><p class="stem">Adam's bias corrections m̂ = m/(1−β₁ᵗ) and v̂ = v/(1−β₂ᵗ) exist because:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q5"><p class="stem">Your minibatch gradient averages B of the 250 days in the panel. Its variance is:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q6"><p class="stem">Which direction of weight space converges slowest under plain GD on this loss?</p><div class="opts"></div><p class="fb"></p></div>
 
   <div class="checkRow">
     <button class="primary" id="check">Check answers</button>
     <span class="scoreOut" id="scoreOut"></span>
-    <span class="hint" id="hint">Answer all five first.</span>
+    <span class="hint" id="hint">Answer all six first.</span>
   </div>
   <div class="done" id="done">Engine online. Next in Wing II: backprop as autodiff — the chain rule as a computation graph.</div>
 </div>
@@ -196,140 +252,178 @@
 /* storage shim: window.storage (Claude artifacts) or localStorage (web) */
 if(!window.storage){window.storage={async get(k){const v=localStorage.getItem(k);if(v==null)throw new Error('missing');return{key:k,value:v}},async set(k,v){localStorage.setItem(k,v);return{key:k,value:v}},async delete(k){localStorage.removeItem(k);return{key:k,deleted:true}},async list(p){const ks=[];for(let i=0;i<localStorage.length;i++){const kk=localStorage.key(i);if(!p||kk.startsWith(p))ks.push(kk)}return{keys:ks}}};}
 function renderMath(){document.querySelectorAll('.math').forEach(el=>{const tex=el.getAttribute('data-tex');if(!tex||el.dataset.done)return;try{if(window.katex){katex.render(tex,el,{displayMode:el.dataset.display==='1',throwOnError:false});el.dataset.done='1';}else el.textContent=tex;}catch(e){el.textContent=tex;}});}
+function mulberry32(seed){let a=seed>>>0;return function(){a|=0;a=(a+0x6D2B79F5)|0;let t=Math.imul(a^(a>>>15),1|a);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296;}}
+function randn(rng){let u=0,v=0;while(!u)u=rng();while(!v)v=rng();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+const fmtd=d=>!isFinite(d)?'→∞':(d<0.01?d.toExponential(1):d.toFixed(3));
 
-/* ---------- surfaces ---------- */
-const SURF={
-  bowl:{dom:[-3,3,-3,3],min:[0,0],start:[-2.6,2.3],
-    L:(x,y)=>0.5*(x*x+18*y*y), g:(x,y)=>[x,18*y]},
-  rosen:{dom:[-1.6,1.6,-0.6,2.3],min:[1,1],start:[-1.15,1.7],
-    L:(x,y)=>(1-x)*(1-x)+100*(y-x*x)*(y-x*x), g:(x,y)=>[-2*(1-x)-400*x*(y-x*x),200*(y-x*x)]},
-  well:{dom:[-2,2,-1.6,1.6],min:[1,0],start:[-0.15,1.25],
-    L:(x,y)=>(x*x-1)*(x*x-1)+0.35*y*y, g:(x,y)=>[4*x*(x*x-1),0.7*y]}
-};
-let cur='bowl', start=SURF.bowl.start.slice();
-const lr=()=>Math.pow(10,+document.getElementById('lr').value);
-const be=()=>+document.getElementById('be').value;
-const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
-function px(s,x,y){const[xa,xb,ya,yb]=s.dom;return [ (x-xa)/(xb-xa)*cv.width, (1-(y-ya)/(yb-ya))*cv.height ];}
-function heat(){
-  const s=SURF[cur],[xa,xb,ya,yb]=s.dom,img=ctx.createImageData(cv.width,cv.height);
-  let mx=-1e9;const buf=new Float64Array(cv.width*cv.height);
-  for(let py=0;py<cv.height;py++)for(let pxx=0;pxx<cv.width;pxx++){
-    const x=xa+(pxx/cv.width)*(xb-xa),y=ya+(1-py/cv.height)*(yb-ya);
-    const v=Math.log(1+s.L(x,y));buf[py*cv.width+pxx]=v;if(v>mx)mx=v;}
-  for(let i=0;i<buf.length;i++){const t=Math.min(1,buf[i]/mx);
-    const r=20+t*205,gg=35+t*200,bb=58+t*190;
-    img.data[i*4]=r;img.data[i*4+1]=gg;img.data[i*4+2]=bb;img.data[i*4+3]=255;}
-  ctx.putImageData(img,0,0);
-}
-function optimize(kind){
-  const s=SURF[cur],steps=160;let x=start[0],y=start[1];
-  let vx=0,vy=0,mx=0,my=0,sx=0,sy=0;const B=be(),eta=lr(),path=[[x,y]],losses=[s.L(x,y)];
-  for(let t=1;t<=steps;t++){
-    const[gx,gy]=s.g(x,y);
-    if(kind==='gd'){x-=eta*gx;y-=eta*gy;}
-    else if(kind==='mom'){vx=B*vx+gx;vy=B*vy+gy;x-=eta*vx;y-=eta*vy;}
-    else{const b1=B,b2=0.999,ep=1e-8;mx=b1*mx+(1-b1)*gx;my=b1*my+(1-b1)*gy;sx=b2*sx+(1-b2)*gx*gx;sy=b2*sy+(1-b2)*gy*gy;
-      const mhx=mx/(1-Math.pow(b1,t)),mhy=my/(1-Math.pow(b1,t)),shx=sx/(1-Math.pow(b2,t)),shy=sy/(1-Math.pow(b2,t));
-      x-=eta*mhx/(Math.sqrt(shx)+ep);y-=eta*mhy/(Math.sqrt(shy)+ep);}
-    if(!isFinite(x)||!isFinite(y)||Math.abs(x)>1e3||Math.abs(y)>1e3){break;}
-    path.push([x,y]);losses.push(s.L(x,y));
+/* ========== Interactive 1 — deterministic quadratic race ========== */
+const W0=[1.15,-0.35],TOL=1e-3,MAXS=600,BETA=0.9,AB1=0.9,AB2=0.999,EPS=1e-8;
+let DISP=25;
+function runMethod(kind,rho,eta){
+  let w=[W0[0],W0[1]],v=[0,0],m=[0,0],s=[0,0];const path=[[w[0],w[1]]];let hit=-1,div=false;
+  for(let t=1;t<=MAXS;t++){
+    const g=[w[0]+rho*w[1],rho*w[0]+w[1]];
+    if(kind===0){w=[w[0]-eta*g[0],w[1]-eta*g[1]];}
+    else if(kind===1){v=[BETA*v[0]+g[0],BETA*v[1]+g[1]];w=[w[0]-eta*v[0],w[1]-eta*v[1]];}
+    else{m=[AB1*m[0]+(1-AB1)*g[0],AB1*m[1]+(1-AB1)*g[1]];s=[AB2*s[0]+(1-AB2)*g[0]*g[0],AB2*s[1]+(1-AB2)*g[1]*g[1]];
+      const c1=1-Math.pow(AB1,t),c2=1-Math.pow(AB2,t);
+      w=[w[0]-eta*(m[0]/c1)/(Math.sqrt(s[0]/c2)+EPS),w[1]-eta*(m[1]/c1)/(Math.sqrt(s[1]/c2)+EPS)];}
+    const d=Math.hypot(w[0],w[1]);
+    if(!isFinite(d)||d>1e6){div=true;break;}
+    path.push([w[0],w[1]]);
+    if(hit<0&&d<TOL)hit=t;
   }
-  return{path,losses};
+  return{path,hit,div};
 }
-function drawPath(p,col){const s=SURF[cur];ctx.lineWidth=1.8;ctx.strokeStyle=col;ctx.beginPath();
-  p.forEach((pt,i)=>{const[a,b]=px(s,pt[0],pt[1]);if(i)ctx.lineTo(a,b);else ctx.moveTo(a,b);});ctx.stroke();
-  const last=p[p.length-1],[la,lb]=px(s,last[0],last[1]);ctx.fillStyle=col;ctx.beginPath();ctx.arc(la,lb,3.2,0,7);ctx.fill();}
-function drawLoss(runs){
-  const W=300,H=220,padL=30,padR=8,padT=10,padB=24,iw=W-padL-padR,ih=H-padT-padB;
-  let mxs=0,mxl=-1e9,mnl=1e9;runs.forEach(r=>{mxs=Math.max(mxs,r.losses.length);r.losses.forEach(v=>{const lv=Math.log(1+v);if(lv>mxl)mxl=lv;if(lv<mnl)mnl=lv;});});
-  const X=i=>padL+i/(Math.max(mxs-1,1))*iw,Y=v=>{const lv=Math.log(1+v);return padT+(1-(lv-mnl)/((mxl-mnl)||1))*ih;};
-  let s=`<line x1="${padL}" y1="${padT+ih}" x2="${W-padR}" y2="${padT+ih}" stroke="var(--hair2)"/><line x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT+ih}" stroke="var(--hair2)"/>`;
-  s+=`<text x="${padL-4}" y="${padT+6}" text-anchor="end" font-family="var(--mono)" font-size="9" fill="var(--faint)">loss</text>`;
-  s+=`<text x="${W-padR}" y="${H-8}" text-anchor="end" font-family="var(--mono)" font-size="9" fill="var(--faint)">step</text>`;
-  const cols={gd:'var(--gd)',mom:'var(--mom)',adam:'var(--adam)'};
-  ['gd','mom','adam'].forEach(k=>{const r=runs.find(rr=>rr.kind===k);if(!r)return;let p='';r.losses.forEach((v,i)=>{p+=(i?'L':'M')+X(i).toFixed(1)+' '+Y(v).toFixed(1)+' ';});s+=`<path d="${p}" fill="none" stroke="${cols[k]}" stroke-width="1.8"/>`;});
-  document.getElementById('loss').innerHTML=s;
+const P1=w=>[(w[0]+1.7)/3.4*340+10,(1.7-w[1])/3.4*340+10];
+function draw1(){
+  const rho=+document.getElementById('rho').value,eta=+document.getElementById('eta').value;
+  const l1=1+rho,l2=1-rho,kap=l1/l2,s2=Math.SQRT1_2;
+  document.getElementById('rhoOut').textContent=rho.toFixed(2);
+  document.getElementById('etaOut').textContent=eta.toFixed(2);
+  document.getElementById('tOut').textContent=DISP;
+  const runs=[runMethod(0,rho,eta),runMethod(1,rho,eta),runMethod(2,rho,eta)];
+  const f0=0.5*(l1*Math.pow((W0[0]+W0[1])*s2,2)+l2*Math.pow((W0[0]-W0[1])*s2,2));
+  let sv='';
+  for(let k=0;k<8;k++){
+    const c=f0*Math.pow(0.33,k),ra=Math.sqrt(2*c/l1),rb=Math.sqrt(2*c/l2);let pth='';
+    for(let a=0;a<=64;a++){const th=a/64*2*Math.PI,u1=ra*Math.cos(th),u2=rb*Math.sin(th);
+      const p=P1([(u1+u2)*s2,(u1-u2)*s2]);pth+=(a?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)+' ';}
+    sv+='<path d="'+pth+'Z" fill="none" stroke="var(--hair2)" stroke-width="1" opacity="0.8"/>';
+  }
+  {const a=P1([1.7,-1.7]),b=P1([-1.7,1.7]);
+   sv+='<line x1="'+a[0]+'" y1="'+a[1]+'" x2="'+b[0]+'" y2="'+b[1]+'" stroke="var(--faint)" stroke-width="1" stroke-dasharray="5 5" opacity="0.55"/>';
+   sv+='<text x="280" y="266" text-anchor="middle" font-family="var(--mono)" font-size="9.5" fill="var(--faint)" transform="rotate(45 280 266)">spread w₁−w₂ · the collinear floor</text>';}
+  const cols=['var(--gd)','var(--mom)','var(--adam)'];
+  runs.forEach((r,i)=>{const n=Math.min(DISP,r.path.length-1);let pth='';
+    for(let t=0;t<=n;t++){const p=P1(r.path[t]);pth+=(t?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)+' ';}
+    sv+='<path d="'+pth+'" fill="none" stroke="'+cols[i]+'" stroke-width="1.7" opacity="0.9"/>';
+    const lp=P1(r.path[n]);sv+='<circle cx="'+lp[0].toFixed(1)+'" cy="'+lp[1].toFixed(1)+'" r="3" fill="'+cols[i]+'"/>';});
+  const o=P1([0,0]);sv+='<path d="M'+(o[0]-5)+' '+(o[1]-5)+'L'+(o[0]+5)+' '+(o[1]+5)+'M'+(o[0]+5)+' '+(o[1]-5)+'L'+(o[0]-5)+' '+(o[1]+5)+'" stroke="var(--ink)" stroke-width="1.6"/>';
+  const st=P1(W0);sv+='<circle cx="'+st[0].toFixed(1)+'" cy="'+st[1].toFixed(1)+'" r="4" fill="var(--paper)" stroke="var(--ink)" stroke-width="1.4"/>';
+  sv+='<text x="14" y="22" font-family="var(--mono)" font-size="10" fill="var(--faint)">w₂ vs w₁ · ✕ = w★ · ○ = w₀</text>';
+  document.getElementById('cplot').innerHTML=sv;
+  const stp=r=>r.div?'diverged':(r.hit>0?String(r.hit):'>'+MAXS);
+  document.getElementById('sK').textContent=kap>=100?kap.toFixed(0):kap.toFixed(1);
+  document.getElementById('sGD').textContent=stp(runs[0]);
+  document.getElementById('sMOM').textContent=stp(runs[1]);
+  document.getElementById('sADAM').textContent=stp(runs[2]);
+  document.getElementById('sETA').textContent=(2/(l1+l2)).toFixed(2);
+  document.getElementById('sRATE').textContent=((kap-1)/(kap+1)).toFixed(3);
+  document.getElementById('sLIM').textContent=((Math.sqrt(kap)-1)/(Math.sqrt(kap)+1)).toFixed(3);
+  document.getElementById('sEDGE').textContent=(2/l1).toFixed(3);
+  const f1=Math.abs(1-eta*l1),f2=Math.abs(1-eta*l2);
+  const ds=r=>{if(r.div&&DISP>=r.path.length-1)return'→∞';const p=r.path[Math.min(DISP,r.path.length-1)];return fmtd(Math.hypot(p[0],p[1]));};
+  let msg='After '+DISP+' steps, distance to w★ — GD '+ds(runs[0])+' · momentum '+ds(runs[1])+' · Adam '+ds(runs[2])+'. Per-step factors |1−ηλ|: '+f1.toFixed(3)+' across the canyon, '+f2.toFixed(3)+' along the floor. ';
+  if(eta>2/l1){msg+='η is past the GD edge 2/λ₁ = '+(2/l1).toFixed(3)+': the steep component is multiplied by '+f1.toFixed(2)+' > 1 every step — the zigzag has become a geometric amplifier. Heavy ball is still stable here (its edge is 2(1+β)/λ₁ = '+(2*(1+BETA)/l1).toFixed(2)+'), and Adam’s normalized step cannot blow up — it just orbits.';}
+  else if(kap>=9){const n2=Math.max(1,Math.ceil(Math.log(1000)/-Math.log(Math.min(f2,0.999999))));msg+='GD zigzags: the steep component flips and shrinks by '+f1.toFixed(2)+' per step while the spread component crawls at '+f2.toFixed(3)+' — about '+n2+' steps per 1000× of shrinkage. Momentum’s velocity averages the flip-flop away; Adam divides each axis by its own RMS gradient — a live diagonal preconditioner.';}
+  else{msg+='With ρ = '+rho.toFixed(2)+' the canyon is mild (κ = '+kap.toFixed(1)+') and plain GD is competitive — drag ρ up and watch κ throttle it.';}
+  if(!runs[2].div&&runs[2].hit<0){msg+=' Adam has not reached tolerance: its late steps are ≈ η·sign(g), so it stalls at scale ~η — shrink η to let it land (why Adam ships with small η plus decay).';}
+  document.getElementById('cnote1').textContent=msg;
 }
-function run(){
-  heat();
-  const s=SURF[cur],[mxp]=[px(s,s.min[0],s.min[1])];ctx.fillStyle='var(--ink)';
-  ctx.strokeStyle=getComputedStyle(document.body).getPropertyValue('--ink');ctx.lineWidth=1.6;
-  const[mmx,mmy]=px(s,s.min[0],s.min[1]);ctx.beginPath();ctx.moveTo(mmx-5,mmy-5);ctx.lineTo(mmx+5,mmy+5);ctx.moveTo(mmx+5,mmy-5);ctx.lineTo(mmx-5,mmy+5);ctx.stroke();
-  const rg=optimize('gd'),rm=optimize('mom'),ra=optimize('adam');
-  drawPath(rg.path,getComputedStyle(document.body).getPropertyValue('--gd'));
-  drawPath(rm.path,getComputedStyle(document.body).getPropertyValue('--mom'));
-  drawPath(ra.path,getComputedStyle(document.body).getPropertyValue('--adam'));
-  // start dot
-  const[sx0,sy0]=px(s,start[0],start[1]);ctx.fillStyle='#fff';ctx.strokeStyle='#000';ctx.lineWidth=1.4;ctx.beginPath();ctx.arc(sx0,sy0,4,0,7);ctx.fill();ctx.stroke();
-  rg.kind='gd';rm.kind='mom';ra.kind='adam';drawLoss([rg,rm,ra]);
-  const fin=r=>r.losses[r.losses.length-1];
-  const f=(v)=>v>1e3?'diverged':v.toFixed(3);
-  document.getElementById('fgd').textContent=f(fin(rg));
-  document.getElementById('fmom').textContent=f(fin(rm));
-  document.getElementById('fadam').textContent=f(fin(ra));
-  const gdBad=fin(rg)>Math.max(fin(ra),1e-6)*5||fin(rg)>1e3;
-  document.getElementById('cnote').textContent = cur==='bowl'
-    ? (gdBad?`GD is zig-zagging across the steep y-axis (or diverging) — the valley's condition number punishes a single fixed step. Momentum and Adam reach the ✕ far faster.`:`All three converge here; lower η and GD starts to crawl, raise it past ~0.11 and GD diverges on the stiff direction while Adam stays stable.`)
-    : cur==='rosen'?`Rosenbrock's curved ravine is the classic torture test: GD stalls or explodes, momentum overshoots the bends, Adam threads it. Click a new start to see path-dependence.`
-    : `Two minima at x = ±1 with a saddle at the origin. Start near the saddle and watch which basin each optimizer falls into — non-convexity means the answer depends on where you begin.`;
-}
-document.getElementById('lr').addEventListener('input',e=>{document.getElementById('lrOut').textContent=lr().toFixed(3);run();});
-document.getElementById('be').addEventListener('input',e=>{document.getElementById('beOut').textContent=(+e.target.value).toFixed(2);run();});
-document.querySelectorAll('#surf button').forEach(b=>b.onclick=()=>{cur=b.dataset.s;start=SURF[cur].start.slice();document.querySelectorAll('#surf button').forEach(x=>x.classList.toggle('on',x===b));run();});
-cv.addEventListener('click',e=>{const r=cv.getBoundingClientRect(),s=SURF[cur],[xa,xb,ya,yb]=s.dom;
-  const x=xa+((e.clientX-r.left)/r.width)*(xb-xa),y=ya+(1-(e.clientY-r.top)/r.height)*(yb-ya);start=[x,y];run();});
+document.getElementById('b1').onclick=()=>{DISP=Math.min(MAXS,DISP+1);draw1();};
+document.getElementById('b10').onclick=()=>{DISP=Math.min(MAXS,DISP+10);draw1();};
+document.getElementById('b0').onclick=()=>{DISP=0;draw1();};
+document.getElementById('rho').addEventListener('input',draw1);
+document.getElementById('eta').addEventListener('input',draw1);
 
-/* ---------- 1D LR + noise ---------- */
-function oned(){
-  const eta=+document.getElementById('lr2').value,ng=+document.getElementById('ng').value;
-  document.getElementById('lr2Out').textContent=eta.toFixed(2);document.getElementById('ngOut').textContent=ng.toFixed(2);
-  const W=660,H=200,padL=32,padR=10,padT=12,padB=24,iw=W-padL-padR,ih=H-padT-padB,steps=60;
-  let th=2.5;const traj=[th];
-  for(let t=0;t<steps;t++){const g=2*th+ng*(Math.random()*2-1);th=th-eta*g;if(!isFinite(th)||Math.abs(th)>1e3)break;traj.push(th);}
-  let mx=0;traj.forEach(v=>mx=Math.max(mx,Math.abs(v)));mx=Math.max(mx,3);
-  const X=i=>padL+i/(steps)*iw,Y=v=>padT+(1-(v+mx)/(2*mx))*ih;
-  let s=`<line x1="${padL}" y1="${Y(0)}" x2="${W-padR}" y2="${Y(0)}" stroke="var(--hair2)" stroke-dasharray="4 4"/>`;
-  s+=`<text x="${padL-4}" y="${Y(0)+3}" text-anchor="end" font-family="var(--mono)" font-size="10" fill="var(--faint)">θ*=0</text>`;
-  let p='';traj.forEach((v,i)=>{p+=(i?'L':'M')+X(i).toFixed(1)+' '+Y(v).toFixed(1)+' ';});
-  const conv=Math.abs(1-2*eta);const col=conv<1?'var(--adam)':(conv<1.02?'var(--mom)':'var(--gd)');
-  s+=`<path d="${p}" fill="none" stroke="${col}" stroke-width="2"/>`;
-  traj.forEach((v,i)=>{s+=`<circle cx="${X(i).toFixed(1)}" cy="${Y(v).toFixed(1)}" r="2" fill="${col}"/>`;});
-  document.getElementById('oned').innerHTML=s;
-  const factor=(1-2*eta);
-  document.getElementById('c2note').textContent = Math.abs(factor)>=1
-    ? `η=${eta.toFixed(2)}: |1−2η|=${Math.abs(factor).toFixed(2)} ≥ 1 — each step multiplies the distance to the minimum by ≥1, so GD oscillates and diverges. The stability limit here is η < 1.`
-    : ng>0.02
-      ? `η=${eta.toFixed(2)} converges, but the minibatch noise (${ng.toFixed(2)}) stops θ settling exactly — it hovers in a noise floor around 0. Shrinking η (or averaging) shrinks the floor; that's why LR is decayed late in training.`
-      : `η=${eta.toFixed(2)}: |1−2η|=${Math.abs(factor).toFixed(2)} < 1, so θ contracts geometrically to the minimum. Add minibatch noise and watch the clean convergence turn into a jitter.`;
+/* ========== Interactive 2 — SGD on a seeded 250-day panel ========== */
+const NDAYS=250,RHO0=0.6,MUD=[0.08,0.05];
+const R1=new Float64Array(NDAYS),R2=new Float64Array(NDAYS);
+(function(){const rng=mulberry32(109);const cc=Math.sqrt(1-RHO0*RHO0);
+  for(let t=0;t<NDAYS;t++){const z1=randn(rng),z2=randn(rng);R1[t]=MUD[0]+z1;R2[t]=MUD[1]+RHO0*z1+cc*z2;}})();
+let S11=0,S12=0,S22=0,M1=0,M2=0;
+for(let t=0;t<NDAYS;t++){S11+=R1[t]*R1[t];S12+=R1[t]*R2[t];S22+=R2[t]*R2[t];M1+=R1[t];M2+=R2[t];}
+S11/=NDAYS;S12/=NDAYS;S22/=NDAYS;M1/=NDAYS;M2/=NDAYS;
+const detS=S11*S22-S12*S12,WS=[(S22*M1-S12*M2)/detS,(S11*M2-S12*M1)/detS];
+function eig2(a,b,c){const tr=a+c,d=Math.sqrt((a-c)*(a-c)/4+b*b),l1=tr/2+d,l2=tr/2-d;
+  let v1=[b,l1-a];if(Math.abs(b)<1e-12)v1=a>=c?[1,0]:[0,1];
+  const n1=Math.hypot(v1[0],v1[1]);v1=[v1[0]/n1,v1[1]/n1];return{l1,l2,e1:v1,e2:[-v1[1],v1[0]]};}
+const EH=eig2(S11,S12,S22);
+const W02=[0.9,-0.7],T2=800,TAIL=500,SEED2=410;
+function runSGD(eta,B){const rng=mulberry32(SEED2);let w=[W02[0],W02[1]];
+  const path=[[w[0],w[1]]],dists=[Math.hypot(w[0]-WS[0],w[1]-WS[1])];
+  for(let t=1;t<=T2;t++){let g0=0,g1=0;
+    for(let j=0;j<B;j++){const i=Math.floor(rng()*NDAYS);const q=R1[i]*w[0]+R2[i]*w[1];g0+=q*R1[i]-R1[i];g1+=q*R2[i]-R2[i];}
+    g0/=B;g1/=B;w=[w[0]-eta*g0,w[1]-eta*g1];
+    path.push([w[0],w[1]]);dists.push(Math.hypot(w[0]-WS[0],w[1]-WS[1]));}
+  let s=0;for(let t=T2-TAIL+1;t<=T2;t++)s+=dists[t]*dists[t];
+  return{path,dists,rms:Math.sqrt(s/TAIL)};}
+function predFloor(eta,B){let C11=0,C12=0,C22=0;
+  for(let t=0;t<NDAYS;t++){const q=R1[t]*WS[0]+R2[t]*WS[1];const a=q*R1[t]-R1[t],b=q*R2[t]-R2[t];C11+=a*a;C12+=a*b;C22+=b*b;}
+  C11/=NDAYS;C12/=NDAYS;C22/=NDAYS;
+  const proj=e=>e[0]*e[0]*C11+2*e[0]*e[1]*C12+e[1]*e[1]*C22;
+  const c1=proj(EH.e1)/B,c2=proj(EH.e2)/B;
+  const term=(c,l)=>{const r=1-eta*l,den=1-r*r;return den>0?eta*eta*c/den:Infinity;};
+  return Math.sqrt(term(c1,EH.l1)+term(c2,EH.l2));}
+function draw2(){
+  const B=+document.getElementById('bs').value,eta=+document.getElementById('eta2').value;
+  document.getElementById('bOut').textContent=B;
+  document.getElementById('eta2Out').textContent=eta.toFixed(2);
+  const B4=Math.min(4*B,NDAYS);
+  const main=runSGD(eta,B),shadow=runSGD(eta,B4),pred=predFloor(eta,B);
+  const P2=w=>[(w[0]+1.15)/2.3*260+10,(1.15-w[1])/2.3*260+10];
+  let sv='';
+  for(const dd of[0.35,0.7,1.05]){const ra=dd*Math.sqrt(EH.l2/EH.l1),rb=dd;let pth='';
+    for(let a=0;a<=64;a++){const th=a/64*2*Math.PI,u1=ra*Math.cos(th),u2=rb*Math.sin(th);
+      const w=[WS[0]+u1*EH.e1[0]+u2*EH.e2[0],WS[1]+u1*EH.e1[1]+u2*EH.e2[1]];const p=P2(w);pth+=(a?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)+' ';}
+    sv+='<path d="'+pth+'Z" fill="none" stroke="var(--hair2)" opacity="0.8"/>';}
+  let pth='';main.path.forEach((w,i)=>{const p=P2(w);pth+=(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)+' ';});
+  sv+='<path d="'+pth+'" fill="none" stroke="var(--accent)" stroke-width="1" opacity="0.75"/>';
+  const o=P2(WS);sv+='<path d="M'+(o[0]-5).toFixed(1)+' '+o[1].toFixed(1)+'L'+(o[0]+5).toFixed(1)+' '+o[1].toFixed(1)+'M'+o[0].toFixed(1)+' '+(o[1]-5).toFixed(1)+'L'+o[0].toFixed(1)+' '+(o[1]+5).toFixed(1)+'" stroke="var(--ink)" stroke-width="1.5"/>';
+  const s0=P2(W02);sv+='<circle cx="'+s0[0].toFixed(1)+'" cy="'+s0[1].toFixed(1)+'" r="4" fill="var(--paper)" stroke="var(--ink)" stroke-width="1.4"/>';
+  document.getElementById('tplot').innerHTML=sv;
+  const W=340,H=230,padL=36,padR=8,padT=10,padB=22,iw=W-padL-padR,ih=H-padT-padB;
+  let mn=pred,mx=0;main.dists.forEach(v=>{if(v<mn)mn=v;if(v>mx)mx=v;});
+  const lo=Math.log10(Math.max(mn,1e-4))-0.15,hi=Math.log10(mx)+0.1;
+  const X=i=>padL+i/T2*iw,Y=v=>padT+(1-(Math.log10(Math.max(v,1e-4))-lo)/(hi-lo))*ih;
+  let sd='<line x1="'+padL+'" y1="'+(padT+ih)+'" x2="'+(W-padR)+'" y2="'+(padT+ih)+'" stroke="var(--hair2)"/><line x1="'+padL+'" y1="'+padT+'" x2="'+padL+'" y2="'+(padT+ih)+'" stroke="var(--hair2)"/>';
+  sd+='<text x="'+(padL-4)+'" y="'+(padT+7)+'" text-anchor="end" font-family="var(--mono)" font-size="9" fill="var(--faint)">'+mx.toFixed(1)+'</text>';
+  sd+='<text x="'+(W-padR)+'" y="'+(H-8)+'" text-anchor="end" font-family="var(--mono)" font-size="9" fill="var(--faint)">step '+T2+'</text>';
+  sd+='<line x1="'+padL+'" y1="'+Y(pred).toFixed(1)+'" x2="'+(W-padR)+'" y2="'+Y(pred).toFixed(1)+'" stroke="var(--series)" stroke-dasharray="5 4" stroke-width="1.4"/>';
+  let pp='';main.dists.forEach((v,i)=>{pp+=(i?'L':'M')+X(i).toFixed(1)+' '+Y(v).toFixed(1)+' ';});
+  sd+='<path d="'+pp+'" fill="none" stroke="var(--accent)" stroke-width="1.3"/>';
+  document.getElementById('dplot').innerHTML=sd;
+  document.getElementById('rmsOut').textContent=main.rms.toFixed(3);
+  document.getElementById('predOut').textContent=pred.toFixed(3);
+  document.getElementById('rms4Out').textContent=shadow.rms.toFixed(3);
+  document.getElementById('ratioOut').textContent=(main.rms/shadow.rms).toFixed(2);
+  const kh=EH.l1/EH.l2;
+  let m2='B = '+B+': each step averages '+B+' of 250 day-gradients — unbiased, variance ∝ 1/B. Measured floor '+main.rms.toFixed(3)+' vs additive-noise prediction '+pred.toFixed(3)+'. Same seed at B = '+B4+': floor '+shadow.rms.toFixed(3)+' — ratio '+(main.rms/shadow.rms).toFixed(2)+' against √('+B4+'/'+B+') = '+Math.sqrt(B4/B).toFixed(2)+' predicted.';
+  if(B4<4*B)m2+=' (4B capped at the 250-day panel.)';
+  m2+=' Panel: μ̂ = ('+M1.toFixed(3)+', '+M2.toFixed(3)+') %/day — note the sign, versus the +0.08/+0.05 drift that generated it — w★ = Σ̂⁻¹μ̂ = ('+WS[0].toFixed(3)+', '+WS[1].toFixed(3)+'); λ̂ = '+EH.l1.toFixed(2)+' / '+EH.l2.toFixed(2)+' (κ̂ = '+kh.toFixed(1)+'). Hit decay η and the ball shrinks by ≈√2.';
+  document.getElementById('cnote2').textContent=m2;
 }
-document.getElementById('lr2').addEventListener('input',oned);
-document.getElementById('ng').addEventListener('input',oned);
+document.getElementById('bs').addEventListener('input',draw2);
+document.getElementById('eta2').addEventListener('input',draw2);
+document.getElementById('decay').onclick=()=>{const s=document.getElementById('eta2');s.value=Math.max(0.01,Math.round((+s.value/2)*100)/100);draw2();};
 
-/* ---------- retrieval ---------- */
+/* ========== retrieval ========== */
 const QS={
-  q1:{opts:["steepest ascent of the loss","steepest descent — the negative gradient","a random direction that decreases loss on average","the direction of largest parameter"],a:1,
-    fb:"∇L points uphill (steepest ascent); subtracting it steps downhill. It's steepest descent only in the current coordinate metric — changing that metric is what preconditioners and natural gradient do."},
-  q2:{opts:["converges fastest of all methods","zig-zags across the steep direction and crawls, because a single η can't suit both a steep and a flat axis","is unaffected by conditioning","always diverges"],a:1,
-    fb:"An ill-conditioned Hessian (large κ = λmax/λmin) means one axis is steep and one flat; a fixed η either diverges on the steep one or crawls on the flat one, so GD zig-zags. Momentum and Adam fight exactly this."},
-  q3:{opts:["a biased approximation that must be corrected","an unbiased but noisy estimate of the full-batch gradient (E[∇L_B]=∇L)","always equal to the full gradient","the second derivative of the loss"],a:1,
-    fb:"Averaging over a random minibatch gives an unbiased estimate of the true gradient; its variance (larger for smaller batches) sets SGD's noise floor. It's an estimator — Lessons 1–3."},
-  q4:{opts:["the learning rate η","the square root of a running average of squared gradients (its per-coordinate RMS)","the number of parameters","the momentum coefficient β"],a:1,
-    fb:"Adam divides the step by √ŝ, the RMS of recent gradients for that coordinate — big-gradient directions get damped, flat ones amplified. That's a diagonal preconditioner that cancels much of the conditioning problem."},
-  q5:{opts:["converges faster with no downside","oscillates and then diverges once |1−2η| ≥ 1","gets stuck at a saddle","becomes unbiased"],a:1,
-    fb:"The update is θ ← θ(1−2η); convergence needs |1−2η| < 1, i.e. η < 1 here. Beyond that each step grows the distance to the minimum — the learning-rate knife-edge."}
+  q1:{opts:["η < 1/λ₁ (the top eigenvalue)","η < 2/λ₁ — beyond it |1−ηλ₁| > 1 and the steep component grows geometrically","η < 2/λ₂ (the smallest eigenvalue)","η < 1/κ"],a:1,
+    fb:"Per eigen-axis the error is multiplied by 1−ηλᵢ each step. The first axis to break is the steepest: |1−ηλ₁| > 1 exactly when η > 2/λ₁ = 2/L. The flat axis is never the binding constraint — it is the slow one, not the unstable one."},
+  q2:{opts:["the size of the SGD noise ball","whether the loss is convex at all","how fast GD can possibly go: the optimal per-step rate is (κ−1)/(κ+1), so steps-to-accuracy grows like κ — the zigzag-and-crawl you watched","the sign of the gradient"],a:2,
+    fb:"One η must serve axes whose curvatures differ by a factor κ. Balancing them optimally still leaves per-step factor (κ−1)/(κ+1) — for our equal-vol pair, exactly ρ. Big κ means zigzag across the steep axis and crawl along the flat one; convexity is untouched by κ."},
+  q3:{opts:["√κ — the rate becomes (√κ−1)/(√κ+1), so a 100× worse-conditioned canyon costs only 10× more steps","log κ","it removes the κ-dependence entirely","κ² — momentum is worse in theory"],a:0,
+    fb:"Nesterov’s lower bound says no gradient+memory method beats (√κ−1)/(√κ+1), and heavy ball / Nesterov momentum attain it. κ becomes √κ — an enormous exchange rate, but not a removal: conditioning still costs, just its square root."},
+  q4:{opts:["they guarantee convergence on convex losses","they cap the step size at η","they add curvature information to the update","m and v start at zero, so early EMAs underestimate the true moments; without the 1−βᵗ rescaling the first steps would divide by a far-too-small √v̂ and be badly mis-scaled"],a:3,
+    fb:"A zero-initialized EMA is missing (1−βᵗ) of its mass. After one step, m holds 10% of the gradient but v holds only 0.1% of its square — uncorrected, the first step would be (1−β₁)/√(1−β₂) ≈ 3.2× too large. The corrections divide by exactly the missing mass; they buy no convergence guarantee (see the twist)."},
+  q5:{opts:["independent of B — noise is noise","∝ 1/B: it is a mean of B iid day-gradients, so the noise ball’s RMS radius shrinks like 1/√B — quadruple the batch, halve the ball","∝ 1/√B","∝ 1/B², which is why tiny batches work"],a:1,
+    fb:"The minibatch gradient is a sample mean of B iid day-gradients (Lessons 1–3): unbiased, variance ∝ 1/B, RMS ∝ 1/√B. That is exactly the ≈ 2× floor drop you see going B → 4B in the demo — and why batch size and learning rate trade off against each other."},
+  q6:{opts:["the (1,1)/√2 both-long direction — the market factor","the direction of the starting gradient","the long–short spread (1,−1)/√2 — the smallest-eigenvalue eigenvector, i.e. the collinear direction of Lesson 5","all directions converge at the same geometric rate"],a:2,
+    fb:"Slowest convergence ↔ contraction factor closest to 1 ↔ smallest λ: the spread between two near-substitutes, which carries almost no risk (λ₂ = 1−ρ → 0). It is the same direction whose weights explode in naive mean–variance — the flat valley floor is Lesson 5’s sausage."}
 };
-const sel={q1:null,q2:null,q3:null,q4:null,q5:null};let revealed=false;
+const sel={q1:null,q2:null,q3:null,q4:null,q5:null,q6:null};let revealed=false;
 Object.keys(QS).forEach(id=>{const holder=document.querySelector('#'+id+' .opts');QS[id].opts.forEach((txt,i)=>{const b=document.createElement('button');b.className='opt';b.textContent=String.fromCharCode(65+i)+'.  '+txt;b.onclick=()=>{if(revealed)return;sel[id]=i;[...holder.children].forEach((c,ci)=>c.classList.toggle('sel',ci===i));document.getElementById('hint').style.display='none';};holder.appendChild(b);});});
 document.getElementById('check').onclick=async()=>{
   if(revealed)return;if(Object.values(sel).some(v=>v===null)){document.getElementById('hint').style.display='inline';return;}
   revealed=true;let score=0;
   Object.keys(QS).forEach(id=>{const a=QS[id].a,holder=document.querySelector('#'+id+' .opts'),fb=document.querySelector('#'+id+' .fb');[...holder.children].forEach((c,ci)=>{c.style.cursor='default';c.classList.remove('sel');if(ci===a)c.classList.add('correct');else if(ci===sel[id])c.classList.add('wrong');});if(sel[id]===a)score++;fb.textContent=QS[id].fb;fb.classList.add('show');});
   document.getElementById('check').style.opacity='0.5';document.getElementById('check').textContent='Checked';
-  document.getElementById('scoreOut').textContent=score+' / 5';document.getElementById('done').classList.add('show');
-  try{await window.storage.set('mfs:lesson09',JSON.stringify({done:true,retrieval:score+'/5',ts:Date.now()}),false);}catch(e){}
+  document.getElementById('scoreOut').textContent=score+' / 6';document.getElementById('done').classList.add('show');
+  try{await window.storage.set('mfs:lesson09',JSON.stringify({done:true,retrieval:score+'/6',ts:Date.now()}),false);}catch(e){}
 };
-function boot(){renderMath();document.getElementById('lrOut').textContent=lr().toFixed(3);run();oned();}
+function boot(){renderMath();draw1();draw2();}
 if(window.katex)boot();else window.addEventListener('load',boot);
 (async()=>{try{const r=await window.storage.get('mfs:lesson09',false);if(r&&r.value){const v=JSON.parse(r.value);if(v.done){const c=document.getElementById('chip');c.classList.add('show');c.textContent='completed · '+v.retrieval;}}}catch(e){}})();
 </script>
