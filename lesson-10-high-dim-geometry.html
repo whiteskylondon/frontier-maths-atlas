@@ -31,6 +31,7 @@
   .glo .def{font-size:14.5px}.glo .def .n{color:var(--muted)}
   .step{font-size:14.5px;color:var(--muted);margin:10px 0}
   .panel{background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:20px;margin:14px 0}
+  .hintline{font-size:13px;color:var(--faint);font-family:var(--mono);margin:0 0 8px}
   .ctrls{display:flex;flex-wrap:wrap;gap:16px 26px;align-items:flex-end;margin:0 0 10px}
   .field{display:flex;flex-direction:column;gap:6px;min-width:240px;flex:1}
   .field label{font-size:12px;color:var(--muted);font-family:var(--mono);display:flex;justify-content:space-between}
@@ -74,142 +75,245 @@
 <div class="wrap">
   <p class="eyebrow">Lesson 10 · Wing I — the linear-algebra substrate</p>
   <h1>Geometry of high-dimensional embeddings<span class="chip" id="chip"></span></h1>
-  <p class="sub">In high dimensions everything is far, everything is orthogonal, and that turns out to be a gift.</p>
-  <div class="levels"><span class="lk">Level</span><span class="pill"><b>US</b> Graduate</span><span class="pill"><b>FR</b> Master M2 · ENSAE 3A</span></div>
+  <p class="sub">Random vectors are strangers and random points share one radius — the curse of dimensionality and the budget behind superposition are the same fact.</p>
+  <div class="levels"><span class="lk">Level</span><span class="pill"><b>US</b> Graduate</span><span class="pill"><b>FR</b> M2 · ENSAE 3A</span></div>
 
-  <p class="lead">Every token, every feature vector in a modern model is a point in a space of hundreds or thousands of dimensions. Our 3-D intuition breaks there — and the way it breaks is lawful. Random vectors become <b>nearly orthogonal</b>, distances <b>concentrate</b> so that near and far blur together, and a Gaussian's mass drifts off the centre onto a thin <b>shell</b>. These aren't pathologies to avoid; they're the reason embeddings, cosine similarity, and superposition work at all.</p>
+  <p class="lead">Put two portfolio managers in separate rooms and let each build a <b>random</b> long/short book over the same 500 assets. How much will the two books overlap? Plain words before any formalism. An <b>embedding</b> is a list of d numbers used as coordinates — a book's weight on each asset, a token's vector inside a transformer; the <b>dimension</b> d is how long the list is. A vector's <b>norm</b> is its overall size (a book's gross exposure); a <b>unit vector</b> is the vector rescaled to size 1 — pure direction. The <b>cosine similarity</b> of two vectors is their overlap once size is stripped away: +1 means the same book, −1 the opposite book, and 0 means <b>orthogonal</b> — perpendicular, geometry's word for "unrelated". This lesson is one lawful surprise, <b>concentration of measure</b>: as d grows, random cosines stop spreading out and pile up hard at 0, and random lengths pile onto a single value — a <b>thin shell</b>. The two managers' books are all but guaranteed to be strangers. Read one way, that is the curse of dimensionality; read the other, it is the budget that lets 4,096 dimensions carry hundreds of millions of features — and a 500-asset market carry far more than 500 uncrowded strategies.</p>
 
-  <div class="sec">The central fact — concentration</div>
-  <p class="step">Take two independent random unit vectors in ℝ^d. Their cosine similarity is their dot product, and it behaves like a mean-zero Gaussian whose spread <i>shrinks</i> with dimension:</p>
-  <div class="mblock math" data-tex="\cos\theta=\langle u,v\rangle,\qquad \mathbb{E}[\cos\theta]=0,\qquad \operatorname{Var}(\cos\theta)=\tfrac{1}{d}\;\Rightarrow\;\cos\theta\approx\mathcal{N}\!\big(0,\tfrac1d\big)" data-display="1"></div>
-  <p class="step">So the typical angle between two random vectors rushes toward 90° as d grows — a standard deviation of only 1/√d. In 1000 dimensions almost every pair of directions is essentially orthogonal. The companion fact for lengths: a standard Gaussian's norm concentrates tightly at √d.</p>
-  <div class="mblock math" data-tex="\lVert x\rVert \approx \sqrt{d}\,\Big(1\pm O\!\big(\tfrac{1}{\sqrt d}\big)\Big)\quad\text{— the mass lives on a thin shell of radius }\sqrt d\text{ (the ``soap bubble'')}" data-display="1"></div>
+  <div class="sec">1 · Two random books are strangers</div>
+  <p class="step">Scale both books to unit vectors u and v; their cosine is the inner product ⟨u,v⟩ (Lesson 6). The whole derivation fits in one line. A uniformly random direction has no preferred orientation, so rotate coordinates until u lies along the first axis — then the cosine is simply v's <i>first coordinate</i>. Its mean is 0 by sign symmetry, and its variance is a budget argument: the d squared coordinates of a unit vector must add up to exactly 1, and no coordinate is special, so each one gets 1/d in expectation.</p>
+  <div class="mblock math" data-tex="\cos\theta=\langle u,v\rangle \;=\; v_1,\qquad \mathbb{E}[v_1]=0,\qquad \operatorname{Var}(\cos\theta)=\mathbb{E}\big[v_1^{2}\big]=\tfrac1d\,\mathbb{E}\!\Big[\textstyle\sum_{i=1}^{d}v_i^{2}\Big]=\tfrac1d" data-display="1"></div>
+  <div class="mblock math" data-tex="\cos\theta \;\approx\; \mathcal{N}\!\Big(0,\ \tfrac1d\Big)\ \text{ for large } d,\qquad \operatorname{std}(\cos\theta)=\tfrac{1}{\sqrt d}" data-display="1"></div>
   <ul class="glo">
-    <li><span class="sym math" data-tex="\cos\theta"></span><span class="def"><b>cosine similarity</b> of two unit vectors. <span class="n">The survivor metric in high-d — angles stay meaningful where raw distances stop being.</span></span></li>
-    <li><span class="sym math" data-tex="\tfrac{1}{d}"></span><span class="def">the <b>variance</b> of that cosine. <span class="n">Concentration rate: double the dimension, tighten the spread by √2.</span></span></li>
-    <li><span class="sym math" data-tex="\sqrt{d}"></span><span class="def">the <b>shell radius</b>. <span class="n">Where a high-d Gaussian actually lives — not near its own mode at the origin.</span></span></li>
+    <li><span class="sym math" data-tex="v_1"></span><span class="def">the <b>first coordinate</b> of a random unit direction — after the rotation, the entire cosine. <span class="n">Rotating is legal because the uniform law on the sphere is rotation-invariant; "fix one vector, randomize the other" is the workhorse trick of high-dimensional probability.</span></span></li>
+    <li><span class="sym math" data-tex="\tfrac1d"></span><span class="def">the <b>variance</b> — exact at every d, not an asymptotic. <span class="n">The coordinates split the budget Σvᵢ² = 1 equally; nothing deeper about the sphere is needed.</span></span></li>
+    <li><span class="sym math" data-tex="\mathcal{N}(0,\tfrac1d)"></span><span class="def">the <b>large-d shape</b>: v₁ = z₁/‖z‖ for a Gaussian z, and ‖z‖ concentrates (Section 4), so v₁ inherits z₁'s bell curve. <span class="n">Exact at no finite d — at d = 2 the true law is the arcsine shape you will see below.</span></span></li>
+    <li><span class="sym math" data-tex="\tfrac{1}{\sqrt d}"></span><span class="def">the <b>spread of overlaps</b>. <span class="n">In a 500-asset universe, 1/√500 ≈ 0.045: two random books typically overlap by ±4.5%, not 0. At d = 1024 the std is 1/32 ≈ 3% — essentially everything is orthogonal to everything.</span></span></li>
   </ul>
 
-  <div class="sec">See it — random directions collapse toward orthogonal</div>
+  <div class="sec">2 · The same theorem in market clothes — correlation noise</div>
+  <p class="step">Lesson 6 proved the identity: a sample correlation over n days <i>is</i> a cosine — demean each return series and ρ̂ is the cosine of the angle between two vectors in ℝⁿ. Now run this lesson's theorem in the other direction. If the two series are genuinely independent, their demeaned directions are uniformly random — so their cosine concentrates, with the number of <i>days</i> playing the role of the dimension. Dimension is whatever you have many of: assets in Section 1, days here.</p>
+  <div class="mblock math" data-tex="\hat\rho \;=\;\frac{\langle x,y\rangle}{\lVert x\rVert\,\lVert y\rVert}\;=\;\cos\theta_{\mathbb R^{n}},\qquad \operatorname{std}\big(\hat\rho\;\big|\;\text{independent}\big)\;=\;\frac{1}{\sqrt{n-1}}\;\approx\;\frac{1}{\sqrt n}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="x,\,y"></span><span class="def">the two <b>demeaned n-day return histories</b>, read as vectors (Lesson 6's identity). <span class="n">Demeaning projects out the all-ones direction, so the vectors really live in an (n−1)-dimensional subspace — the same lost dimension as Lesson 2's n−1 divisor.</span></span></li>
+    <li><span class="sym math" data-tex="\cos\theta_{\mathbb R^{n}}"></span><span class="def">Section 1's cosine with the roles flipped: <b>days are the coordinates</b>. <span class="n">One theorem, two market readings — book overlap across assets, correlation noise across days.</span></span></li>
+    <li><span class="sym math" data-tex="\tfrac{1}{\sqrt{n-1}}"></span><span class="def">the <b>exact null std</b> — for independent Gaussian series, Var(ρ̂) = 1/(n−1), by the identical budget argument in dimension n−1. <span class="n">At n = 60: ≈ 0.13. Two stds ≈ 0.26 — the noise floor a 60-day correlation must clear before its sign deserves any trust.</span></span></li>
+  </ul>
+  <p class="step">So a 60-day correlation of 0.2 between two unrelated series is not evidence — it is weather: |ρ̂| up to about 2/√60 ≈ 0.26 appears by chance alone. And a 500-asset correlation matrix has 124,750 cells in which to go fishing, so its extreme entries are guaranteed to look impressive in pure noise. That 0.26 line is precisely what a stability flag has to beat — the volarixs panel below.</p>
+
+  <div class="sec">3 · See it — 80 random books, 3,160 cosines</div>
+  <p class="step">80 random unit vectors, redrawn from the same seed at every dimension, and the histogram of all 3,160 pairwise cosines. The ochre curve is the theory law 𝒩(0, 1/d). Slide d up through the powers of two and watch the arcsine spread of d = 2 get crushed onto zero.</p>
   <div class="panel">
-    <p class="step" style="margin-top:0">Cosine similarity of ~1500 random unit-vector pairs. Slide the dimension up and watch a broad spread snap into a spike at zero — the concentration of measure, live.</p>
+    <p class="hintline">slide d · the 80 seeded vectors and all 3,160 pairwise cosines recompute · ochre curve = N(0, 1/d)</p>
     <div class="ctrls">
-      <div class="field"><label>dimension d <b id="dOut">3</b></label><input type="range" id="d" min="2" max="600" value="3" step="1" /></div>
+      <div class="field"><label>dimension d = 2 … 1024 (log steps) <b id="d1Out">2</b></label><input type="range" id="d1" min="1" max="10" value="1" step="1" /></div>
     </div>
-    <svg id="hist" viewBox="0 0 680 300" role="img" aria-label="Histogram of cosine similarity between random unit vectors"></svg>
+    <svg id="hist1" viewBox="0 0 680 300" role="img" aria-label="Histogram of pairwise cosine similarities among 80 random unit vectors, with the normal density overlay"></svg>
     <div class="tally">
-      <div class="stat"><div class="k">mean cos θ</div><div class="v" id="mean">—</div></div>
-      <div class="stat"><div class="k">std (≈ 1/√d)</div><div class="v a" id="std">—</div></div>
-      <div class="stat"><div class="k">within 5° of 90°</div><div class="v g" id="orth">—</div></div>
-      <div class="stat"><div class="k">mean ‖x‖ / √d</div><div class="v" id="shell">—</div></div>
+      <div class="stat"><div class="k">empirical std</div><div class="v a" id="p1-std">—</div></div>
+      <div class="stat"><div class="k">theory 1/√d</div><div class="v" id="p1-th">—</div></div>
+      <div class="stat"><div class="k">most aligned |cos| (angle)</div><div class="v g" id="p1-mx">—</div></div>
     </div>
-    <p class="callout" id="cnote"></p>
+    <p class="callout" id="p1-note"></p>
   </div>
 
-  <div class="sec">The blessing — Johnson–Lindenstrauss</div>
-  <p class="step">Concentration cuts the other way too. Because random projections preserve geometry with high probability, you can crush n points from any dimension down to just <b>O(log n / ε²)</b> dimensions and keep every pairwise distance within a (1 ± ε) factor:</p>
-  <div class="mblock math" data-tex="k=O\!\Big(\tfrac{\log n}{\varepsilon^2}\Big)\ \Rightarrow\ (1-\varepsilon)\lVert x_i-x_j\rVert^2\le \lVert f(x_i)-f(x_j)\rVert^2\le(1+\varepsilon)\lVert x_i-x_j\rVert^2" data-display="1"></div>
-  <p class="step">The target size depends on the <i>number</i> of points and the tolerance — not on the original dimension. That's why approximate nearest-neighbour search, random-feature methods, and sketching all work: high-d structure is compressible precisely because it concentrates.</p>
+  <div class="sec">4 · Lengths concentrate — the thin shell</div>
+  <p class="step">Cosines were the angles; now the lengths. Scale a d-dimensional standard Gaussian by 1/√d — coordinates of size N(0, 1/d), the natural units of an embedding — so the expected squared length is exactly 1. The squared norm is then an <i>average of d independent squared normals</i>, and averages of many independent terms barely fluctuate. Lesson 2 met this exact object: Var(s²) = 2σ⁴/(n−1) was the same "variance of a χ² is twice its degrees of freedom" fact wearing estimator clothes.</p>
+  <div class="mblock math" data-tex="\lVert x\rVert^{2}=\frac{1}{d}\sum_{i=1}^{d} z_i^{2}\;\sim\;\frac{\chi^{2}_{d}}{d},\qquad \mathbb{E}\lVert x\rVert^{2}=1,\qquad \operatorname{Var}\big(\lVert x\rVert^{2}\big)=\frac{2}{d}\;\Rightarrow\;\operatorname{std}\big(\lVert x\rVert\big)\approx\frac{1}{\sqrt{2d}}" data-display="1"></div>
+  <div class="mblock math" data-tex="\lVert x-y\rVert^{2}=\lVert x\rVert^{2}+\lVert y\rVert^{2}-2\langle x,y\rangle\;\approx\;1+1-0\;=\;2\;\;\Rightarrow\;\;\text{every pair sits}\ \approx\sqrt2\ \text{apart}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="z_i^{2}"></span><span class="def">squared standard normal coordinates — each has <b>mean 1, variance 2</b>. <span class="n">That variance-2 is why every constant in this business carries a 2.</span></span></li>
+    <li><span class="sym math" data-tex="\chi^{2}_{d}/d"></span><span class="def">a <b>mean of d of them</b> — a chi-square over its degrees of freedom. <span class="n">Lesson 2's Var(s²) and this shell are the same computation with different nouns.</span></span></li>
+    <li><span class="sym math" data-tex="\tfrac{1}{\sqrt{2d}}"></span><span class="def">the <b>norm's fluctuation</b> — the delta method: taking a square root halves relative error, √(2/d)/2 = 1/√(2d). <span class="n">Identical to Lesson 3's Fisher bound for a volatility, std(σ̂) ≈ σ/√(2d): measuring a high-d radius and estimating a vol from d returns are the same estimation problem.</span></span></li>
+    <li><span class="sym math" data-tex="\lVert x-y\rVert^{2}"></span><span class="def">a squared <b>distance</b>, expanded into two norms and a cosine. <span class="n">Both norms pin to 1 (this section) and the cross-term pins to 0 (Section 1), so every distance pins to √2 ≈ 1.414 — no free parameters left.</span></span></li>
+  </ul>
+  <p class="step">The shell paradox: the Gaussian density is largest at the origin, yet nobody lives there. The volume of a radius-r shell grows like r^{d−1}, and density × volume peaks sharply at radius 1. In d = 1024 the origin is simultaneously the mode of the density and a probability desert.</p>
 
+  <div class="sec">5 · See it — one radius, one distance</div>
+  <p class="step">200 seeded Gaussian points in the same 1/√d units. Top strip: their 200 norms. Bottom strip: all 19,900 pairwise distances. Watch both histograms crush onto their pins — 1 and √2 — and watch the nearest-vs-farthest contrast die.</p>
+  <div class="panel">
+    <p class="hintline">slide d · 200 points x ~ N(0, I_d)/√d resample from the seed · top = norms, bottom = pairwise distances</p>
+    <div class="ctrls">
+      <div class="field"><label>dimension d = 2 … 1024 (log steps) <b id="d2Out">2</b></label><input type="range" id="d2" min="1" max="10" value="1" step="1" /></div>
+    </div>
+    <svg id="hist2" viewBox="0 0 680 320" role="img" aria-label="Histograms of point norms and of pairwise distances for 200 random Gaussian points"></svg>
+    <div class="tally">
+      <div class="stat"><div class="k">mean ‖x‖</div><div class="v a" id="p2-mn">—</div></div>
+      <div class="stat"><div class="k">std ‖x‖ · 1/√(2d)</div><div class="v" id="p2-sn">—</div></div>
+      <div class="stat"><div class="k">mean dist · √2</div><div class="v" id="p2-md">—</div></div>
+      <div class="stat"><div class="k">contrast (max−min)/min</div><div class="v g" id="p2-ct">—</div></div>
+    </div>
+    <p class="callout" id="p2-note"></p>
+  </div>
+
+  <div class="sec">6 · The blessing — Johnson–Lindenstrauss</div>
+  <p class="step">Everything so far says high-dimensional geometry is rigid: random distances are all alike. Johnson–Lindenstrauss turns that rigidity into a compression theorem. Project m points onto a random k-dimensional subspace — a k×N Gaussian matrix that has never seen the data. Each squared distance becomes a χ²ₖ-style average that concentrates around its true value with relative error ~1/√k: Section 4's story again, with k in the role of d. Make k just large enough that the error beats ε <i>simultaneously</i> for all m(m−1)/2 pairs — a union bound, which is where the log m comes from — and every distance survives to within 1 ± ε.</p>
+  <div class="mblock math" data-tex="k \;\ge\; \frac{4\ln m}{\varepsilon^{2}/2-\varepsilon^{3}/3}\;\Longrightarrow\;(1-\varepsilon)\lVert x_i-x_j\rVert^{2}\le\lVert f(x_i)-f(x_j)\rVert^{2}\le(1+\varepsilon)\lVert x_i-x_j\rVert^{2}\ \ \forall\, i,j" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="m"></span><span class="def">how many <b>points</b> — entering only through ln m. <span class="n">A million points cost ln 10⁶ ≈ 13.8; doubling the data adds a constant, not a factor.</span></span></li>
+    <li><span class="sym math" data-tex="\varepsilon"></span><span class="def">the <b>distortion</b> you tolerate on squared distances. <span class="n">The ε² in the denominator is the real price: halving the tolerance quadruples the dimension.</span></span></li>
+    <li><span class="sym math" data-tex="k"></span><span class="def">the <b>target dimension</b>: for m = 10⁶ points at ε = 0.1, k ≥ 4 ln(10⁶)/(0.005 − 0.000333…) ≈ 11,842. <span class="n">The ambient dimension N appears nowhere — points from ℝ^(10⁴) or ℝ^(10⁹) compress identically.</span></span></li>
+    <li><span class="sym math" data-tex="f"></span><span class="def">the <b>random linear map</b> f(x) = Ax/√k, A a k×N matrix of i.i.d. N(0,1) entries. <span class="n">Oblivious: drawn before ever looking at the data. No training, no fitting — randomness alone preserves geometry.</span></span></li>
+  </ul>
   <div class="theorem">
     <p class="lbl">The precise statement</p>
-    <p>For u, v drawn uniformly on the unit sphere Sᵈ⁻¹, ⟨u,v⟩ has mean 0 and variance 1/d, and concentrates as 𝒩(0, 1/d) for large d — so random directions are asymptotically orthogonal. A standard Gaussian x ∈ ℝᵈ has ‖x‖ concentrated at √d with fluctuations O(1): ℙ(|‖x‖ − √d| ≥ t) ≤ 2e^{−ct²}. Johnson–Lindenstrauss: any n points admit a linear map into k = O(ε⁻²log n) dimensions preserving all pairwise squared distances within (1 ± ε), with high probability, via a random projection.</p>
+    <p>(Johnson–Lindenstrauss lemma, Dasgupta–Gupta form.) Fix 0 &lt; ε &lt; 1 and any m points x₁, …, x_m ∈ ℝᴺ. Let k ≥ 4 ln m / (ε²/2 − ε³/3), and let f(x) = Ax/√k where A is a k×N matrix with independent N(0,1) entries. Then with probability at least 1/m over the draw of A, (1−ε)‖xᵢ−xⱼ‖² ≤ ‖f(xᵢ)−f(xⱼ)‖² ≤ (1+ε)‖xᵢ−xⱼ‖² holds for every pair i, j simultaneously — in particular such an embedding exists, and redrawing A a few times (or padding k by a constant factor) makes success overwhelmingly likely. The map is linear, oblivious to the data, and k is independent of the ambient dimension N.</p>
   </div>
 
   <div class="twist">
-    <p class="lbl">The twist — the curse and the blessing are one fact</p>
-    <p>Concentration is usually taught as the "curse of dimensionality": when all pairwise distances converge, the nearest neighbour is barely closer than the farthest, so distance-based methods (kNN, k-means, radius queries) lose their grip — the <i>ratio</i> of nearest to farthest distance → 1. But the identical phenomenon is the blessing: near-orthogonality means you can pack an <b>exponential number of almost-orthogonal directions</b> into d dimensions (there are ~e^{cd} vectors pairwise within a few degrees of orthogonal), which is exactly how a network stores far more features than it has neurons — <b>superposition</b> (Lesson 20). And it's why <b>cosine</b>, not Euclidean distance, is the right embedding metric: angles carry the signal that lengths have washed out. Same maths, read as a warning or a superpower depending on whether you cluster by distance or separate by direction.</p>
+    <p class="lbl">The twist — exact orthogonality costs d; near-orthogonality is exponentially cheap</p>
+    <p>ℝᵈ holds exactly d mutually perpendicular directions — a hard budget, and the reason "one feature per neuron" would cap a network at d features. Relax <i>perpendicular</i> to <i>almost perpendicular</i>, pairwise |cos| ≤ ε, and the budget explodes: Section 1 says a random pair violates ε-orthogonality with probability ≈ 2e^(−dε²/2), so on the order of e^(ε²d/2) random directions can coexist, all pairwise ε-orthogonal — exponential in d. At ε = 0.1 inside a 4,096-dimensional residual stream that is e^(20.48) ≈ 8×10⁸ almost-independent directions: hundreds of millions of feature slots in a space with only 4,096 exact ones. That surplus is the geometric bank account <b>superposition</b> (Lesson 20) spends — a model stores far more features than neurons by accepting ε of crosstalk. The market version: a 500-asset universe caps you at 500 exactly-uncorrelated books, but at pairwise |ρ| ≤ 0.2 the same count allows ~e^(10) ≈ 22,000. Crowding doesn't come from running out of orthogonal space — it comes from everyone's "random-looking" books not actually being random.</p>
   </div>
 
   <div class="vol">
     <p class="lbl">Why this matters · volarixs</p>
-    <p>The moment you embed cells or assets as vectors and search by similarity — the pgvector <code>cell_card</code> similarity your design doc floats ("cells like dispersion → skew"), or clustering return-vectors of a large universe — you're in this regime. Use <b>cosine</b>, not raw Euclidean distance, and expect naive nearest-neighbour to degrade as the vector dimension climbs: that's concentration, not a bug in the index.</p>
-    <p>It also sharpens a Lesson-8 point: a high-dimensional factor space where "everything looks equidistant" is often a low-rank object in disguise — reduce first (SVD/PCA), then measure similarity in the compressed space where distances still mean something. And Johnson–Lindenstrauss is the license to do that fast: random-project to O(log n) dims for approximate similarity at scale.</p>
+    <p><code>sign_stability</code> is a war fought against Section 2's noise floor. A Cross-Matrix cell's sample ρ on a 60-day window carries sampling std ≈ 1/√60 ≈ 0.13 even when the true relationship is zero — so any cell with |ρ| below about 2/√n ≈ 0.26 has a sign that flips from resample to resample. The flag isn't measuring vague "reliability"; it is measuring whether a cosine clears the 1/√n geometry of this lesson.</p>
+    <p><code>pca_factors</code> survives the same noise for the opposite reason: concentration works <i>for</i> it. A factor direction aggregates thousands of noisy pairwise cosines at once, and averaging concentrates — which is why the dominant eigen-portfolio stays stable across windows even when most individual cells' signs do not.</p>
   </div>
 
   <div class="sec">Check yourself</div>
-  <div class="q" id="q1"><p class="stem">Two independent random unit vectors in ℝ^d have cosine similarity that, as d grows:</p><div class="opts"></div><p class="fb"></p></div>
-  <div class="q" id="q2"><p class="stem">The mass of a standard Gaussian in ℝ^d concentrates:</p><div class="opts"></div><p class="fb"></p></div>
-  <div class="q" id="q3"><p class="stem">The "curse of dimensionality" for nearest-neighbour search means:</p><div class="opts"></div><p class="fb"></p></div>
-  <div class="q" id="q4"><p class="stem">Johnson–Lindenstrauss lets you reduce n points to k dimensions where k depends on:</p><div class="opts"></div><p class="fb"></p></div>
-  <div class="q" id="q5"><p class="stem">Near-orthogonality of random directions is a blessing because:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q1"><p class="stem">In a universe of d assets, two independently chosen random long/short books have cosine similarity with standard deviation:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q2"><p class="stem">Two return series are genuinely independent. Over an n = 60-day window, the sample correlation you measure is typically:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q3"><p class="stem">Johnson–Lindenstrauss squeezes m points into k dimensions with all pairwise distances preserved to 1 ± ε. The required k grows like:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q4"><p class="stem">For random points x with i.i.d. N(0, 1/d) coordinates (so 𝔼‖x‖² = 1), as d grows the norm ‖x‖:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q5"><p class="stem">ℝᵈ contains exactly d mutually orthogonal directions. If you relax to pairwise |cos| ≤ ε, the number of directions you can fit becomes:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q6"><p class="stem">In high dimension the contrast (d_max − d_min)/d_min between the farthest and nearest of a set of random points tends to 0. For naive nearest-neighbour similarity search this means:</p><div class="opts"></div><p class="fb"></p></div>
 
-  <div class="checkRow"><button class="primary" id="check">Check answers</button><span class="scoreOut" id="scoreOut"></span><span class="hint" id="hint">Answer all five first.</span></div>
-  <div class="done" id="done">Intuition rewired. Next in Wing I: tensors & the einsum world.</div>
+  <div class="checkRow"><button class="primary" id="check">Check answers</button><span class="scoreOut" id="scoreOut"></span><span class="hint" id="hint">Answer all six first.</span></div>
+  <div class="done" id="done">Intuition rewired — orthogonality is nearly free, raw distance is nearly meaningless, and both facts are budgets. Next in Wing I: tensors &amp; the einsum world.</div>
 </div>
 
 <script>
 /* storage shim: window.storage (Claude artifacts) or localStorage (web) */
 if(!window.storage){window.storage={async get(k){const v=localStorage.getItem(k);if(v==null)throw new Error('missing');return{key:k,value:v}},async set(k,v){localStorage.setItem(k,v);return{key:k,value:v}},async delete(k){localStorage.removeItem(k);return{key:k,deleted:true}},async list(p){const ks=[];for(let i=0;i<localStorage.length;i++){const kk=localStorage.key(i);if(!p||kk.startsWith(p))ks.push(kk)}return{keys:ks}}};}
 function renderMath(){document.querySelectorAll('.math').forEach(el=>{const tex=el.getAttribute('data-tex');if(!tex||el.dataset.done)return;try{if(window.katex){katex.render(tex,el,{displayMode:el.dataset.display==='1',throwOnError:false});el.dataset.done='1';}else el.textContent=tex;}catch(e){el.textContent=tex;}});}
-function randn(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+/* deterministic RNG — the atlas's seeded generator, seed 110 */
+function mulberry32(seed){let a=seed>>>0;return function(){a|=0;a=(a+0x6D2B79F5)|0;let t=Math.imul(a^(a>>>15),1|a);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296;}}
+function randn(rng){let u=0,v=0;while(!u)u=rng();while(!v)v=rng();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+const SEED=110;
 
-const M=1500;
-function sampleCos(d){
-  const cosv=new Float64Array(M);let normSum=0;
-  for(let p=0;p<M;p++){
-    let a=new Float64Array(d),b=new Float64Array(d),na=0,nb=0;
-    for(let i=0;i<d;i++){a[i]=randn();b[i]=randn();na+=a[i]*a[i];nb+=b[i]*b[i];}
-    na=Math.sqrt(na);nb=Math.sqrt(nb);normSum+=na;
-    let dot=0;for(let i=0;i<d;i++)dot+=(a[i]/na)*(b[i]/nb);
-    cosv[p]=dot;
+/* ---------- Panel 1 : pairwise cosines of 80 seeded unit vectors ---------- */
+(function(){
+  const M=80,PAIRS=M*(M-1)/2,BINS=61,svg=document.getElementById('hist1');
+  function cosines(d){
+    const rng=mulberry32(SEED),vecs=[];
+    for(let m=0;m<M;m++){const v=new Float64Array(d);let n2=0;for(let i=0;i<d;i++){v[i]=randn(rng);n2+=v[i]*v[i];}const nn=Math.sqrt(n2);for(let i=0;i<d;i++)v[i]/=nn;vecs.push(v);}
+    const cos=new Float64Array(PAIRS);let t=0;
+    for(let a=0;a<M;a++)for(let b=a+1;b<M;b++){let s=0;const va=vecs[a],vb=vecs[b];for(let i=0;i<d;i++)s+=va[i]*vb[i];cos[t++]=s;}
+    return cos;
   }
-  return {cosv,meanNorm:normSum/M};
-}
-const BINS=41;
-function render(){
-  const d=+document.getElementById('d').value;document.getElementById('dOut').textContent=d;
-  const {cosv,meanNorm}=sampleCos(d);
-  let mean=0;for(const c of cosv)mean+=c;mean/=M;
-  let varc=0;for(const c of cosv)varc+=(c-mean)**2;varc/=M;const std=Math.sqrt(varc);
-  const thr=Math.cos((85)*Math.PI/180); // |cos|<thr → within 5° of 90°
-  let orth=0;for(const c of cosv)if(Math.abs(c)<thr)orth++;
-  const counts=new Array(BINS).fill(0);
-  for(const c of cosv){let b=Math.floor((c+1)/2*BINS);if(b<0)b=0;if(b>=BINS)b=BINS-1;counts[b]++;}
-  const W=680,H=300,padL=8,padR=8,padT=14,padB=30,iw=W-padL-padR,ih=H-padT-padB,mx=Math.max(...counts),bw=iw/BINS;
-  let s='';
-  s+=`<line x1="${padL}" y1="${padT+ih}" x2="${W-padR}" y2="${padT+ih}" stroke="var(--hair2)"/>`;
-  const zx=padL+iw/2;s+=`<line x1="${zx}" y1="${padT}" x2="${zx}" y2="${padT+ih}" stroke="var(--series)" stroke-dasharray="4 4" opacity="0.7"/>`;
-  s+=`<text x="${zx}" y="${H-8}" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--series)">cos = 0 (90°)</text>`;
-  s+=`<text x="${padL}" y="${H-8}" font-family="var(--mono)" font-size="10" fill="var(--faint)">−1</text>`;
-  s+=`<text x="${W-padR}" y="${H-8}" text-anchor="end" font-family="var(--mono)" font-size="10" fill="var(--faint)">+1</text>`;
-  counts.forEach((c,i)=>{const h=mx?c/mx*ih:0,x=padL+i*bw;s+=`<rect x="${(x+0.6).toFixed(1)}" y="${(padT+ih-h).toFixed(1)}" width="${(bw-1.2).toFixed(1)}" height="${h.toFixed(1)}" fill="var(--accent)" opacity="0.85"/>`;});
-  document.getElementById('hist').innerHTML=s;
-  document.getElementById('mean').textContent=mean.toFixed(3);
-  document.getElementById('std').textContent=std.toFixed(3)+' · '+(1/Math.sqrt(d)).toFixed(3);
-  document.getElementById('orth').textContent=(100*orth/M).toFixed(0)+'%';
-  document.getElementById('shell').textContent=(meanNorm/Math.sqrt(d)).toFixed(3);
-  document.getElementById('cnote').textContent = d<=4
-    ? `In d=${d}, cosines spread across the whole range — random vectors point every which way, and "similar" vs "dissimilar" is a real distinction.`
-    : d<40
-      ? `By d=${d} the spread has tightened to std ≈ ${std.toFixed(2)} ≈ 1/√d, and ${(100*orth/M).toFixed(0)}% of pairs sit within 5° of orthogonal. The distribution is collapsing onto 0.`
-      : `At d=${d}, essentially every pair is near-orthogonal (std ≈ ${std.toFixed(3)}, ${(100*orth/M).toFixed(0)}% within 5° of 90°). This is the regime real embeddings live in — and why cosine, not distance, is the metric.`;
-}
-document.getElementById('d').addEventListener('input',render);
+  function render(){
+    const d=1<<(+document.getElementById('d1').value);
+    document.getElementById('d1Out').textContent=d;
+    const cos=cosines(d);
+    let mean=0;for(const c of cos)mean+=c;mean/=PAIRS;
+    let va=0,mx=0;for(const c of cos){va+=(c-mean)*(c-mean);const a=Math.abs(c);if(a>mx)mx=a;}
+    const std=Math.sqrt(va/PAIRS),th=1/Math.sqrt(d),ang=Math.acos(Math.min(1,mx))*180/Math.PI;
+    const counts=new Array(BINS).fill(0);
+    for(const c of cos){let b=Math.floor((c+1)/2*BINS);if(b<0)b=0;if(b>=BINS)b=BINS-1;counts[b]++;}
+    const W=680,H=300,padL=10,padR=10,padT=14,padB=30,iw=W-padL-padR,ih=H-padT-padB,bw=iw/BINS;
+    const phi0=Math.sqrt(d/(2*Math.PI)),binW=2/BINS,over=[];
+    for(let i=0;i<=240;i++){const x=-1+2*i/240;over.push(PAIRS*binW*phi0*Math.exp(-d*x*x/2));}
+    const ymax=Math.max(Math.max(...counts),Math.max(...over))||1;
+    let s=`<line x1="${padL}" y1="${padT+ih}" x2="${W-padR}" y2="${padT+ih}" stroke="var(--hair2)"/>`;
+    counts.forEach((c,i)=>{const h=c/ymax*ih,x=padL+i*bw;if(c)s+=`<rect x="${(x+0.6).toFixed(1)}" y="${(padT+ih-h).toFixed(1)}" width="${(bw-1.2).toFixed(1)}" height="${h.toFixed(1)}" fill="var(--accent)" opacity="0.8"/>`;});
+    let p='';over.forEach((v,i)=>{const X=padL+i/240*iw,Y=padT+ih-v/ymax*ih;p+=(i?'L':'M')+X.toFixed(1)+' '+Y.toFixed(1)+' ';});
+    s+=`<path d="${p}" fill="none" stroke="var(--series)" stroke-width="2"/>`;
+    const zx=padL+iw/2;
+    s+=`<line x1="${zx}" y1="${padT}" x2="${zx}" y2="${padT+ih}" stroke="var(--faint)" stroke-dasharray="4 4" opacity="0.7"/>`;
+    s+=`<text x="${zx}" y="${H-8}" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--muted)">cos = 0 (90°)</text>`;
+    s+=`<text x="${padL}" y="${H-8}" font-family="var(--mono)" font-size="10" fill="var(--faint)">−1</text>`;
+    s+=`<text x="${W-padR}" y="${H-8}" text-anchor="end" font-family="var(--mono)" font-size="10" fill="var(--faint)">+1</text>`;
+    s+=`<text x="${W-padR}" y="${padT+10}" text-anchor="end" font-family="var(--mono)" font-size="10" fill="var(--series)">N(0, 1/${d})</text>`;
+    svg.innerHTML=s;
+    document.getElementById('p1-std').textContent=std.toFixed(3);
+    document.getElementById('p1-th').textContent=th.toFixed(3);
+    document.getElementById('p1-mx').textContent=mx.toFixed(3)+' ('+ang.toFixed(1)+'°)';
+    const note=document.getElementById('p1-note');
+    if(d===2)note.textContent=`d = 2: a direction is just an angle on a circle, and uniform angles pile their cosines onto ±1 — the arcsine shape. The variance is already exactly 1/d (empirical std ${std.toFixed(3)} vs 1/√2 = ${th.toFixed(3)}), but the shape is as un-Gaussian as it gets: the ochre curve is the wrong law down here.`;
+    else if(d<=32)note.textContent=`d = ${d}: the histogram is snapping onto the ochre N(0, 1/d). Empirical std ${std.toFixed(3)} vs theory ${th.toFixed(3)}; the most aligned of all ${PAIRS.toLocaleString()} pairs is |cos| = ${mx.toFixed(3)} — an angle of ${ang.toFixed(1)}°.`;
+    else note.textContent=`d = ${d}: every one of the ${PAIRS.toLocaleString()} pairs is trapped near cos = 0 (std ${std.toFixed(3)} ≈ 1/√d = ${th.toFixed(3)}). The most aligned pair in the whole cloud manages |cos| = ${mx.toFixed(3)} — ${(90-ang).toFixed(1)}° from perpendicular. 80 random books, and no two of them meaningfully overlap: dimension manufactures strangers.`;
+  }
+  document.getElementById('d1').addEventListener('input',render);
+  window.__p1=render;
+})();
 
+/* ---------- Panel 2 : norms & pairwise distances of 200 seeded points ---------- */
+(function(){
+  const M=200,PAIRS=M*(M-1)/2,XMAX=4.5,BINS=90,svg=document.getElementById('hist2');
+  function sample(d){
+    const rng=mulberry32(SEED),sq=Math.sqrt(d),pts=[];
+    for(let p=0;p<M;p++){const v=new Float64Array(d);for(let i=0;i<d;i++)v[i]=randn(rng)/sq;pts.push(v);}
+    const norms=new Float64Array(M);
+    for(let p=0;p<M;p++){let s=0;const v=pts[p];for(let i=0;i<d;i++)s+=v[i]*v[i];norms[p]=Math.sqrt(s);}
+    const dist=new Float64Array(PAIRS);let t=0;
+    for(let a=0;a<M;a++)for(let b=a+1;b<M;b++){let s=0;const va=pts[a],vb=pts[b];for(let i=0;i<d;i++){const df=va[i]-vb[i];s+=df*df;}dist[t++]=Math.sqrt(s);}
+    return{norms,dist};
+  }
+  function strip(vals,y0,h,color,guideX,guideLbl,lbl,W,padL,padR){
+    const iw=W-padL-padR,counts=new Array(BINS).fill(0);
+    for(const v of vals){let b=Math.floor(v/XMAX*BINS);if(b<0)b=0;if(b>=BINS)b=BINS-1;counts[b]++;}
+    const mx=Math.max(...counts)||1,bw=iw/BINS;
+    let s=`<line x1="${padL}" y1="${y0+h}" x2="${W-padR}" y2="${y0+h}" stroke="var(--hair2)"/>`;
+    counts.forEach((c,i)=>{const hh=c/mx*(h-18),x=padL+i*bw;if(c)s+=`<rect x="${(x+0.4).toFixed(1)}" y="${(y0+h-hh).toFixed(1)}" width="${(bw-0.8).toFixed(1)}" height="${hh.toFixed(1)}" fill="${color}" opacity="0.8"/>`;});
+    const gx=padL+guideX/XMAX*iw;
+    s+=`<line x1="${gx.toFixed(1)}" y1="${y0}" x2="${gx.toFixed(1)}" y2="${y0+h}" stroke="${color}" stroke-dasharray="4 4" opacity="0.6"/>`;
+    s+=`<text x="${(gx+5).toFixed(1)}" y="${y0+12}" font-family="var(--mono)" font-size="10" fill="${color}">${guideLbl}</text>`;
+    s+=`<text x="${padL}" y="${y0+12}" font-family="var(--mono)" font-size="11" fill="var(--muted)">${lbl}</text>`;
+    return s;
+  }
+  function render(){
+    const d=1<<(+document.getElementById('d2').value);
+    document.getElementById('d2Out').textContent=d;
+    const{norms,dist}=sample(d);
+    let mN=0,nmin=Infinity,nmax=0;for(const v of norms){mN+=v;if(v<nmin)nmin=v;if(v>nmax)nmax=v;}mN/=M;
+    let vN=0;for(const v of norms)vN+=(v-mN)*(v-mN);const sN=Math.sqrt(vN/M);
+    let mD=0,dmin=Infinity,dmax=0;for(const v of dist){mD+=v;if(v<dmin)dmin=v;if(v>dmax)dmax=v;}mD/=PAIRS;
+    const contrast=(dmax-dmin)/dmin,thN=1/Math.sqrt(2*d);
+    const W=680,padL=10,padR=10;
+    let s=strip(norms,12,120,'var(--accent)',1,'1','200 norms ‖x‖',W,padL,padR);
+    s+=strip(dist,168,120,'var(--series)',Math.SQRT2,'√2','19,900 pairwise distances',W,padL,padR);
+    for(let x=0;x<=4;x++){const gx=padL+x/XMAX*(W-padL-padR);s+=`<text x="${gx.toFixed(1)}" y="308" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--faint)">${x}</text>`;}
+    svg.innerHTML=s;
+    document.getElementById('p2-mn').textContent=mN.toFixed(3);
+    document.getElementById('p2-sn').textContent=sN.toFixed(3)+' · '+thN.toFixed(3);
+    document.getElementById('p2-md').textContent=mD.toFixed(3)+' · 1.414';
+    document.getElementById('p2-ct').textContent=contrast.toFixed(2);
+    const note=document.getElementById('p2-note');
+    if(d===2)note.textContent=`d = 2: an honest low-dimensional scatter. Norms run ${nmin.toFixed(2)}–${nmax.toFixed(2)}, distances ${dmin.toFixed(2)}–${dmax.toFixed(2)} — the farthest pair is ${(dmax/dmin).toFixed(0)}× the nearest (contrast ${contrast.toFixed(1)}). Down here "nearest neighbour" is a meaningful phrase.`;
+    else if(d<=64)note.textContent=`d = ${d}: the shell is forming. Mean ‖x‖ = ${mN.toFixed(3)}, std ${sN.toFixed(3)} (theory 1/√(2d) = ${thN.toFixed(3)}), and the distances are collapsing onto √2 ≈ 1.414 — contrast already down to ${contrast.toFixed(2)}.`;
+    else note.textContent=`d = ${d}: all 200 points sit on a shell of radius 1 (mean ‖x‖ = ${mN.toFixed(3)}, std ${sN.toFixed(3)} ≈ 1/√(2d) = ${thN.toFixed(3)}), and all 19,900 distances hug √2 (mean ${mD.toFixed(3)}). Contrast ${contrast.toFixed(2)}: the nearest neighbour is barely nearer than the farthest — a naive k-NN query up here returns noise, ranked confidently.`;
+  }
+  document.getElementById('d2').addEventListener('input',render);
+  window.__p2=render;
+})();
+
+/* ---------- retrieval ---------- */
 const QS={
-  q1:{opts:["approaches ±1 (they align)","concentrates near 0 with variance 1/d — nearly orthogonal","stays uniform on [−1,1]","grows without bound"],a:1,
-    fb:"⟨u,v⟩ has mean 0 and variance 1/d, so it behaves like 𝒩(0,1/d): random directions become asymptotically orthogonal, with spread shrinking as 1/√d."},
-  q2:{opts:["at the origin, its mode","on a thin shell at radius √d","uniformly through the ball","at the corners of the space"],a:1,
-    fb:"Despite the density peaking at 0, there's exponentially more volume out near radius √d, so ‖x‖ concentrates there — the soap-bubble / shell phenomenon."},
-  q3:{opts:["distances become impossible to compute","the nearest and farthest points become almost equidistant, so distance stops discriminating","every point becomes identical","dimension makes search faster"],a:1,
-    fb:"Concentration drives the ratio of nearest-to-farthest distance toward 1, so distance-based methods (kNN, k-means) lose contrast. Angles/cosine survive better than raw distance."},
-  q4:{opts:["the original dimension d","the number of points n (and tolerance ε): k = O(ε⁻²log n)","the norm of the largest vector","nothing — it's always 2"],a:1,
-    fb:"JL's target dimension is O(log n / ε²) — it scales with how many points and how tight a distortion you allow, independent of the source dimension. That's why sketching/ANN scale."},
-  q5:{opts:["it makes all vectors equal","you can pack exponentially many almost-orthogonal directions into d dims — the basis for superposition","it removes the need for training","it eliminates noise"],a:1,
-    fb:"There are ~e^{cd} vectors pairwise near-orthogonal in ℝᵈ, so a model can represent far more features than it has neurons by assigning them near-orthogonal directions — superposition (Lesson 20)."}
+  q1:{opts:["1/d","1/√d — exact at every d: rotate one book onto an axis and the cosine is a single coordinate of a unit vector","√(2/d)","0 — random books are exactly orthogonal"],a:1,
+    fb:"Rotate coordinates so the first book is the first axis; the cosine is v₁ of a uniform unit vector. E[v₁²] = 1/d because the d coordinates share the budget ‖v‖² = 1 equally — std 1/√d. In a 500-asset universe that is 1/√500 ≈ 0.045: random books overlap by ±4.5%, small but never exactly zero."},
+  q2:{opts:["exactly 0 — independence forces the estimate to vanish","of order 1/n ≈ 0.017","scattered with std ≈ 1/√n ≈ 0.13 — so |ρ̂| up to about 0.26 is indistinguishable from zero","uniformly spread over [−1, 1]"],a:2,
+    fb:"A sample correlation is the cosine between two demeaned return vectors in ℝⁿ (Lesson 6), and for independent series those directions are random — Section 1's theorem with d = n−1 gives std = 1/√59 ≈ 0.13 exactly. Two stds ≈ 0.26: anything inside that band is sampling weather, not signal."},
+  q3:{opts:["like ln m / ε² — and not at all on the ambient dimension","linearly in the ambient dimension N","like m · ε — one dimension per point, scaled by the tolerance","like √m / ε"],a:0,
+    fb:"k ≥ 4 ln m/(ε²/2 − ε³/3): only the number of points (logarithmically) and the tolerance enter. A million points from ℝ^(10⁹) or ℝ^(10⁴) alike fit in ≈ 11,842 dimensions at ε = 0.1 — and the projection is drawn without ever looking at the data."},
+  q4:{opts:["concentrates at 0, where the density is highest","spreads out — more coordinates, more variety","grows like √d","concentrates near 1 with fluctuations ≈ 1/√(2d): a thin shell"],a:3,
+    fb:"‖x‖² is a mean of d independent squares — χ²_d/d — so it pins to 1 with std √(2/d), and the square root halves the relative error: std(‖x‖) ≈ 1/√(2d). The density does peak at the origin, but shell volume ∝ r^(d−1) crushes it — the mass sits on the shell. Same constant as Lesson 3's σ/√(2d) error for estimating a vol."},
+  q5:{opts:["still d — near-orthogonality buys nothing","about d/ε","of order e^(cε²d) — exponentially many: the geometric budget behind superposition (Lesson 20)","about d² — one per pair of axes"],a:2,
+    fb:"P(|cos| > ε) ≈ 2e^(−dε²/2) is so small that on the order of e^(dε²/2) random directions coexist all pairwise ε-orthogonal. At ε = 0.1 and d = 4096 that is ≈ 8×10⁸ near-independent feature slots. Exact orthogonality is a budget of d; approximate orthogonality is effectively unlimited."},
+  q6:{opts:["search gets faster, because there is less to compare","the ranking becomes noise-dominated — 'nearest' barely differs from 'farthest', so raw high-d distance stops discriminating","distances become impossible to compute numerically","only Euclidean distance suffers; raw cosine between random points is immune"],a:1,
+    fb:"All pairwise distances converge to the same value (≈ √2 on the unit shell: norms → 1, cosines → 0), so the contrast vanishes and rank order is decided by noise. Raw cosine collapses identically (it concentrates at 0). What rescues similarity search is structure — data that actually lives on a low-dimensional object (Lesson 8's fast-decaying spectrum), not the ambient geometry."}
 };
-const sel={q1:null,q2:null,q3:null,q4:null,q5:null};let revealed=false;
+const sel={q1:null,q2:null,q3:null,q4:null,q5:null,q6:null};let revealed=false;
 Object.keys(QS).forEach(id=>{const holder=document.querySelector('#'+id+' .opts');QS[id].opts.forEach((txt,i)=>{const b=document.createElement('button');b.className='opt';b.textContent=String.fromCharCode(65+i)+'.  '+txt;b.onclick=()=>{if(revealed)return;sel[id]=i;[...holder.children].forEach((c,ci)=>c.classList.toggle('sel',ci===i));document.getElementById('hint').style.display='none';};holder.appendChild(b);});});
 document.getElementById('check').onclick=async()=>{
   if(revealed)return;if(Object.values(sel).some(v=>v===null)){document.getElementById('hint').style.display='inline';return;}
   revealed=true;let score=0;
   Object.keys(QS).forEach(id=>{const a=QS[id].a,holder=document.querySelector('#'+id+' .opts'),fb=document.querySelector('#'+id+' .fb');[...holder.children].forEach((c,ci)=>{c.style.cursor='default';c.classList.remove('sel');if(ci===a)c.classList.add('correct');else if(ci===sel[id])c.classList.add('wrong');});if(sel[id]===a)score++;fb.textContent=QS[id].fb;fb.classList.add('show');});
   document.getElementById('check').style.opacity='0.5';document.getElementById('check').textContent='Checked';
-  document.getElementById('scoreOut').textContent=score+' / 5';document.getElementById('done').classList.add('show');
-  try{await window.storage.set('mfs:lesson10',JSON.stringify({done:true,retrieval:score+'/5',ts:Date.now()}),false);}catch(e){}
+  document.getElementById('scoreOut').textContent=score+' / 6';document.getElementById('done').classList.add('show');
+  try{await window.storage.set('mfs:lesson10',JSON.stringify({done:true,retrieval:score+'/6',ts:Date.now()}),false);}catch(e){}
 };
-function boot(){renderMath();render();}
+function boot(){renderMath();window.__p1();window.__p2();}
 if(window.katex)boot();else window.addEventListener('load',boot);
 (async()=>{try{const r=await window.storage.get('mfs:lesson10',false);if(r&&r.value){const v=JSON.parse(r.value);if(v.done){const c=document.getElementById('chip');c.classList.add('show');c.textContent='completed · '+v.retrieval;}}}catch(e){}})();
 </script>
