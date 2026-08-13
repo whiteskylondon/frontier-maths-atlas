@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lesson 15 — Entropy, cross-entropy & KL</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<style>
+  :root{--paper:#FAFAF6;--ink:#1A1C22;--muted:#63676E;--faint:#9A9EA4;--hair:#E4E3DB;--hair2:#D4D3CA;--panel:#FFFFFF;--accent:#24507A;--accent-bg:#EAF0F6;--series:#B07A2E;--miss:#B23A3A;--ok:#2F6B4F;--ok-bg:#E9F1EC;--p:#24507A;--q:#B07A2E;--vol:#8A5A2B;--vol-bg:#F6EFE6;--serif:Iowan Old Style,Palatino,Georgia,serif;--sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;}
+  @media (prefers-color-scheme:dark){:root{--paper:#15161A;--ink:#E9E8E2;--muted:#A2A6AC;--faint:#71757B;--hair:#2A2C31;--hair2:#3A3C42;--panel:#1B1D22;--accent:#7FB0E0;--accent-bg:#1E2A38;--series:#D9A85E;--miss:#E07A7A;--ok:#7FC49F;--ok-bg:#1C2A22;--p:#7FB0E0;--q:#D9A85E;--vol:#D9A066;--vol-bg:#2A2115;}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.62;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:750px;margin:0 auto;padding:32px 24px 60px}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 6px}
+  h1{font-family:var(--serif);font-weight:600;font-size:27px;line-height:1.22;margin:0 0 6px;letter-spacing:-.01em}
+  .chip{display:none;font-family:var(--mono);font-size:11px;color:var(--ok);border:1px solid var(--ok);border-radius:20px;padding:3px 10px;vertical-align:middle;margin-left:10px}
+  .chip.show{display:inline-block}
+  .sub{color:var(--muted);font-size:15px;margin:0 0 18px}
+  .levels{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 26px}
+  .levels .lk{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+  .levels .pill{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-family:var(--mono);color:var(--muted);background:var(--panel);border:1px solid var(--hair2);border-radius:20px;padding:4px 11px}
+  .levels .pill b{color:var(--accent);font-weight:700}
+  p.lead{font-size:16px;margin:0 0 22px}p.lead b{font-weight:600}
+  .sec{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:36px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--hair)}
+  .mblock{margin:16px 0;overflow-x:auto}
+  .glo{list-style:none;padding:0;margin:14px 0 0}
+  .glo li{display:flex;gap:14px;padding:9px 0;border-top:1px solid var(--hair);align-items:baseline}
+  .glo li:first-child{border-top:none}
+  .glo .sym{flex:0 0 118px;text-align:right;padding-top:2px}
+  .glo .def{font-size:14.5px}.glo .def .n{color:var(--muted)}
+  .step{font-size:14.5px;color:var(--muted);margin:10px 0}
+  .panel{background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:20px;margin:14px 0}
+  .toggle{display:flex;flex-wrap:wrap;gap:16px;margin:0 0 12px;font-family:var(--mono);font-size:12.5px;align-items:center}
+  .toggle .grp{display:inline-flex;border:1px solid var(--hair2);border-radius:8px;overflow:hidden}
+  .toggle .grp button{border:none;border-right:1px solid var(--hair2);background:var(--panel);color:var(--muted);padding:6px 11px;cursor:pointer;font-family:var(--mono);font-size:12.5px}
+  .toggle .grp button:last-child{border-right:none}.toggle .grp button.on{background:var(--accent);color:#fff}
+  .oneh{display:none;gap:6px;flex-wrap:wrap}
+  .oneh.show{display:flex}
+  .oneh button{border:1px solid var(--hair2);border-radius:6px;background:var(--panel);color:var(--muted);padding:5px 9px;cursor:pointer;font-family:var(--mono);font-size:11.5px}
+  .oneh button.on{background:var(--p);color:#fff;border-color:var(--p)}
+  svg{max-width:100%;height:auto;display:block}
+  .qsliders{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:12px 0 4px}
+  .qsliders .qs{display:flex;flex-direction:column;align-items:center;gap:4px}
+  .qsliders .qs span{font-family:var(--mono);font-size:10.5px;color:var(--muted)}
+  .qsliders input[type=range]{writing-mode:vertical-lr;direction:rtl;width:20px;height:70px;accent-color:var(--q)}
+  .legend{display:flex;flex-wrap:wrap;gap:16px;margin:6px 0 2px;font-size:12.5px;color:var(--muted);font-family:var(--mono)}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .dotc{width:10px;height:10px;border-radius:3px;display:inline-block}
+  .tally{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0 2px}
+  .stat{flex:1;min-width:130px;background:var(--paper);border-radius:9px;padding:9px 12px}
+  .stat .k{font-size:11px;font-family:var(--mono);color:var(--muted);text-transform:uppercase}
+  .stat .v{font-size:17px;font-weight:600;font-family:var(--mono);margin-top:2px}
+  .stat .v.p{color:var(--p)}.stat .v.q{color:var(--q)}.stat .v.k{color:var(--miss)}
+  .btnrow{display:flex;gap:8px;margin:10px 0 0;flex-wrap:wrap}
+  button.act{font-family:var(--sans);font-size:13.5px;padding:7px 12px;border-radius:8px;border:1px solid var(--hair2);background:var(--panel);color:var(--ink);cursor:pointer}
+  button.act:hover{border-color:var(--accent);color:var(--accent)}
+  .callout{font-size:14px;color:var(--muted);border-left:2px solid var(--accent);padding:2px 0 2px 14px;margin:14px 0 2px;min-height:1.4em}
+  .theorem{background:var(--accent-bg);border-radius:12px;padding:18px 20px;margin:16px 0}
+  .theorem .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
+  .theorem p{font-family:var(--serif);font-size:16px;line-height:1.55;margin:0}
+  .twist{border:1px dashed var(--hair2);border-radius:12px;padding:16px 18px;margin:16px 0;background:var(--panel)}
+  .twist .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+  .twist p{margin:0;font-size:14.6px}
+  .vol{background:var(--vol-bg);border:1px solid var(--vol);border-radius:12px;padding:18px 20px;margin:16px 0}
+  .vol .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:var(--vol);margin:0 0 8px}
+  .vol p{margin:0 0 10px;font-size:14.8px}.vol p:last-child{margin-bottom:0}
+  .vol code{font-family:var(--mono);font-size:13px;background:rgba(138,90,43,.12);padding:1px 5px;border-radius:4px}
+  .q{border:1px solid var(--hair);border-radius:12px;padding:16px 18px;margin:12px 0;background:var(--panel)}
+  .q .stem{font-size:15px;font-weight:500;margin:0 0 12px}
+  .opt{display:block;width:100%;text-align:left;font-size:14px;padding:10px 12px;margin:0 0 8px;border:1px solid var(--hair2);border-radius:8px;background:transparent;color:var(--ink);cursor:pointer;line-height:1.45}
+  .opt:last-child{margin-bottom:0}.opt:hover{border-color:var(--accent)}
+  .opt.sel{border-color:var(--accent);background:var(--accent-bg)}
+  .opt.correct{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+  .opt.wrong{background:#F7ECEC;border-color:var(--miss);color:var(--miss)}
+  @media (prefers-color-scheme:dark){.opt.wrong{background:#2E1E1E}}
+  .fb{font-size:13.5px;color:var(--muted);margin:10px 0 0;line-height:1.5;display:none}.fb.show{display:block}
+  .checkRow{display:flex;align-items:center;gap:14px;margin:18px 0 0;flex-wrap:wrap}
+  .hint{font-size:13px;color:var(--miss);display:none}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-family:var(--sans);font-size:14px;padding:8px 14px;border-radius:8px;border:1px solid var(--accent);cursor:pointer}
+  .scoreOut{font-family:var(--mono);font-size:14px;font-weight:600}
+  .done{display:none;align-items:center;gap:10px;background:var(--ok-bg);color:var(--ok);border-radius:10px;padding:12px 16px;font-size:14px;margin:14px 0 0}
+  .done.show{display:flex}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">Lesson 15 · Wing III — probability &amp; information</p>
+  <h1>Entropy, cross-entropy &amp; KL<span class="chip" id="chip"></span></h1>
+  <p class="sub">Why almost every training loss is, underneath, a negative log-likelihood.</p>
+  <div class="levels"><span class="lk">Level</span><span class="pill"><b>US</b> Advanced undergrad → graduate</span><span class="pill"><b>FR</b> Master M1–M2 · ENSAE 2A–3A</span></div>
+
+  <p class="lead">Information theory gives three quantities that run through all of modern ML. <b>Entropy</b> measures how uncertain a distribution is. <b>Cross-entropy</b> measures the cost of using a <i>model</i> distribution q to describe the <i>true</i> one p. And their difference, the <b>KL divergence</b>, is the penalty you pay for being wrong — always non-negative, zero only when the model is exact. Training a classifier by minimizing cross-entropy turns out to be identical to maximum likelihood, which is why "the loss is a negative log-likelihood" is not a slogan but a theorem.</p>
+
+  <div class="sec">Three quantities</div>
+  <div class="mblock math" data-tex="H(p)=-\sum_i p_i\ln p_i\qquad H(p,q)=-\sum_i p_i\ln q_i\qquad D_{\mathrm{KL}}(p\Vert q)=\sum_i p_i\ln\frac{p_i}{q_i}" data-display="1"></div>
+  <p class="step">They lock together in one identity — cross-entropy is the irreducible uncertainty of p plus the avoidable penalty for modelling it with q:</p>
+  <div class="mblock math" data-tex="H(p,q)=H(p)+D_{\mathrm{KL}}(p\Vert q),\qquad D_{\mathrm{KL}}(p\Vert q)\ge 0,\ \ =0\iff q=p" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="H(p)"></span><span class="def"><b>entropy</b> — uncertainty in p. <span class="n">Maximal when all outcomes are equally likely; zero when one is certain. In nats (bits × ln 2).</span></span></li>
+    <li><span class="sym math" data-tex="H(p,q)"></span><span class="def"><b>cross-entropy</b> — cost of coding p with q's code. <span class="n">The classification loss; minimized (at H(p)) exactly when q = p.</span></span></li>
+    <li><span class="sym math" data-tex="D_{\mathrm{KL}}"></span><span class="def"><b>KL divergence</b> — information lost using q for p. <span class="n">≥ 0, asymmetric, zero iff identical. The model's excess surprise.</span></span></li>
+  </ul>
+
+  <div class="sec">See it — model q against realized p</div>
+  <div class="panel">
+    <div class="toggle">
+      <span>p is:</span>
+      <div class="grp" id="pmode"><button data-m="dist" class="on">a distribution</button><button data-m="one">one realized outcome</button></div>
+      <div class="oneh" id="oneh"></div>
+    </div>
+    <svg id="bars" viewBox="0 0 680 260" role="img" aria-label="Bar chart of true distribution p and model distribution q over market states"></svg>
+    <div class="legend"><span><i class="dotc" style="background:var(--p)"></i>p (realized / true)</span><span><i class="dotc" style="background:var(--q)"></i>q (model)</span></div>
+    <div class="qsliders" id="qsliders"></div>
+    <div class="tally">
+      <div class="stat"><div class="k">entropy H(p)</div><div class="v p" id="Hp">—</div></div>
+      <div class="stat"><div class="k" id="ceLbl">cross-entropy H(p,q)</div><div class="v q" id="Hpq">—</div></div>
+      <div class="stat"><div class="k">KL(p‖q)</div><div class="v k" id="KL">—</div></div>
+    </div>
+    <div class="btnrow"><button class="act" id="matchp">Set q = p</button><button class="act" id="unif">Set q uniform</button></div>
+    <p class="callout" id="cnote"></p>
+  </div>
+
+  <div class="sec">Why it's a negative log-likelihood</div>
+  <p class="step">Set p to a single realized outcome (a one-hot) above, and cross-entropy collapses to <b>−ln q(that outcome)</b> — the log-loss of that single prediction, which is exactly the negative log-likelihood the model assigns to what happened. Averaging over a dataset, minimizing cross-entropy is maximizing likelihood:</p>
+  <div class="mblock math" data-tex="\underbrace{-\tfrac1N\textstyle\sum_n \ln q_\theta(y_n)}_{\text{cross-entropy loss}}=-\tfrac1N\ln\!\prod_n q_\theta(y_n)=\underbrace{-\tfrac1N\log\mathcal L(\theta)}_{\text{negative log-likelihood}}" data-display="1"></div>
+  <p class="step">The same logic makes <b>MSE a negative log-likelihood too</b> — under a Gaussian noise model, −ln p(y|ŷ) = (y−ŷ)²/2σ² + const. Every standard loss is an NLL under some assumed noise distribution; that's why they yield calibrated probabilities and connect straight back to Lesson 3's MLE.</p>
+
+  <div class="theorem">
+    <p class="lbl">The precise statement</p>
+    <p>For distributions p, q on a finite set, H(p,q) = H(p) + D_KL(p‖q), and by Gibbs' inequality D_KL(p‖q) ≥ 0 with equality iff p = q — so cross-entropy is minimized over q exactly at q = p, where it equals H(p). Minimizing the empirical cross-entropy between the data distribution and a parametric model q_θ is equivalent to maximum-likelihood estimation of θ, i.e. minimizing D_KL(p_data‖q_θ). Under a Gaussian observation model the per-example NLL is (y−ŷ)²/(2σ²) + const, recovering squared-error loss; under a categorical model it is −ln q_θ(y), the log-loss.</p>
+  </div>
+
+  <div class="twist">
+    <p class="lbl">The twist — KL has a direction, and it changes the answer</p>
+    <p>KL is <b>not symmetric</b>: D_KL(p‖q) ≠ D_KL(q‖p), and the two are minimized by different fits. <b>Forward</b> KL D(p‖q) — what maximum likelihood minimizes — is <i>mode-covering</i>: it punishes q for putting no mass where p has some, so q spreads to cover every outcome p can produce. <b>Reverse</b> KL D(q‖p) — what variational inference and the RLHF penalty (Lesson 35) use — is <i>mode-seeking</i>: q collapses onto one mode and ignores the rest. This is why a variational posterior looks too narrow, why a model trained by MLE hedges, and why the KL <i>direction</i> in a method is a design decision, not a detail. The deeper unification: entropy = optimal code length, cross-entropy = the code you actually paid, KL = the waste — and "minimize the loss" almost always means "minimize the KL from reality to your model," i.e. maximize likelihood. Once you see a loss as an NLL, its noise model, its calibration, and its failure modes all become legible.</p>
+  </div>
+
+  <div class="vol">
+    <p class="lbl">Why this matters · volarixs</p>
+    <p>The entropy of a <b>regime-probability vector</b> is a clean uncertainty gauge: when your HMM's filtered state probabilities are spread out, H is high and the regime is genuinely ambiguous; when one state dominates, H → 0 and you're confidently in a regime. That number can gate how aggressively a regime-conditional signal fires.</p>
+    <p>For evaluating forecasts, <b>log-loss is the honest score</b>: a directional model that put probability q on the move that actually happened contributes −ln q, and averaging it is the model's NLL — lower is better, and unlike hit-rate it rewards calibrated confidence. And when you back out a risk-neutral density from option prices, the <b>maximum-entropy</b> density consistent with the quoted strikes is the least-committal one — the Buchen–Kelly construction is literally "assume nothing beyond the constraints," which is what entropy formalizes.</p>
+  </div>
+
+  <div class="sec">Check yourself</div>
+  <div class="q" id="q1"><p class="stem">The KL divergence D_KL(p‖q) is:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q2"><p class="stem">Cross-entropy decomposes as:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q3"><p class="stem">Minimizing the cross-entropy between the data and a model q_θ is equivalent to:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q4"><p class="stem">Squared-error (MSE) loss is the negative log-likelihood under:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q5"><p class="stem">A model assigned probability q to the market move that actually occurred. Its contribution to the loss (its NLL) is:</p><div class="opts"></div><p class="fb"></p></div>
+
+  <div class="checkRow"><button class="primary" id="check">Check answers</button><span class="scoreOut" id="scoreOut"></span><span class="hint" id="hint">Answer all five first.</span></div>
+  <div class="done" id="done">Batch B complete — Wing II closed, Wing III opened. Next: attention & the transformer, or the rest of Wing III.</div>
+</div>
+
+<script>
+/* storage shim: window.storage (Claude artifacts) or localStorage (web) */
+if(!window.storage){window.storage={async get(k){const v=localStorage.getItem(k);if(v==null)throw new Error('missing');return{key:k,value:v}},async set(k,v){localStorage.setItem(k,v);return{key:k,value:v}},async delete(k){localStorage.removeItem(k);return{key:k,deleted:true}},async list(p){const ks=[];for(let i=0;i<localStorage.length;i++){const kk=localStorage.key(i);if(!p||kk.startsWith(p))ks.push(kk)}return{keys:ks}}};}
+function renderMath(){document.querySelectorAll('.math').forEach(el=>{const tex=el.getAttribute('data-tex');if(!tex||el.dataset.done)return;try{if(window.katex){katex.render(tex,el,{displayMode:el.dataset.display==='1',throwOnError:false});el.dataset.done='1';}else el.textContent=tex;}catch(e){el.textContent=tex;}});}
+
+const STATES=['crash','down','flat','up','rally'];
+const Pdist=[0.08,0.20,0.40,0.24,0.08];
+let pmode='dist', oneHot=2;
+let qraw=[0.12,0.22,0.30,0.26,0.10];
+
+function pVec(){ if(pmode==='dist')return Pdist.slice(); const e=[0,0,0,0,0];e[oneHot]=1;return e; }
+function qVec(){ const s=qraw.reduce((a,b)=>a+b,0)||1; return qraw.map(v=>Math.max(v/s,1e-6)); }
+
+function bars(){
+  const p=pVec(),q=qVec();
+  const W=680,H=260,padL=30,padR=10,padT=14,padB=34,iw=W-padL-padR,ih=H-padT-padB,gw=iw/STATES.length;
+  let s=`<line x1="${padL}" y1="${padT+ih}" x2="${W-padR}" y2="${padT+ih}" stroke="var(--hair2)"/>`;
+  STATES.forEach((st,i)=>{
+    const cx=padL+gw*(i+0.5),bw=gw*0.3;
+    const hp=p[i]*ih,hq=q[i]*ih;
+    s+=`<rect x="${(cx-bw-2).toFixed(1)}" y="${(padT+ih-hp).toFixed(1)}" width="${bw.toFixed(1)}" height="${hp.toFixed(1)}" fill="var(--p)" opacity="0.9"/>`;
+    s+=`<rect x="${(cx+2).toFixed(1)}" y="${(padT+ih-hq).toFixed(1)}" width="${bw.toFixed(1)}" height="${hq.toFixed(1)}" fill="var(--q)" opacity="0.9"/>`;
+    s+=`<text x="${cx.toFixed(1)}" y="${H-16}" text-anchor="middle" font-family="var(--mono)" font-size="11" fill="var(--muted)">${st}</text>`;
+    s+=`<text x="${cx.toFixed(1)}" y="${H-4}" text-anchor="middle" font-family="var(--mono)" font-size="9.5" fill="var(--faint)">${(q[i]).toFixed(2)}</text>`;
+  });
+  document.getElementById('bars').innerHTML=s;
+}
+function compute(){
+  const p=pVec(),q=qVec();
+  let Hp=0,Hpq=0,KL=0;
+  for(let i=0;i<p.length;i++){ if(p[i]>0){Hp+=-p[i]*Math.log(p[i]);Hpq+=-p[i]*Math.log(q[i]);KL+=p[i]*Math.log(p[i]/q[i]);} }
+  document.getElementById('Hp').textContent=Hp.toFixed(3);
+  document.getElementById('Hpq').textContent=Hpq.toFixed(3);
+  document.getElementById('KL').textContent=KL.toFixed(3);
+  if(pmode==='one'){
+    document.getElementById('ceLbl').textContent='NLL = −ln q(realized)';
+    document.getElementById('cnote').innerHTML=`p is certain (${STATES[oneHot]}), so H(p)=0 and cross-entropy = KL = <b>−ln q(${STATES[oneHot]}) = −ln ${q[oneHot].toFixed(3)} = ${Hpq.toFixed(3)}</b>. That single number <i>is</i> the negative log-likelihood the model assigned to what happened — the log-loss. Raise q on ${STATES[oneHot]} to lower it.`;
+  }else{
+    document.getElementById('ceLbl').textContent='cross-entropy H(p,q)';
+    const gap=Hpq-Hp;
+    document.getElementById('cnote').innerHTML = gap<0.005
+      ? `q now matches p: KL = 0, and cross-entropy has hit its floor H(p) = ${Hp.toFixed(3)}. No model can score better than the true distribution's own entropy.`
+      : `Check the identity: H(p,q) = H(p) + KL = ${Hp.toFixed(3)} + ${gap.toFixed(3)} = ${Hpq.toFixed(3)}. The KL is the avoidable penalty for q ≠ p — drag the sliders toward the blue bars and watch it fall to zero.`;
+  }
+}
+function refresh(){bars();compute();}
+
+// build q sliders
+const qc=document.getElementById('qsliders');
+STATES.forEach((st,i)=>{
+  const d=document.createElement('div');d.className='qs';
+  d.innerHTML=`<input type="range" min="0.01" max="1" step="0.01" value="${qraw[i]}" data-i="${i}"><span>${st}</span>`;
+  qc.appendChild(d);
+});
+qc.querySelectorAll('input').forEach(inp=>inp.addEventListener('input',e=>{qraw[+e.target.dataset.i]=+e.target.value;refresh();}));
+// one-hot selector
+const oh=document.getElementById('oneh');
+STATES.forEach((st,i)=>{const b=document.createElement('button');b.textContent=st;b.className=i===oneHot?'on':'';b.onclick=()=>{oneHot=i;oh.querySelectorAll('button').forEach((x,xi)=>x.classList.toggle('on',xi===i));refresh();};oh.appendChild(b);});
+// p mode
+document.querySelectorAll('#pmode button').forEach(b=>b.onclick=()=>{pmode=b.dataset.m;document.querySelectorAll('#pmode button').forEach(x=>x.classList.toggle('on',x===b));document.getElementById('oneh').classList.toggle('show',pmode==='one');refresh();});
+document.getElementById('matchp').onclick=()=>{const p=pmode==='dist'?Pdist:pVec();qraw=p.slice();qc.querySelectorAll('input').forEach((inp,i)=>inp.value=qraw[i]);refresh();};
+document.getElementById('unif').onclick=()=>{qraw=[0.2,0.2,0.2,0.2,0.2];qc.querySelectorAll('input').forEach((inp,i)=>inp.value=qraw[i]);refresh();};
+
+const QS={
+  q1:{opts:["symmetric and can be negative","always ≥ 0, and = 0 exactly when q = p","a proper distance (a metric)","bounded above by 1"],a:1,
+    fb:"By Gibbs' inequality KL ≥ 0, with equality iff the distributions match. It is not symmetric and not a metric — just a non-negative divergence."},
+  q2:{opts:["H(p,q) = H(p) − H(q)","H(p,q) = H(p) + KL(p‖q)","H(p,q) = KL(p‖q) − H(p)","H(p,q) = H(q) + KL(q‖p)"],a:1,
+    fb:"Cross-entropy = the true distribution's own entropy plus the KL penalty for using q. Since KL ≥ 0, cross-entropy is minimized (at H(p)) exactly when q = p."},
+  q3:{opts:["maximizing entropy","maximum-likelihood estimation of θ (equivalently, minimizing KL(data‖model))","minimizing the model's entropy","minimizing variance"],a:1,
+    fb:"Empirical cross-entropy = average NLL, so minimizing it maximizes likelihood — equivalently it minimizes the forward KL from the data distribution to the model."},
+  q4:{opts:["a uniform noise model","a Gaussian noise model","a Bernoulli model","no probabilistic model"],a:1,
+    fb:"Under y = ŷ + Gaussian noise, −ln p(y|ŷ) = (y−ŷ)²/(2σ²) + const, so squared error is the Gaussian NLL. Every standard loss is an NLL under some assumed noise."},
+  q5:{opts:["q","−ln q","1 − q","q·ln q"],a:1,
+    fb:"The per-outcome cross-entropy / log-loss is −ln q(realized): confident-and-right is cheap, confident-and-wrong is heavily penalized. Averaged over history it's the model's NLL."}
+};
+const sel={q1:null,q2:null,q3:null,q4:null,q5:null};let revealed=false;
+Object.keys(QS).forEach(id=>{const holder=document.querySelector('#'+id+' .opts');QS[id].opts.forEach((txt,i)=>{const b=document.createElement('button');b.className='opt';b.textContent=String.fromCharCode(65+i)+'.  '+txt;b.onclick=()=>{if(revealed)return;sel[id]=i;[...holder.children].forEach((c,ci)=>c.classList.toggle('sel',ci===i));document.getElementById('hint').style.display='none';};holder.appendChild(b);});});
+document.getElementById('check').onclick=async()=>{
+  if(revealed)return;if(Object.values(sel).some(v=>v===null)){document.getElementById('hint').style.display='inline';return;}
+  revealed=true;let score=0;
+  Object.keys(QS).forEach(id=>{const a=QS[id].a,holder=document.querySelector('#'+id+' .opts'),fb=document.querySelector('#'+id+' .fb');[...holder.children].forEach((c,ci)=>{c.style.cursor='default';c.classList.remove('sel');if(ci===a)c.classList.add('correct');else if(ci===sel[id])c.classList.add('wrong');});if(sel[id]===a)score++;fb.textContent=QS[id].fb;fb.classList.add('show');});
+  document.getElementById('check').style.opacity='0.5';document.getElementById('check').textContent='Checked';
+  document.getElementById('scoreOut').textContent=score+' / 5';document.getElementById('done').classList.add('show');
+  try{await window.storage.set('mfs:lesson15',JSON.stringify({done:true,retrieval:score+'/5',ts:Date.now()}),false);}catch(e){}
+};
+function boot(){renderMath();refresh();}
+if(window.katex)boot();else window.addEventListener('load',boot);
+(async()=>{try{const r=await window.storage.get('mfs:lesson15',false);if(r&&r.value){const v=JSON.parse(r.value);if(v.done){const c=document.getElementById('chip');c.classList.add('show');c.textContent='completed · '+v.retrieval;}}}catch(e){}})();
+</script>
+</body>
+</html>

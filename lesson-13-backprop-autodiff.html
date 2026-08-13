@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lesson 13 — Backprop as autodiff</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<style>
+  :root{--paper:#FAFAF6;--ink:#1A1C22;--muted:#63676E;--faint:#9A9EA4;--hair:#E4E3DB;--hair2:#D4D3CA;--panel:#FFFFFF;--accent:#24507A;--accent-bg:#EAF0F6;--series:#B07A2E;--miss:#B23A3A;--ok:#2F6B4F;--ok-bg:#E9F1EC;--grad:#7A3B8F;--grad-bg:#F0E6F4;--vol:#8A5A2B;--vol-bg:#F6EFE6;--serif:Iowan Old Style,Palatino,Georgia,serif;--sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;}
+  @media (prefers-color-scheme:dark){:root{--paper:#15161A;--ink:#E9E8E2;--muted:#A2A6AC;--faint:#71757B;--hair:#2A2C31;--hair2:#3A3C42;--panel:#1B1D22;--accent:#7FB0E0;--accent-bg:#1E2A38;--series:#D9A85E;--miss:#E07A7A;--ok:#7FC49F;--ok-bg:#1C2A22;--grad:#C99BD6;--grad-bg:#291930;--vol:#D9A066;--vol-bg:#2A2115;}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.62;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:750px;margin:0 auto;padding:32px 24px 60px}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 6px}
+  h1{font-family:var(--serif);font-weight:600;font-size:27px;line-height:1.22;margin:0 0 6px;letter-spacing:-.01em}
+  .chip{display:none;font-family:var(--mono);font-size:11px;color:var(--ok);border:1px solid var(--ok);border-radius:20px;padding:3px 10px;vertical-align:middle;margin-left:10px}
+  .chip.show{display:inline-block}
+  .sub{color:var(--muted);font-size:15px;margin:0 0 18px}
+  .levels{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 26px}
+  .levels .lk{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+  .levels .pill{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-family:var(--mono);color:var(--muted);background:var(--panel);border:1px solid var(--hair2);border-radius:20px;padding:4px 11px}
+  .levels .pill b{color:var(--accent);font-weight:700}
+  p.lead{font-size:16px;margin:0 0 22px}p.lead b{font-weight:600}
+  .sec{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:36px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--hair)}
+  .mblock{margin:16px 0;overflow-x:auto}
+  .glo{list-style:none;padding:0;margin:14px 0 0}
+  .glo li{display:flex;gap:14px;padding:9px 0;border-top:1px solid var(--hair);align-items:baseline}
+  .glo li:first-child{border-top:none}
+  .glo .sym{flex:0 0 96px;text-align:right;padding-top:2px;font-family:var(--mono);font-size:13px;color:var(--accent)}
+  .glo .def{font-size:14.5px}.glo .def .n{color:var(--muted)}
+  .step{font-size:14.5px;color:var(--muted);margin:10px 0}
+  .panel{background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:20px;margin:14px 0}
+  .toggle{display:flex;gap:16px;margin:0 0 8px;font-family:var(--mono);font-size:12.5px}
+  .toggle button{border:1px solid var(--hair2);background:var(--panel);color:var(--muted);border-radius:7px;padding:6px 12px;cursor:pointer}
+  .toggle button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .ctrls{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px 20px;margin:14px 0 4px}
+  @media(max-width:560px){.ctrls{grid-template-columns:1fr 1fr}}
+  .field{display:flex;flex-direction:column;gap:4px}
+  .field label{font-size:11.5px;color:var(--muted);font-family:var(--mono);display:flex;justify-content:space-between}
+  .field label b{color:var(--ink);font-weight:600}
+  input[type=range]{width:100%;accent-color:var(--accent);height:18px}
+  svg{max-width:100%;height:auto;display:block}
+  .legend{display:flex;flex-wrap:wrap;gap:18px;margin:8px 0 2px;font-size:12.5px;color:var(--muted);font-family:var(--mono)}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .dotc{width:10px;height:10px;border-radius:3px;display:inline-block}
+  .callout{font-size:14px;color:var(--muted);border-left:2px solid var(--accent);padding:2px 0 2px 14px;margin:14px 0 2px;min-height:1.4em}
+  .theorem{background:var(--accent-bg);border-radius:12px;padding:18px 20px;margin:16px 0}
+  .theorem .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
+  .theorem p{font-family:var(--serif);font-size:16px;line-height:1.55;margin:0}
+  .twist{border:1px dashed var(--hair2);border-radius:12px;padding:16px 18px;margin:16px 0;background:var(--panel)}
+  .twist .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+  .twist p{margin:0;font-size:14.6px}
+  .vol{background:var(--vol-bg);border:1px solid var(--vol);border-radius:12px;padding:18px 20px;margin:16px 0}
+  .vol .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:var(--vol);margin:0 0 8px}
+  .vol p{margin:0 0 10px;font-size:14.8px}.vol p:last-child{margin-bottom:0}
+  .vol code{font-family:var(--mono);font-size:13px;background:rgba(138,90,43,.12);padding:1px 5px;border-radius:4px}
+  .q{border:1px solid var(--hair);border-radius:12px;padding:16px 18px;margin:12px 0;background:var(--panel)}
+  .q .stem{font-size:15px;font-weight:500;margin:0 0 12px}
+  .opt{display:block;width:100%;text-align:left;font-size:14px;padding:10px 12px;margin:0 0 8px;border:1px solid var(--hair2);border-radius:8px;background:transparent;color:var(--ink);cursor:pointer;line-height:1.45}
+  .opt:last-child{margin-bottom:0}.opt:hover{border-color:var(--accent)}
+  .opt.sel{border-color:var(--accent);background:var(--accent-bg)}
+  .opt.correct{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+  .opt.wrong{background:#F7ECEC;border-color:var(--miss);color:var(--miss)}
+  @media (prefers-color-scheme:dark){.opt.wrong{background:#2E1E1E}}
+  .fb{font-size:13.5px;color:var(--muted);margin:10px 0 0;line-height:1.5;display:none}.fb.show{display:block}
+  .checkRow{display:flex;align-items:center;gap:14px;margin:18px 0 0;flex-wrap:wrap}
+  .hint{font-size:13px;color:var(--miss);display:none}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-family:var(--sans);font-size:14px;padding:8px 14px;border-radius:8px;border:1px solid var(--accent);cursor:pointer}
+  .scoreOut{font-family:var(--mono);font-size:14px;font-weight:600}
+  .done{display:none;align-items:center;gap:10px;background:var(--ok-bg);color:var(--ok);border-radius:10px;padding:12px 16px;font-size:14px;margin:14px 0 0}
+  .done.show{display:flex}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">Lesson 13 · Wing II — the optimization engine</p>
+  <h1>Backprop as automatic differentiation<span class="chip" id="chip"></span></h1>
+  <p class="sub">Backpropagation isn't a neural-net trick — it's the chain rule, run backward through a graph, in one pass.</p>
+  <div class="levels"><span class="lk">Level</span><span class="pill"><b>US</b> Advanced undergrad → graduate</span><span class="pill"><b>FR</b> Master M1 · ENSAE 2A</span></div>
+
+  <p class="lead">Lesson 9's optimizers all needed one thing: the gradient ∇L. Backpropagation is how you get it — cheaply, for millions of parameters at once. The idea is exact and simple: write the computation as a <b>graph</b> of elementary operations, do a <b>forward pass</b> to compute values, then a <b>backward pass</b> that pushes derivatives from the output back to every input by multiplying local derivatives along the way. That's the chain rule as bookkeeping — <b>reverse-mode automatic differentiation</b>.</p>
+
+  <div class="sec">The chain rule, made mechanical</div>
+  <div class="mblock math" data-tex="\frac{\partial L}{\partial \theta}=\sum_{\text{paths }\theta\to L}\ \prod_{\text{edges on path}}\frac{\partial\,(\text{child})}{\partial\,(\text{parent})}" data-display="1"></div>
+  <p class="step">Reverse mode computes this efficiently by assigning every node an <b>adjoint</b> <span class="math" data-tex="\bar v=\partial L/\partial v"></span> and sweeping from output to inputs. Each node's adjoint is its local derivative times the adjoints of the nodes it feeds — and when a node feeds several places, those contributions <b>add</b>:</p>
+  <div class="mblock math" data-tex="\bar v=\sum_{c\,\in\,\text{children}(v)}\ \bar c\;\frac{\partial c}{\partial v}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym">forward</span><span class="def">values flow input → output. <span class="n">Compute and cache every node's value; this is just evaluating the function.</span></span></li>
+    <li><span class="sym">v̄ = ∂L/∂v</span><span class="def">the <b>adjoint</b> of node v. <span class="n">How much the final loss moves per unit change in v — the thing you want for every parameter.</span></span></li>
+    <li><span class="sym">Σ children</span><span class="def">a node feeding several places. <span class="n">Its adjoint is the SUM over all the branches it influences — the most-missed rule.</span></span></li>
+  </ul>
+
+  <div class="sec">See it — forward values, backward gradients</div>
+  <div class="panel">
+    <p class="step" style="margin-top:0">A tiny factor model predicting this month's index return: prediction p = tanh(w₁x₁ + w₂x₂ + b), loss L = (p − y)². <b id="modeLbl" style="color:var(--ink)">Forward</b> mode shows node values; <b style="color:var(--grad)">backward</b> shows each node's gradient ∂L/∂node. Move any leaf and watch both sweep.</p>
+    <div class="toggle" id="mode"><button data-m="both" class="on">show both</button><button data-m="fwd">forward only</button><button data-m="bwd">backward only</button></div>
+    <svg id="graph" viewBox="0 0 700 380" role="img" aria-label="Computation graph with forward values and backward gradients"></svg>
+    <div class="legend"><span><i class="dotc" style="background:var(--ink)"></i>forward value</span><span><i class="dotc" style="background:var(--grad)"></i>gradient ∂L/∂node</span></div>
+    <div class="ctrls">
+      <div class="field"><label>x₁ · momentum factor <b id="x1O">1.20</b></label><input type="range" id="x1" min="-2" max="2" value="1.2" step="0.05"></div>
+      <div class="field"><label>x₂ · value factor <b id="x2O">-0.50</b></label><input type="range" id="x2" min="-2" max="2" value="-0.5" step="0.05"></div>
+      <div class="field"><label>y · realized return <b id="yO">0.15</b></label><input type="range" id="y" min="-1" max="1" value="0.15" step="0.05"></div>
+      <div class="field"><label>w₁ · loading <b id="w1O">0.30</b></label><input type="range" id="w1" min="-1" max="1" value="0.3" step="0.05"></div>
+      <div class="field"><label>w₂ · loading <b id="w2O">0.20</b></label><input type="range" id="w2" min="-1" max="1" value="0.2" step="0.05"></div>
+      <div class="field"><label>b · intercept <b id="bO">0.00</b></label><input type="range" id="b" min="-1" max="1" value="0" step="0.05"></div>
+    </div>
+    <p class="callout" id="cnote"></p>
+  </div>
+
+  <div class="theorem">
+    <p class="lbl">The precise statement</p>
+    <p>Reverse-mode AD computes the gradient of one scalar output with respect to all inputs in time proportional to the cost of one forward evaluation (times a small constant), by traversing the computation graph in reverse topological order and accumulating adjoints v̄ = Σ_{c∈children} c̄ · ∂c/∂v. It is exact (not finite-difference) — each adjoint is a vector-Jacobian product with the node's local Jacobian. Forward mode instead propagates one input's perturbation to all outputs (a Jacobian-vector product); reverse mode is preferred whenever outputs ≪ inputs, e.g. a scalar loss over millions of parameters.</p>
+  </div>
+
+  <div class="twist">
+    <p class="lbl">The twist — this is exactly how you'd compute every Greek at once</p>
+    <p>Reverse-mode's whole advantage is direction: <b>one output, many inputs</b>, all sensitivities in a single backward pass. That's precisely the shape of a Greeks calculation — one price V, and you want ∂V/∂S, ∂V/∂σ, ∂V/∂r, ∂V/∂t all together. Bump-and-revalue (finite differences) costs one extra revaluation <i>per</i> input and adds truncation error; reverse-mode AD — "adjoint algorithmic differentiation," now standard in derivatives libraries — gets the entire gradient for roughly the price of one valuation, exactly. The mirror image also matters: if you have <b>one input and many outputs</b> (how a single shock propagates through a whole book), <b>forward</b> mode is the efficient one. Same chain rule, two sweep directions; which is cheaper depends only on the shape of the Jacobian — tall (many outputs) favours forward, wide (many inputs, scalar loss) favours reverse. Deep learning is the extreme wide case, which is why backprop won.</p>
+  </div>
+
+  <div class="vol">
+    <p class="lbl">Why this matters · volarixs</p>
+    <p>The graph above is the literal gradient step from Lesson 9, now itemised: change a loading w₁ and the backward pass tells you ∂L/∂w₁ = (tanh′·x₁)·2(p−y) — the number your optimizer subtracts. Any gradient-trained model you build (a neural forecaster, a logistic direction signal, a calibration objective) is differentiated exactly this way, and every framework — PyTorch, JAX — is just a graph builder plus this reverse sweep.</p>
+    <p>The transferable instinct for your derivatives work: when you need many sensitivities of a single quantity — a book's Greeks, a portfolio's exposures to every factor — reach for <b>adjoint/reverse-mode</b>, not per-input bumping. It's exact and it's one pass. And note ∂L/∂x is computed too: the model hands you the sensitivity of its loss to the <i>inputs</i>, not just the weights — useful for attribution and for adversarial/robustness checks.</p>
+  </div>
+
+  <div class="sec">Check yourself</div>
+  <div class="q" id="q1"><p class="stem">Backpropagation is fundamentally:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q2"><p class="stem">In the backward pass, the adjoint of a node that feeds several downstream nodes is:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q3"><p class="stem">Reverse-mode AD is preferred over forward-mode when:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q4"><p class="stem">Computing the gradient of a scalar loss w.r.t. all parameters by reverse-mode costs, per step, roughly:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q5"><p class="stem">To get all Greeks (∂V/∂S, ∂V/∂σ, …) of a single price efficiently and exactly, the natural tool is:</p><div class="opts"></div><p class="fb"></p></div>
+
+  <div class="checkRow"><button class="primary" id="check">Check answers</button><span class="scoreOut" id="scoreOut"></span><span class="hint" id="hint">Answer all five first.</span></div>
+  <div class="done" id="done">Gradients demystified. Next in Wing II: convexity, saddle points & the reparameterization trick.</div>
+</div>
+
+<script>
+/* storage shim: window.storage (Claude artifacts) or localStorage (web) */
+if(!window.storage){window.storage={async get(k){const v=localStorage.getItem(k);if(v==null)throw new Error('missing');return{key:k,value:v}},async set(k,v){localStorage.setItem(k,v);return{key:k,value:v}},async delete(k){localStorage.removeItem(k);return{key:k,deleted:true}},async list(p){const ks=[];for(let i=0;i<localStorage.length;i++){const kk=localStorage.key(i);if(!p||kk.startsWith(p))ks.push(kk)}return{keys:ks}}};}
+function renderMath(){document.querySelectorAll('.math').forEach(el=>{const tex=el.getAttribute('data-tex');if(!tex||el.dataset.done)return;try{if(window.katex){katex.render(tex,el,{displayMode:el.dataset.display==='1',throwOnError:false});el.dataset.done='1';}else el.textContent=tex;}catch(e){el.textContent=tex;}});}
+
+let mode='both';
+const NODES={
+  x1:{x:55,y:38,label:'x₁'}, w1:{x:55,y:96,label:'w₁'},
+  x2:{x:55,y:158,label:'x₂'}, w2:{x:55,y:216,label:'w₂'},
+  b:{x:55,y:278,label:'b'},  y:{x:55,y:340,label:'y'},
+  m1:{x:210,y:67,label:'w₁·x₁'}, m2:{x:210,y:187,label:'w₂·x₂'},
+  h:{x:355,y:150,label:'Σ  (h)'}, p:{x:475,y:150,label:'tanh (p)'},
+  r:{x:585,y:245,label:'p − y'}, L:{x:640,y:245,label:'L = r²'}
+};
+const EDGES=[['x1','m1'],['w1','m1'],['x2','m2'],['w2','m2'],['m1','h'],['m2','h'],['b','h'],['h','p'],['p','r'],['y','r'],['r','L']];
+function compute(){
+  const g=id=>+document.getElementById(id).value;
+  const x1=g('x1'),x2=g('x2'),w1=g('w1'),w2=g('w2'),b=g('b'),y=g('y');
+  const m1=w1*x1,m2=w2*x2,h=m1+m2+b,p=Math.tanh(h),r=p-y,L=r*r;
+  const val={x1,x2,w1,w2,b,y,m1,m2,h,p,r,L};
+  // backward
+  const Lb=1,rb=2*r,pb=rb*1,hb=pb*(1-p*p),m1b=hb,m2b=hb,bb=hb;
+  const w1b=m1b*x1,x1b=m1b*w1,w2b=m2b*x2,x2b=m2b*w2,yb=rb*(-1);
+  const grad={L:Lb,r:rb,p:pb,h:hb,m1:m1b,m2:m2b,b:bb,w1:w1b,x1:x1b,w2:w2b,x2:x2b,y:yb};
+  return {val,grad};
+}
+function nodeSVG(id,n,val,grad){
+  const w=id.length>2?66:46,hh=val!==undefined&&grad!==undefined&&mode==='both'?44:32;
+  const x=n.x,y=n.y;let s=`<rect x="${x}" y="${y}" width="${w}" height="${hh}" rx="8" fill="var(--panel)" stroke="var(--hair2)"/>`;
+  s+=`<text x="${x+w/2}" y="${y+13}" text-anchor="middle" font-family="var(--mono)" font-size="10.5" fill="var(--muted)">${n.label}</text>`;
+  if(mode!=='bwd')s+=`<text x="${x+w/2}" y="${y+(mode==='both'?26:27)}" text-anchor="middle" font-family="var(--mono)" font-size="11" fill="var(--ink)" font-weight="600">${val.toFixed(2)}</text>`;
+  if(mode!=='fwd'&&grad!==undefined)s+=`<text x="${x+w/2}" y="${y+(mode==='both'?39:27)}" text-anchor="middle" font-family="var(--mono)" font-size="10.5" fill="var(--grad)">${(grad>=0?'+':'')+grad.toFixed(2)}</text>`;
+  return s;
+}
+function render(){
+  const {val,grad}=compute();
+  ['x1','x2','w1','w2','b','y'].forEach(id=>document.getElementById(id+'O').textContent=(+document.getElementById(id).value).toFixed(2));
+  let s='';
+  // edges
+  EDGES.forEach(([a,c])=>{const na=NODES[a],nc=NODES[c];const wa=a.length>2?66:46;
+    const x1=na.x+wa,y1=na.y+16,x2=nc.x,y2=nc.y+16;
+    const mx=(x1+x2)/2;s+=`<path d="M${x1} ${y1} C ${mx} ${y1}, ${mx} ${y2}, ${x2} ${y2}" fill="none" stroke="var(--hair2)" stroke-width="1.3"/>`;});
+  Object.keys(NODES).forEach(id=>{s+=nodeSVG(id,NODES[id],val[id],grad[id]);});
+  document.getElementById('graph').innerHTML=s;
+  document.getElementById('cnote').innerHTML = `Prediction p = <b>${val.p.toFixed(3)}</b>, actual y = ${val.y.toFixed(2)}, so loss = <b>${val.L.toFixed(4)}</b>. Reading the gradients: ∂L/∂w₁ = <b style="color:var(--grad)">${grad.w1.toFixed(3)}</b> and ∂L/∂w₂ = <b style="color:var(--grad)">${grad.w2.toFixed(3)}</b> — the numbers the optimizer subtracts. Notice the tanh node damps everything by (1−p²) = ${(1-val.p*val.p).toFixed(3)} on the way back.`;
+}
+document.querySelectorAll('#mode button').forEach(b=>b.onclick=()=>{mode=b.dataset.m;document.querySelectorAll('#mode button').forEach(x=>x.classList.toggle('on',x===b));render();});
+['x1','x2','w1','w2','b','y'].forEach(id=>document.getElementById(id).addEventListener('input',render));
+
+const QS={
+  q1:{opts:["a heuristic special to neural networks","the chain rule applied in reverse over a computation graph (reverse-mode AD)","a finite-difference approximation of the gradient","a way to initialize weights"],a:1,
+    fb:"Backprop is exactly reverse-mode automatic differentiation: build the graph, cache forward values, then accumulate exact derivatives backward via the chain rule. Nothing network-specific about it."},
+  q2:{opts:["the maximum over its branches","the sum of the contributions from every node it feeds","only the first branch's contribution","its local derivative alone"],a:1,
+    fb:"A shared node influences the loss through each path it feeds, so its adjoint sums those contributions: v̄ = Σ_children c̄·∂c/∂v. Forgetting to add is the classic backprop bug."},
+  q3:{opts:["there are many outputs and few inputs","there is a scalar (or few) output and many inputs — e.g. a loss over millions of weights","the function is linear","gradients aren't needed"],a:1,
+    fb:"Reverse mode gets all input-gradients of one output in a single backward pass, so it wins when outputs ≪ inputs. Forward mode is better for one input → many outputs."},
+  q4:{opts:["much more than the forward pass (quadratic in parameters)","about the same as one forward evaluation (a small constant times)","exponential in network depth","one revaluation per parameter"],a:1,
+    fb:"That's the key efficiency result: reverse-mode AD costs O(1) forward passes regardless of the number of parameters — which is why training billion-parameter models is even feasible."},
+  q5:{opts:["bump-and-revalue each input separately","reverse-mode (adjoint) automatic differentiation","forward-mode AD","a lookup table"],a:1,
+    fb:"One output (price), many inputs (S, σ, r, t) is the wide-Jacobian case reverse mode is built for — 'adjoint algorithmic differentiation' returns all Greeks exactly for ~one valuation, versus bumping's per-input cost and truncation error."}
+};
+const sel={q1:null,q2:null,q3:null,q4:null,q5:null};let revealed=false;
+Object.keys(QS).forEach(id=>{const holder=document.querySelector('#'+id+' .opts');QS[id].opts.forEach((txt,i)=>{const b=document.createElement('button');b.className='opt';b.textContent=String.fromCharCode(65+i)+'.  '+txt;b.onclick=()=>{if(revealed)return;sel[id]=i;[...holder.children].forEach((c,ci)=>c.classList.toggle('sel',ci===i));document.getElementById('hint').style.display='none';};holder.appendChild(b);});});
+document.getElementById('check').onclick=async()=>{
+  if(revealed)return;if(Object.values(sel).some(v=>v===null)){document.getElementById('hint').style.display='inline';return;}
+  revealed=true;let score=0;
+  Object.keys(QS).forEach(id=>{const a=QS[id].a,holder=document.querySelector('#'+id+' .opts'),fb=document.querySelector('#'+id+' .fb');[...holder.children].forEach((c,ci)=>{c.style.cursor='default';c.classList.remove('sel');if(ci===a)c.classList.add('correct');else if(ci===sel[id])c.classList.add('wrong');});if(sel[id]===a)score++;fb.textContent=QS[id].fb;fb.classList.add('show');});
+  document.getElementById('check').style.opacity='0.5';document.getElementById('check').textContent='Checked';
+  document.getElementById('scoreOut').textContent=score+' / 5';document.getElementById('done').classList.add('show');
+  try{await window.storage.set('mfs:lesson13',JSON.stringify({done:true,retrieval:score+'/5',ts:Date.now()}),false);}catch(e){}
+};
+function boot(){renderMath();render();}
+if(window.katex)boot();else window.addEventListener('load',boot);
+(async()=>{try{const r=await window.storage.get('mfs:lesson13',false);if(r&&r.value){const v=JSON.parse(r.value);if(v.done){const c=document.getElementById('chip');c.classList.add('show');c.textContent='completed · '+v.retrieval;}}}catch(e){}})();
+</script>
+</body>
+</html>

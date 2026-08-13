@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lesson 01 — What a confidence interval actually claims</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<style>
+  :root{
+    --paper:#FAFAF6; --ink:#1A1C22; --muted:#63676E; --faint:#9A9EA4;
+    --hair:#E4E3DB; --hair2:#D4D3CA; --panel:#FFFFFF;
+    --accent:#24507A; --accent-bg:#EAF0F6;
+    --miss:#B23A3A; --cover:#3C5A78;
+    --ok:#2F6B4F; --ok-bg:#E9F1EC;
+    --vol:#8A5A2B; --vol-bg:#F6EFE6;
+    --serif:Iowan Old Style,Palatino,"Palatino Linotype",Georgia,serif;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#15161A; --ink:#E9E8E2; --muted:#A2A6AC; --faint:#71757B;
+      --hair:#2A2C31; --hair2:#3A3C42; --panel:#1B1D22;
+      --accent:#7FB0E0; --accent-bg:#1E2A38;
+      --miss:#E07A7A; --cover:#8FB2D4;
+      --ok:#7FC49F; --ok-bg:#1C2A22;
+      --vol:#D9A066; --vol-bg:#2A2115;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);
+    line-height:1.62;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:740px;margin:0 auto;padding:32px 24px 60px}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--accent);margin:0 0 6px}
+  h1{font-family:var(--serif);font-weight:600;font-size:30px;line-height:1.2;
+    margin:0 0 6px;letter-spacing:-.01em}
+  .chip{display:none;font-family:var(--mono);font-size:11px;letter-spacing:.05em;color:var(--ok);
+    border:1px solid var(--ok);border-radius:20px;padding:3px 10px;vertical-align:middle;margin-left:10px}
+  .chip.show{display:inline-block}
+  .sub{color:var(--muted);font-size:15px;margin:0 0 18px}
+  .levels{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 26px}
+  .levels .lk{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+  .levels .pill{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-family:var(--mono);color:var(--muted);background:var(--panel);border:1px solid var(--hair2);border-radius:20px;padding:4px 11px}
+  .levels .pill b{color:var(--accent);font-weight:700;letter-spacing:.03em}
+  p.lead{font-size:16px;margin:0 0 22px}
+  p.lead b{font-weight:600}
+  .sec{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--faint);margin:34px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--hair)}
+  .mblock{margin:16px 0;overflow-x:auto}
+  .glo{list-style:none;padding:0;margin:14px 0 0}
+  .glo li{display:flex;gap:14px;padding:9px 0;border-top:1px solid var(--hair);align-items:baseline}
+  .glo li:first-child{border-top:none}
+  .glo .sym{flex:0 0 84px;text-align:right;padding-top:2px}
+  .glo .def{font-size:14.5px;color:var(--ink)}
+  .glo .def .n{color:var(--muted)}
+  .step{font-size:14.5px;color:var(--muted);margin:10px 0}
+  .panel{background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:20px;margin:14px 0}
+  .curveWrap{display:flex;flex-direction:column;align-items:center}
+  .curveCap{font-size:13px;color:var(--muted);margin:6px 0 0;text-align:center}
+  .ctrls{display:flex;flex-wrap:wrap;gap:18px 28px;align-items:flex-end;margin:0 0 16px}
+  .field{display:flex;flex-direction:column;gap:6px;min-width:150px;flex:1}
+  .field label{font-size:12px;color:var(--muted);font-family:var(--mono);letter-spacing:.03em;
+    display:flex;justify-content:space-between}
+  .field label b{color:var(--ink);font-weight:600}
+  input[type=range]{width:100%;accent-color:var(--accent);height:20px}
+  select{font-family:var(--mono);font-size:14px;padding:7px 8px;border:1px solid var(--hair2);
+    border-radius:7px;background:var(--panel);color:var(--ink)}
+  .btns{display:flex;flex-wrap:wrap;gap:8px;margin:2px 0 14px}
+  button.act{font-family:var(--sans);font-size:14px;padding:8px 14px;border-radius:8px;
+    border:1px solid var(--hair2);background:var(--panel);color:var(--ink);cursor:pointer}
+  button.act:hover{border-color:var(--accent);color:var(--accent)}
+  button.act.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  button.act.primary:hover{color:#fff;opacity:.92}
+  svg{max-width:100%;height:auto;display:block}
+  .tally{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 2px}
+  .stat{flex:1;min-width:120px;background:var(--paper);border-radius:9px;padding:9px 12px}
+  .stat .k{font-size:11px;font-family:var(--mono);letter-spacing:.05em;color:var(--muted);text-transform:uppercase}
+  .stat .v{font-size:22px;font-weight:600;font-family:var(--mono);margin-top:2px}
+  .callout{font-size:14px;color:var(--muted);border-left:2px solid var(--accent);padding:2px 0 2px 14px;margin:16px 0 2px}
+  .theorem{background:var(--accent-bg);border-radius:12px;padding:18px 20px;margin:16px 0}
+  .theorem .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
+  .theorem p{font-family:var(--serif);font-size:16.5px;line-height:1.55;margin:0}
+  .vol{background:var(--vol-bg);border:1px solid var(--vol);border-radius:12px;padding:18px 20px;margin:16px 0}
+  .vol .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:var(--vol);margin:0 0 8px}
+  .vol p{margin:0 0 10px;font-size:14.8px}
+  .vol p:last-child{margin-bottom:0}
+  .vol code{font-family:var(--mono);font-size:13px;background:rgba(138,90,43,.12);padding:1px 5px;border-radius:4px}
+  .q{border:1px solid var(--hair);border-radius:12px;padding:16px 18px;margin:12px 0;background:var(--panel)}
+  .q .stem{font-size:15px;font-weight:500;margin:0 0 12px}
+  .opt{display:block;width:100%;text-align:left;font-size:14px;padding:10px 12px;margin:0 0 8px;
+    border:1px solid var(--hair2);border-radius:8px;background:transparent;color:var(--ink);cursor:pointer;line-height:1.45}
+  .opt:last-child{margin-bottom:0}
+  .opt:hover{border-color:var(--accent)}
+  .opt.sel{border-color:var(--accent);background:var(--accent-bg)}
+  .opt.correct{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+  .opt.wrong{background:#F7ECEC;border-color:var(--miss);color:var(--miss)}
+  @media (prefers-color-scheme: dark){ .opt.wrong{background:#2E1E1E} }
+  .fb{font-size:13.5px;color:var(--muted);margin:10px 0 0;line-height:1.5;display:none}
+  .fb.show{display:block}
+  .checkRow{display:flex;align-items:center;gap:14px;margin:16px 0 0;flex-wrap:wrap}
+  .hint{font-size:13px;color:var(--miss)}
+  .done{display:none;align-items:center;gap:10px;background:var(--ok-bg);color:var(--ok);
+    border-radius:10px;padding:12px 16px;font-size:14px;margin:14px 0 0}
+  .done.show{display:flex}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">Lesson 01 · Estimation &amp; inference</p>
+  <h1>What a confidence interval actually claims<span class="chip" id="chip"></span></h1>
+  <p class="sub">The parameter is fixed. The interval is what's random. Watch — and derive — the difference.</p>
+  <div class="levels">
+    <span class="lk">Level</span>
+    <span class="pill"><b>US</b> Undergraduate (intro→intermediate)</span>
+    <span class="pill"><b>FR</b> Licence L2–L3</span>
+  </div>
+
+  <p class="lead">We know a truth the analyst doesn't: the population mean is <b>μ = 50</b>, with known <b>σ = 12</b>. Each sample of size <i>n</i> yields one interval. Any single interval either covers μ or it doesn't — no probability survives the computation. The confidence level lives entirely in the <i>procedure</i>.</p>
+
+  <div class="sec">The formula</div>
+  <div class="mblock math" data-tex="\left[\;\bar{x} \;-\; z_{\alpha/2}\,\dfrac{\sigma}{\sqrt{n}}\;,\quad \bar{x} \;+\; z_{\alpha/2}\,\dfrac{\sigma}{\sqrt{n}}\;\right]" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="\bar{x}=\frac1n\sum_i x_i"></span><span class="def">the <b>sample mean</b>, our point estimate of μ. <span class="n">It is random — a fresh sample moves it. This is the only quantity in the formula that changes from draw to draw.</span></span></li>
+    <li><span class="sym math" data-tex="\sigma"></span><span class="def">the <b>population standard deviation</b>, here assumed known. <span class="n">In practice you estimate it, which swaps the normal for a t-distribution — question 3 below.</span></span></li>
+    <li><span class="sym math" data-tex="\dfrac{\sigma}{\sqrt{n}}"></span><span class="def">the <b>standard error</b> — the SD of the sampling distribution of x̄. <span class="n">Precision improves only as √n, so halving the interval takes 4× the data.</span></span></li>
+    <li><span class="sym math" data-tex="z_{\alpha/2}"></span><span class="def">the <b>critical value</b> from the standard normal. <span class="n">95% → 1.96, 99% → 2.576. It sets how many standard errors wide the interval is.</span></span></li>
+    <li><span class="sym math" data-tex="1-\alpha"></span><span class="def">the <b>confidence level</b> — the long-run fraction of intervals that cover μ. <span class="n">Not the probability for any one interval.</span></span></li>
+  </ul>
+
+  <div class="sec">Where the 1−α comes from</div>
+  <p class="step">Because the mean of a normal sample is itself normal:</p>
+  <div class="mblock math" data-tex="\bar{x}\ \sim\ \mathcal{N}\!\left(\mu,\ \frac{\sigma^{2}}{n}\right)\qquad\Longrightarrow\qquad Z=\frac{\bar{x}-\mu}{\sigma/\sqrt{n}}\ \sim\ \mathcal{N}(0,1)" data-display="1"></div>
+  <p class="step">By definition of the critical value, the standard normal puts mass 1−α in the central band:</p>
+  <div class="mblock math" data-tex="\mathbb{P}\!\left(-z_{\alpha/2}\ \le\ Z\ \le\ z_{\alpha/2}\right)=1-\alpha" data-display="1"></div>
+  <p class="step">Substitute Z and rearrange the inequality to isolate μ — note the move: μ stays fixed while the <i>endpoints</i> carry all the randomness:</p>
+  <div class="mblock math" data-tex="\mathbb{P}\!\left(\bar{x}-z_{\alpha/2}\tfrac{\sigma}{\sqrt{n}}\ \le\ \mu\ \le\ \bar{x}+z_{\alpha/2}\tfrac{\sigma}{\sqrt{n}}\right)=1-\alpha" data-display="1"></div>
+
+  <div class="panel curveWrap">
+    <svg id="curve" viewBox="0 0 520 170" role="img" aria-label="Standard normal density with the central 1 minus alpha region shaded"></svg>
+    <p class="curveCap" id="curveCap"></p>
+  </div>
+
+  <div class="sec">See it — the procedure in the long run</div>
+  <div class="panel">
+    <div class="ctrls">
+      <div class="field">
+        <label>sample size <i>n</i> <b id="nOut">30</b></label>
+        <input type="range" id="n" min="5" max="200" value="30" step="1" />
+      </div>
+      <div class="field" style="max-width:170px;flex:0 0 170px">
+        <label for="conf">confidence level</label>
+        <select id="conf">
+          <option value="1.6449">90%</option>
+          <option value="1.9600" selected>95%</option>
+          <option value="2.5758">99%</option>
+        </select>
+      </div>
+    </div>
+    <div class="btns">
+      <button class="act" id="one">Draw one</button>
+      <button class="act primary" id="hundred">Run 100</button>
+      <button class="act" id="reset">Reset</button>
+    </div>
+    <svg id="plot" viewBox="0 0 680 400" role="img" aria-label="Confidence intervals plotted against the fixed true mean"></svg>
+    <div class="tally">
+      <div class="stat"><div class="k">nominal</div><div class="v" id="nom">95%</div></div>
+      <div class="stat"><div class="k">covered / total</div><div class="v" id="ct">0 / 0</div></div>
+      <div class="stat"><div class="k">empirical coverage</div><div class="v" id="emp">—</div></div>
+    </div>
+    <p class="callout" id="note">Change n or the confidence level and the batch is redrawn under the new settings — widths change, coverage doesn't.</p>
+  </div>
+
+  <div class="theorem">
+    <p class="lbl">The precise statement</p>
+    <p>A 1−α confidence procedure produces a random interval [L(X), U(X)] with P( L(X) ≤ μ ≤ U(X) ) = 1−α, the probability taken over the sampling of the data with μ fixed. It describes the method's long-run behaviour, never a single computed interval.</p>
+  </div>
+
+  <div class="vol">
+    <p class="lbl">Why this matters · volarixs</p>
+    <p>This is the parametric ancestor of the conformal guarantee you're wiring in through MAPIE. A classical CI gives <b>marginal</b> coverage for a fixed parameter μ: <code>P(μ ∈ [L,U]) = 1−α</code> over the sampling. Split conformal gives the same shape one level up, for a fresh prediction: <code>P(Y ∈ Ĉ(X)) ≥ 1−α</code>, marginal over the exchangeable data — but distribution-free and with no "σ known" assumption.</p>
+    <p>Same logic in both: the guarantee is <b>over the draw, not conditional on the specific point</b> — which is exactly the marginal-vs-conditional distinction you already nailed on the placement quiz. The CI assumes normality and known σ to get an exact 1−α; conformal drops both and pays with ≥ instead of =. Seeing them as one claim at two rigour levels is the transferable idea.</p>
+  </div>
+
+  <div class="sec">Check yourself</div>
+  <div class="q" id="q1"><p class="stem">You run the procedure once and obtain [46.1, 53.9]. Which statement is correct?</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q2"><p class="stem">Same data, but you raise the confidence level from 95% to 99%. The interval becomes:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q3"><p class="stem">In practice σ is unknown, so you plug in the sample SD s. The correct interval then uses:</p><div class="opts"></div><p class="fb"></p></div>
+
+  <div class="checkRow">
+    <button class="act primary" id="check">Check answers</button>
+    <span class="hint" id="hint" style="display:none">Select an answer for all three first.</span>
+  </div>
+  <div class="done" id="done">Lesson complete — saved. Next up: estimators, bias, and the n vs n−1 story.</div>
+</div>
+
+<script>
+/* storage shim: window.storage (Claude artifacts) or localStorage (web) */
+if(!window.storage){window.storage={async get(k){const v=localStorage.getItem(k);if(v==null)throw new Error('missing');return{key:k,value:v}},async set(k,v){localStorage.setItem(k,v);return{key:k,value:v}},async delete(k){localStorage.removeItem(k);return{key:k,deleted:true}},async list(p){const ks=[];for(let i=0;i<localStorage.length;i++){const kk=localStorage.key(i);if(!p||kk.startsWith(p))ks.push(kk)}return{keys:ks}}};}
+/* ---------- math typesetting (resilient) ---------- */
+function renderMath(){
+  document.querySelectorAll('.math').forEach(el=>{
+    const tex=el.getAttribute('data-tex'); if(!tex||el.dataset.done)return;
+    try{ if(window.katex){ katex.render(tex,el,{displayMode:el.dataset.display==='1',throwOnError:false}); el.dataset.done='1'; }
+         else { el.textContent=tex; } }
+    catch(e){ el.textContent=tex; }
+  });
+}
+
+/* ---------- sampling-distribution curve ---------- */
+function renderCurve(z, levelPct){
+  const W=520,H=170,padL=20,padR=20,padT=14,padB=30, iw=W-padL-padR, ih=H-padT-padB;
+  const xmin=-3.6,xmax=3.6, base=H-padB;
+  const X=x=>padL+((x-xmin)/(xmax-xmin))*iw;
+  const g=x=>Math.exp(-x*x/2), peak=g(0);
+  const Y=y=>padT+(1-y/peak)*ih;
+  const pts=[]; for(let i=0;i<=160;i++){const x=xmin+(i/160)*(xmax-xmin);pts.push([X(x),Y(g(x))]);}
+  const line=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+  // shaded central band [-z, z]
+  const bp=[]; for(let i=0;i<=120;i++){const x=-z+(i/120)*(2*z);bp.push([X(x),Y(g(x))]);}
+  const area='M'+X(-z).toFixed(1)+' '+base+' '+bp.map(p=>'L'+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ')+' L'+X(z).toFixed(1)+' '+base+' Z';
+  let s='';
+  s+=`<line x1="${padL}" y1="${base}" x2="${W-padR}" y2="${base}" stroke="var(--hair2)" stroke-width="1"/>`;
+  s+=`<path d="${area}" fill="var(--accent)" opacity="0.16"/>`;
+  s+=`<path d="${line}" fill="none" stroke="var(--accent)" stroke-width="1.8"/>`;
+  [[-z,'−z'],[z,'+z']].forEach(([x,lab])=>{
+    s+=`<line x1="${X(x)}" y1="${Y(g(x))}" x2="${X(x)}" y2="${base}" stroke="var(--accent)" stroke-width="1" stroke-dasharray="3 3"/>`;
+    s+=`<text x="${X(x)}" y="${base+18}" text-anchor="middle" font-family="var(--mono)" font-size="11" fill="var(--muted)">${lab} = ${(x<0?'−':'')}${Math.abs(x).toFixed(2)}</text>`;
+  });
+  s+=`<text x="${X(0)}" y="${Y(peak)+ -6+16}" text-anchor="middle" font-family="var(--mono)" font-size="12" fill="var(--accent)">area = ${levelPct}</text>`;
+  document.getElementById('curve').innerHTML=s;
+  document.getElementById('curveCap').textContent=`The shaded central band of the standard normal holds probability ${levelPct}. Its edges are ±z; that z is the multiplier in the formula. Raise the level → the band (and the interval) must widen.`;
+}
+
+/* ---------- coverage simulator ---------- */
+const S={intervals:[],covered:0};
+const MU=50,SIGMA=12,PW=680,PH=400,PADL=44,PADR=20,PADT=18,PADB=34;
+const innerW=PW-PADL-PADR, innerH=PH-PADT-PADB;
+const LEVELS={'1.6449':'90%','1.9600':'95%','2.5758':'99%'};
+const z=()=>parseFloat(document.getElementById('conf').value);
+const nVal=()=>parseInt(document.getElementById('n').value,10);
+function randn(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+function drawSamples(k){
+  const n=nVal(),zz=z(),se=SIGMA/Math.sqrt(n),h=zz*se;
+  for(let i=0;i<k;i++){let s=0;for(let j=0;j<n;j++)s+=MU+SIGMA*randn();const xbar=s/n,cov=Math.abs(xbar-MU)<=h;S.intervals.push({xbar,h,cov});if(cov)S.covered++;}
+  if(S.intervals.length>300){const over=S.intervals.length-300;for(let i=0;i<over;i++)if(S.intervals[i].cov)S.covered--;S.intervals.splice(0,over);}
+  renderPlot();
+}
+function renderPlot(){
+  const zz=z(),n=nVal(),se=SIGMA/Math.sqrt(n),R=(zz+3.7)*se,lo=MU-R,hi=MU+R;
+  const X=v=>PADL+((v-lo)/(hi-lo))*innerW, count=S.intervals.length, rowH=count?Math.min(7,innerH/count):7, y0=PH-PADB;
+  let s='';
+  s+=`<line x1="${PADL}" y1="${y0}" x2="${PW-PADR}" y2="${y0}" stroke="var(--hair2)" stroke-width="1"/>`;
+  [lo,MU,hi].forEach(v=>{s+=`<line x1="${X(v)}" y1="${y0}" x2="${X(v)}" y2="${y0+5}" stroke="var(--hair2)" stroke-width="1"/><text x="${X(v)}" y="${y0+18}" text-anchor="middle" font-family="var(--mono)" font-size="11" fill="var(--faint)">${v.toFixed(1)}</text>`;});
+  s+=`<line x1="${X(MU)}" y1="${PADT-4}" x2="${X(MU)}" y2="${y0}" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="4 4"/><text x="${X(MU)}" y="${PADT-6}" text-anchor="middle" font-family="var(--mono)" font-size="11" fill="var(--accent)">μ = 50</text>`;
+  S.intervals.forEach((iv,idx)=>{
+    const y=PADT+idx*rowH+rowH/2,x1=X(iv.xbar-iv.h),x2=X(iv.xbar+iv.h),xc=X(iv.xbar),col=iv.cov?'var(--cover)':'var(--miss)',w=iv.cov?1.4:2,op=count>120?0.85:1;
+    s+=`<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="${col}" stroke-width="${w}" opacity="${op}"/>`;
+    if(rowH>=4)s+=`<circle cx="${xc}" cy="${y}" r="${Math.min(1.6,rowH/3)}" fill="${col}" opacity="${op}"/>`;
+  });
+  document.getElementById('plot').innerHTML=s;
+  document.getElementById('nom').textContent=LEVELS[z().toString()]||'95%';
+  document.getElementById('ct').textContent=`${S.covered} / ${count}`;
+  document.getElementById('emp').textContent=count?(100*S.covered/count).toFixed(1)+'%':'—';
+  if(count>=20){document.getElementById('note').textContent=`Empirical coverage sits near the nominal ${document.getElementById('nom').textContent}. Change n and it stays there while the widths change; change the level and both the widths and the band above move together. The level is a property of the procedure, not of any one interval.`;}
+}
+function resetSim(){S.intervals=[];S.covered=0;renderPlot();document.getElementById('note').textContent='Change n or the confidence level and the batch is redrawn under the new settings — widths change, coverage doesn\u2019t.';}
+function syncCurve(){renderCurve(z(), LEVELS[z().toString()]||'95%');}
+
+document.getElementById('n').addEventListener('input',e=>{document.getElementById('nOut').textContent=e.target.value;});
+document.getElementById('n').addEventListener('change',()=>{const had=S.intervals.length;S.intervals=[];S.covered=0;drawSamples(had>0?Math.min(had,100)||100:100);});
+document.getElementById('conf').addEventListener('change',()=>{const had=S.intervals.length;S.intervals=[];S.covered=0;syncCurve();drawSamples(had>0?Math.min(had,100)||100:100);});
+document.getElementById('one').onclick=()=>drawSamples(1);
+document.getElementById('hundred').onclick=()=>drawSamples(100);
+document.getElementById('reset').onclick=resetSim;
+
+/* ---------- retrieval (deferred validation) ---------- */
+const QS={
+  q1:{opts:["There is a 95% probability the true mean lies in [46.1, 53.9].","If the whole procedure were repeated many times, about 95% of the intervals produced would contain the true mean.","95% of future observations will fall inside [46.1, 53.9].","The true mean is definitely close to 50."],a:1,
+    fb:"Once computed, the interval either covers μ or it doesn't — the randomness was in the sampling, so 95% is a property of the method. Option 3 is a prediction interval, a different object."},
+  q2:{opts:["Narrower","Wider","Unchanged","Shifted left"],a:1,
+    fb:"Higher confidence needs a larger multiplier (z: 1.96 → 2.576), so the half-width z·σ/√n grows. More coverage bought with less precision — the band in the curve above widens too."},
+  q3:{opts:["The same z critical value","A t-distribution value t_{α/2, n−1}, giving a slightly wider interval","No change at all","A chi-square critical value"],a:1,
+    fb:"Estimating σ injects extra uncertainty, so the pivot follows Student's t with n−1 degrees of freedom — heavier tails, so a wider interval. As n grows, t → z and the difference vanishes."}
+};
+const sel={q1:null,q2:null,q3:null};
+let revealed=false;
+Object.keys(QS).forEach(id=>{
+  const holder=document.querySelector('#'+id+' .opts');
+  QS[id].opts.forEach((txt,i)=>{
+    const b=document.createElement('button');b.className='opt';b.textContent=String.fromCharCode(65+i)+'.  '+txt;
+    b.onclick=()=>{ if(revealed)return; sel[id]=i; [...holder.children].forEach((c,ci)=>c.classList.toggle('sel',ci===i)); document.getElementById('hint').style.display='none'; };
+    holder.appendChild(b);
+  });
+});
+document.getElementById('check').onclick=async()=>{
+  if(revealed)return;
+  if(sel.q1===null||sel.q2===null||sel.q3===null){document.getElementById('hint').style.display='inline';return;}
+  revealed=true; let score=0;
+  Object.keys(QS).forEach(id=>{
+    const a=QS[id].a,holder=document.querySelector('#'+id+' .opts'),fb=document.querySelector('#'+id+' .fb');
+    [...holder.children].forEach((c,ci)=>{c.style.cursor='default';c.classList.remove('sel');if(ci===a)c.classList.add('correct');else if(ci===sel[id])c.classList.add('wrong');});
+    if(sel[id]===a)score++; fb.textContent=QS[id].fb; fb.classList.add('show');
+  });
+  document.getElementById('check').style.opacity='0.5';document.getElementById('check').textContent='Checked · '+score+'/3';
+  document.getElementById('done').classList.add('show');
+  try{ await window.storage.set('mfs:lesson01',JSON.stringify({done:true,retrieval:score+'/3',ts:Date.now()}),false); }catch(e){}
+};
+
+/* ---------- init ---------- */
+function boot(){ renderMath(); syncCurve(); drawSamples(100); }
+if(window.katex) boot(); else window.addEventListener('load',boot);
+(async()=>{ try{ const r=await window.storage.get('mfs:lesson01',false); if(r&&r.value){const v=JSON.parse(r.value); if(v.done){const c=document.getElementById('chip');c.classList.add('show');c.textContent='completed · '+v.retrieval;}} }catch(e){} })();
+</script>
+</body>
+</html>

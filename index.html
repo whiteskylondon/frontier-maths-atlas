@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The Atlas of Frontier-AI Mathematics</title>
+<style>
+  :root{
+    --paper:#FAFAF6;--ink:#1A1C22;--muted:#63676E;--faint:#9A9EA4;--hair:#E4E3DB;--hair2:#D4D3CA;--panel:#FFFFFF;
+    --accent:#24507A;--accent-bg:#EAF0F6;--series:#B07A2E;--ok:#2F6B4F;--ok-bg:#E9F1EC;
+    --serif:Iowan Old Style,Palatino,Georgia,serif;--sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme:dark){:root{--paper:#141519;--ink:#E9E8E2;--muted:#A2A6AC;--faint:#6E727A;--hair:#26282E;--hair2:#34363C;--panel:#1A1C21;--accent:#7FB0E0;--accent-bg:#1E2A38;--series:#D9A85E;--ok:#7FC49F;--ok-bg:#1C2A22;}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:820px;margin:0 auto;padding:34px 22px 60px}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
+  h1{font-family:var(--serif);font-weight:600;font-size:32px;line-height:1.14;margin:0 0 8px;letter-spacing:-.015em}
+  .tag{color:var(--muted);font-size:15px;margin:0 0 22px;max-width:60ch}
+  .prog{background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:16px 18px;margin:0 0 10px}
+  .prog .top{display:flex;justify-content:space-between;align-items:baseline;font-family:var(--mono);font-size:12.5px;color:var(--muted);margin:0 0 8px}
+  .prog .top b{color:var(--ink);font-size:15px}
+  .bar{height:8px;border-radius:6px;background:var(--hair);overflow:hidden}
+  .bar>div{height:100%;background:var(--accent);width:0;transition:width .5s}
+  .note{font-size:12.5px;color:var(--faint);margin:8px 0 26px;font-family:var(--mono)}
+  .wing{margin:0 0 8px;border:1px solid var(--hair);border-radius:12px;overflow:hidden}
+  .wing>summary{cursor:pointer;list-style:none;padding:14px 18px;display:flex;align-items:center;gap:12px;background:var(--panel)}
+  .wing>summary::-webkit-details-marker{display:none}
+  .wing .wn{font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:700;letter-spacing:.05em;flex:0 0 auto}
+  .wing .wt{font-family:var(--serif);font-size:17px;font-weight:600}
+  .wing .wc{margin-left:auto;font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+  .chev{transition:transform .2s;color:var(--faint)}
+  details[open] .chev{transform:rotate(90deg)}
+  .lessons{padding:4px 12px 12px}
+  .les{display:flex;align-items:center;gap:12px;padding:10px 8px;border-top:1px solid var(--hair)}
+  .les:first-child{border-top:none}
+  .dot{flex:0 0 auto;width:11px;height:11px;border-radius:50%;border:1.5px solid var(--hair2)}
+  .dot.done{background:var(--ok);border-color:var(--ok)}
+  .dot.built{background:var(--accent);border-color:var(--accent)}
+  .les .n{font-family:var(--mono);font-size:12px;color:var(--muted);flex:0 0 34px}
+  .les .t{font-size:14px;flex:1;min-width:0}
+  .les .t a{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--hair2)}
+  .les .t a:hover{color:var(--accent);border-bottom-color:var(--accent)}
+  .les .t .planned{color:var(--faint)}
+  .les .lvl{font-family:var(--mono);font-size:10.5px;color:var(--muted);background:var(--paper);border:1px solid var(--hair);border-radius:20px;padding:2px 8px;white-space:nowrap;flex:0 0 auto}
+  .les .sc{font-family:var(--mono);font-size:11px;color:var(--ok);flex:0 0 auto;min-width:42px;text-align:right}
+  .foot{font-size:13px;color:var(--muted);margin:26px 0 0;border-top:1px solid var(--hair);padding-top:16px}
+  .legend{display:flex;gap:18px;flex-wrap:wrap;font-family:var(--mono);font-size:11.5px;color:var(--muted);margin:14px 0 0}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">An explorable atlas · bespoke maths track</p>
+  <h1>The Atlas of Frontier-AI Mathematics</h1>
+  <p class="tag">Every core idea behind modern AI, rendered as something you can manipulate and watch recompute — at real formal depth. Built in wings; each lesson is its own self-contained interactive page. This page is the map and the tracker: click any built lesson to open it.</p>
+
+  <div class="prog">
+    <div class="top"><span>completion of built lessons</span><b id="pcount">— / —</b></div>
+    <div class="bar"><div id="pbar"></div></div>
+  </div>
+  <p class="note" id="pnote">progress syncs from each lesson you complete</p>
+
+  <div id="wings"></div>
+
+  <div class="legend">
+    <span><i class="dot done" style="width:11px;height:11px"></i>completed</span>
+    <span><i class="dot built" style="width:11px;height:11px"></i>built · not yet done</span>
+    <span><i class="dot" style="width:11px;height:11px"></i>planned</span>
+  </div>
+  <p class="foot">Lesson titles link to their files when everything lives in one folder (this repo, or the deployed site). Progress is stored locally — per browser on the web, per conversation inside Claude — so each environment keeps its own tracker. Wings III onward are the build queue; the maths gets progressively deeper and closer to the live research frontier as you descend.</p>
+</div>
+
+<script>
+/* storage shim — window.storage (Claude artifacts) or localStorage (GitHub Pages / local file) */
+if(!window.storage){window.storage={async get(k){const v=localStorage.getItem(k);if(v==null)throw new Error('missing');return{key:k,value:v}},async set(k,v){localStorage.setItem(k,v);return{key:k,value:v}},async delete(k){localStorage.removeItem(k);return{key:k,deleted:true}},async list(p){const ks=[];for(let i=0;i<localStorage.length;i++){const kk=localStorage.key(i);if(!p||kk.startsWith(p))ks.push(kk)}return{keys:ks}}};}
+
+const WINGS=[
+ {n:"0", t:"Statistical & linear-algebra foundations", les:[
+   {id:"lesson01",n:"L1",t:"What a confidence interval actually claims",lvl:"UG intro→int / L2–L3",built:1,f:"lesson-01-confidence-intervals.html"},
+   {id:"lesson02",n:"L2",t:"Estimators, bias, and the n−1 story",lvl:"UG adv / L3–M1 · ENSAE 1A",built:1,f:"lesson-02-estimator-bias.html"},
+   {id:"lesson03",n:"L3",t:"Maximum likelihood, done properly",lvl:"Sr UG→grad / M1 · ENSAE 2A",built:1,f:"lesson-03-mle.html"},
+   {id:"lesson04",n:"L4",t:"Conditional expectation as a projection",lvl:"Adv UG→grad / M1–M2",built:1,f:"lesson-04-conditional-expectation.html"},
+   {id:"lesson05",n:"L5",t:"Least squares in matrix form (XᵀX)",lvl:"Grad · ML / M2 · ENSAE 3A",built:1,f:"lesson-05-least-squares-matrix.html"},
+   {id:"lesson06",n:"L6",t:"Matrix fundamentals: inner products & eigenvectors",lvl:"UG core / L1–L2 · prépa",built:1,f:"lesson-06-matrix-fundamentals.html"},
+   {n:"—",t:"Supplement: XᵀX at the intersection (Falk-layout demo)",lvl:"UG core / L1–L2",built:1,f:"xtx-symmetry-demo.html",supp:true},
+   {id:"lesson07",n:"L7",t:"The Cross-Matrix, statistically (applied)",lvl:"Grad · quant / M2 · ENSAE 3A",built:1,f:"lesson-07-crossmatrix-statistics.html"},
+ ]},
+ {n:"I", t:"The linear-algebra substrate", les:[
+   {id:"lesson08",n:"L8",t:"SVD & low-rank structure",lvl:"Adv UG→grad / L3–M1 · ENSAE 2A",built:1,f:"lesson-08-svd.html"},
+   {id:"lesson10",n:"L10",t:"Geometry of high-dimensional embeddings",lvl:"Grad / M2 · ENSAE 3A",built:1,f:"lesson-10-high-dim-geometry.html"},
+   {id:"lesson11",n:"L11",t:"Tensors & the einsum world",lvl:"Adv UG→grad / M1 · ENSAE 2A",built:1,f:"lesson-11-tensors-einsum.html"},
+   {id:"lesson12",n:"L12",t:"Fast matrix multiplication — Strassen → AlphaTensor",lvl:"Grad / M2–PhD",built:1,f:"lesson-12-fast-matmul.html"},
+ ]},
+ {n:"II", t:"The optimization engine", les:[
+   {id:"lesson09",n:"L9",t:"Gradient descent → SGD → momentum → Adam",lvl:"Adv UG→grad · ML / M1–M2",built:1,f:"lesson-09-optimization.html"},
+   {id:"lesson13",n:"L13",t:"Backprop as autodiff — the chain rule as a computation graph",lvl:"Adv UG→grad / M1 · ENSAE 2A",built:1,f:"lesson-13-backprop-autodiff.html"},
+   {id:"lesson14",n:"L14",t:"Convexity, saddle points & the reparameterization trick",lvl:"Grad / M2 · ENSAE 3A",built:1,f:"lesson-14-convexity-reparam.html"},
+ ]},
+ {n:"III", t:"Probability & information", les:[
+   {id:"lesson15",n:"L15",t:"Entropy, cross-entropy, KL — the loss is a negative log-likelihood",lvl:"Adv UG→grad / M1–M2",built:1,f:"lesson-15-entropy-crossentropy-kl.html"},
+   {n:"L16",t:"The information bottleneck",lvl:"Grad / M2–PhD"},
+ ]},
+ {n:"IV", t:"Inside the transformer", les:[
+   {n:"L17",t:"Scaled dot-product attention — softmax, Q/K/V mechanics",lvl:"Grad · ML / M2 · ENSAE 3A"},
+   {n:"L18",t:"Rotary positional encodings (RoPE)",lvl:"Grad / M2"},
+   {n:"L19",t:"The residual stream, LayerNorm & RMSNorm",lvl:"Grad / M2"},
+   {n:"L20",t:"Embeddings as directions & superposition",lvl:"Grad / M2–PhD"},
+ ]},
+ {n:"V", t:"Training-dynamics mysteries", les:[
+   {n:"L21",t:"Scaling laws — power laws & compute-optimal training",lvl:"Grad / M2"},
+   {n:"L22",t:"Double descent",lvl:"Grad / M2–PhD"},
+   {n:"L23",t:"Grokking",lvl:"Grad / M2–PhD"},
+   {n:"L24",t:"Emergence as phase transitions",lvl:"Grad / M2–PhD"},
+   {n:"L25",t:"The neural tangent kernel & the lazy regime",lvl:"PhD / M2 advanced"},
+ ]},
+ {n:"VI", t:"Generative machinery", les:[
+   {n:"L26",t:"Diffusion as SDEs + score matching",lvl:"Grad / M2–PhD"},
+   {n:"L27",t:"Flow matching & continuous normalizing flows",lvl:"Grad / M2–PhD"},
+   {n:"L28",t:"VAEs & the ELBO",lvl:"Grad · ML / M2"},
+   {n:"L29",t:"GAN minimax as a two-player game",lvl:"Grad / M2"},
+ ]},
+ {n:"VII", t:"The reinforcement-learning spine", les:[
+   {n:"L30",t:"MDPs & Bellman equations",lvl:"Grad · ML / M2"},
+   {n:"L31",t:"Policy gradients / REINFORCE",lvl:"Grad / M2"},
+   {n:"L32",t:"Actor-critic",lvl:"Grad / M2"},
+   {n:"L33",t:"PPO trust regions — the KL constraint",lvl:"Grad / M2–PhD"},
+   {n:"L34",t:"MCTS — the AlphaGo/AlphaZero core",lvl:"Grad / M2"},
+   {n:"L35",t:"RLHF — KL-regularized reward over Bradley-Terry",lvl:"Grad / M2–PhD"},
+   {n:"L36",t:"The closed forms behind DPO & GRPO",lvl:"Grad / M2–PhD"},
+ ]},
+ {n:"VIII", t:"The live frontier", les:[
+   {n:"L37",t:"State-space models — Mamba/S4, the selective scan",lvl:"Grad / M2–PhD"},
+   {n:"L38",t:"Mixture-of-experts routing & load balancing",lvl:"Grad / M2"},
+   {n:"L39",t:"Test-time compute & the maths of chain-of-thought",lvl:"Grad / M2–PhD"},
+   {n:"L40",t:"In-context learning as implicit optimization",lvl:"PhD / M2 advanced"},
+   {n:"L41",t:"Mechanistic interpretability & the linear representation hypothesis",lvl:"Grad / M2–PhD"},
+   {n:"L42",t:"Formal proof search à la AlphaProof (RL over Lean)",lvl:"Grad / M2–PhD"},
+ ]},
+ {n:"IX", t:"The deep theory floor", les:[
+   {n:"L43",t:"Statistical learning theory — PAC, VC, Rademacher",lvl:"PhD / M2 advanced"},
+   {n:"L44",t:"Bias–variance & why deep nets shouldn't generalize but do",lvl:"Grad / M2–PhD"},
+   {n:"L45",t:"The manifold hypothesis",lvl:"Grad / M2"},
+   {n:"L46",t:"Geometric deep learning & equivariance (SE(3))",lvl:"Grad / M2–PhD"},
+   {n:"L47",t:"Optimal transport & the Wasserstein distance",lvl:"Grad / M2–PhD"},
+ ]},
+];
+
+const cont=document.getElementById('wings');
+let builtTotal=0;
+WINGS.forEach((w,wi)=>{
+  const det=document.createElement('details');det.className='wing';if(wi<4)det.open=true;
+  const built=w.les.filter(l=>l.built&&!l.supp).length;const total=w.les.filter(l=>!l.supp).length;
+  det.innerHTML=`<summary><span class="wn">${w.n}</span><span class="wt">${w.t}</span><span class="wc">${built?built+' built · ':''}${total} lessons</span><span class="chev">▸</span></summary>`;
+  const box=document.createElement('div');box.className='lessons';
+  w.les.forEach(l=>{
+    if(l.built&&l.id)builtTotal++;
+    const row=document.createElement('div');row.className='les';
+    const title=l.built?(l.f?`<a href="${l.f}">${l.t}</a>`:l.t):`<span class="planned">${l.t}</span>`;
+    row.innerHTML=`<span class="dot ${l.built?'built':''}" ${l.id?`data-id="${l.id}"`:''}></span>`+
+      `<span class="n">${l.n}</span>`+
+      `<span class="t">${title}</span>`+
+      `<span class="lvl">${l.lvl}</span>`+
+      `<span class="sc" ${l.id?`data-sc="${l.id}"`:''}></span>`;
+    box.appendChild(row);
+  });
+  det.appendChild(box);cont.appendChild(det);
+});
+
+/* live completion from storage */
+(async()=>{
+  let done=0;
+  const ids=[...document.querySelectorAll('[data-id]')].map(e=>e.getAttribute('data-id'));
+  for(const id of ids){
+    try{const r=await window.storage.get('mfs:'+id,false);
+      if(r&&r.value){const v=JSON.parse(r.value);if(v.done){done++;
+        const dot=document.querySelector(`.dot[data-id="${id}"]`);dot.classList.remove('built');dot.classList.add('done');
+        const sc=document.querySelector(`.sc[data-sc="${id}"]`);if(sc&&v.retrieval)sc.textContent=v.retrieval;}}
+    }catch(e){}
+  }
+  document.getElementById('pcount').textContent=done+' / '+builtTotal;
+  document.getElementById('pbar').style.width=(builtTotal?100*done/builtTotal:0)+'%';
+  document.getElementById('pnote').textContent = done===0
+    ? `${builtTotal} lessons built and waiting · ${47-builtTotal} more mapped across the nine wings`
+    : done===builtTotal
+      ? `all ${builtTotal} built lessons complete — ${47-builtTotal} more mapped ahead`
+      : `${done} of ${builtTotal} built lessons complete · ${47-builtTotal} more mapped across the wings`;
+})();
+</script>
+</body>
+</html>

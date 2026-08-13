@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lesson 04 — Conditional expectation as a projection</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<style>
+  :root{
+    --paper:#FAFAF6; --ink:#1A1C22; --muted:#63676E; --faint:#9A9EA4;
+    --hair:#E4E3DB; --hair2:#D4D3CA; --panel:#FFFFFF;
+    --accent:#24507A; --accent-bg:#EAF0F6; --series:#B07A2E;
+    --miss:#B23A3A; --ok:#2F6B4F; --ok-bg:#E9F1EC;
+    --vol:#8A5A2B; --vol-bg:#F6EFE6;
+    --serif:Iowan Old Style,Palatino,"Palatino Linotype",Georgia,serif;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#15161A; --ink:#E9E8E2; --muted:#A2A6AC; --faint:#71757B;
+      --hair:#2A2C31; --hair2:#3A3C42; --panel:#1B1D22;
+      --accent:#7FB0E0; --accent-bg:#1E2A38; --series:#D9A85E;
+      --miss:#E07A7A; --ok:#7FC49F; --ok-bg:#1C2A22;
+      --vol:#D9A066; --vol-bg:#2A2115;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.62;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:740px;margin:0 auto;padding:32px 24px 60px}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 6px}
+  h1{font-family:var(--serif);font-weight:600;font-size:28px;line-height:1.2;margin:0 0 6px;letter-spacing:-.01em}
+  .chip{display:none;font-family:var(--mono);font-size:11px;letter-spacing:.05em;color:var(--ok);border:1px solid var(--ok);border-radius:20px;padding:3px 10px;vertical-align:middle;margin-left:10px}
+  .chip.show{display:inline-block}
+  .sub{color:var(--muted);font-size:15px;margin:0 0 18px}
+  .levels{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 26px}
+  .levels .lk{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+  .levels .pill{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-family:var(--mono);color:var(--muted);background:var(--panel);border:1px solid var(--hair2);border-radius:20px;padding:4px 11px}
+  .levels .pill b{color:var(--accent);font-weight:700;letter-spacing:.03em}
+  p.lead{font-size:16px;margin:0 0 22px}
+  p.lead b{font-weight:600}
+  .sec{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:34px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--hair)}
+  .mblock{margin:16px 0;overflow-x:auto}
+  .glo{list-style:none;padding:0;margin:14px 0 0}
+  .glo li{display:flex;gap:14px;padding:9px 0;border-top:1px solid var(--hair);align-items:baseline}
+  .glo li:first-child{border-top:none}
+  .glo .sym{flex:0 0 132px;text-align:right;padding-top:2px}
+  .glo .def{font-size:14.5px}
+  .glo .def .n{color:var(--muted)}
+  .step{font-size:14.5px;color:var(--muted);margin:10px 0}
+  .panel{background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:20px;margin:14px 0}
+  .seg{display:inline-flex;border:1px solid var(--hair2);border-radius:9px;overflow:hidden;margin:0 0 14px}
+  .seg button{font-family:var(--sans);font-size:13.5px;padding:8px 14px;border:none;background:var(--panel);color:var(--muted);cursor:pointer;border-right:1px solid var(--hair2)}
+  .seg button:last-child{border-right:none}
+  .seg button.on{background:var(--accent);color:#fff}
+  .ctrls{display:flex;flex-wrap:wrap;gap:18px 28px;align-items:flex-end;margin:0 0 12px}
+  .field{display:flex;flex-direction:column;gap:6px;min-width:150px;flex:1}
+  .field label{font-size:12px;color:var(--muted);font-family:var(--mono);letter-spacing:.03em;display:flex;justify-content:space-between}
+  .field label b{color:var(--ink);font-weight:600}
+  input[type=range]{width:100%;accent-color:var(--accent);height:20px}
+  .btns{display:flex;flex-wrap:wrap;gap:8px;margin:2px 0 12px}
+  button.act{font-family:var(--sans);font-size:14px;padding:8px 14px;border-radius:8px;border:1px solid var(--hair2);background:var(--panel);color:var(--ink);cursor:pointer}
+  button.act:hover{border-color:var(--accent);color:var(--accent)}
+  svg{max-width:100%;height:auto;display:block}
+  .tally{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 2px}
+  .stat{flex:1;min-width:110px;background:var(--paper);border-radius:9px;padding:9px 12px}
+  .stat .k{font-size:11px;font-family:var(--mono);letter-spacing:.04em;color:var(--muted);text-transform:uppercase}
+  .stat .v{font-size:20px;font-weight:600;font-family:var(--mono);margin-top:2px}
+  .stat .v.warn{color:var(--series)} .stat .v.good{color:var(--ok)}
+  .callout{font-size:14px;color:var(--muted);border-left:2px solid var(--accent);padding:2px 0 2px 14px;margin:16px 0 2px}
+  .theorem{background:var(--accent-bg);border-radius:12px;padding:18px 20px;margin:16px 0}
+  .theorem .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
+  .theorem p{font-family:var(--serif);font-size:16.5px;line-height:1.55;margin:0}
+  .twist{border:1px dashed var(--hair2);border-radius:12px;padding:16px 18px;margin:16px 0;background:var(--panel)}
+  .twist .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+  .twist p{margin:0;font-size:14.6px}
+  .vol{background:var(--vol-bg);border:1px solid var(--vol);border-radius:12px;padding:18px 20px;margin:16px 0}
+  .vol .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:var(--vol);margin:0 0 8px}
+  .vol p{margin:0 0 10px;font-size:14.8px}
+  .vol p:last-child{margin-bottom:0}
+  .vol code{font-family:var(--mono);font-size:13px;background:rgba(138,90,43,.12);padding:1px 5px;border-radius:4px}
+  .q{border:1px solid var(--hair);border-radius:12px;padding:16px 18px;margin:12px 0;background:var(--panel)}
+  .q .stem{font-size:15px;font-weight:500;margin:0 0 12px}
+  .opt{display:block;width:100%;text-align:left;font-size:14px;padding:10px 12px;margin:0 0 8px;border:1px solid var(--hair2);border-radius:8px;background:transparent;color:var(--ink);cursor:pointer;line-height:1.45}
+  .opt:last-child{margin-bottom:0}
+  .opt:hover{border-color:var(--accent)}
+  .opt.sel{border-color:var(--accent);background:var(--accent-bg)}
+  .opt.correct{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+  .opt.wrong{background:#F7ECEC;border-color:var(--miss);color:var(--miss)}
+  @media (prefers-color-scheme: dark){ .opt.wrong{background:#2E1E1E} }
+  .fb{font-size:13.5px;color:var(--muted);margin:10px 0 0;line-height:1.5;display:none}
+  .fb.show{display:block}
+  .checkRow{display:flex;align-items:center;gap:14px;margin:16px 0 0;flex-wrap:wrap}
+  .hint{font-size:13px;color:var(--miss);display:none}
+  .done{display:none;align-items:center;gap:10px;background:var(--ok-bg);color:var(--ok);border-radius:10px;padding:12px 16px;font-size:14px;margin:14px 0 0}
+  .done.show{display:flex}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">Lesson 04 · Estimation &amp; inference</p>
+  <h1>Conditional expectation as a projection<span class="chip" id="chip"></span></h1>
+  <p class="sub">The best predictor of Y from X, and why that sentence is geometry.</p>
+  <div class="levels">
+    <span class="lk">Level</span>
+    <span class="pill"><b>US</b> Advanced undergrad → graduate</span>
+    <span class="pill"><b>FR</b> Master M1–M2 · ENSAE 2A–3A</span>
+  </div>
+
+  <p class="lead">Ask for the function of X that predicts Y with the smallest mean squared error. The answer is <b>E[Y|X]</b> — and the reason is a picture: think of random variables as vectors, MSE as squared distance, and "functions of X" as a flat subspace. The best predictor is then just the <b>closest point in that subspace</b> — the orthogonal projection of Y onto it. Everything below is that one idea, made literal.</p>
+
+  <div class="sec">The claim, and the geometry</div>
+  <div class="mblock math" data-tex="g^{\star}(X)=\mathbb{E}[Y\mid X]=\arg\min_{g}\ \mathbb{E}\big[(Y-g(X))^{2}\big]" data-display="1"></div>
+  <p class="step">Give the space of random variables an inner product and the words "length", "angle", "distance" all acquire meaning:</p>
+  <div class="mblock math" data-tex="\langle U,V\rangle=\mathbb{E}[UV]\qquad \|U\|^{2}=\mathbb{E}[U^{2}]\qquad \operatorname{dist}(Y,g)^{2}=\mathbb{E}[(Y-g)^{2}]=\text{MSE}" data-display="1"></div>
+  <p class="step">The defining property — the residual is orthogonal to <i>every</i> function of X (there's no predictable structure left to use):</p>
+  <div class="mblock math" data-tex="\mathbb{E}\big[\,(Y-\mathbb{E}[Y\mid X])\,h(X)\,\big]=0\qquad\text{for every }h" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="\mathbb{E}[Y\mid X]"></span><span class="def">the <b>conditional expectation</b> — itself a random variable, a function of X. <span class="n">The projection of Y onto the subspace of all functions of X.</span></span></li>
+    <li><span class="sym math" data-tex="\langle U,V\rangle=\mathbb{E}[UV]"></span><span class="def">the <b>inner product</b>. <span class="n">Uncorrelated (mean-zero) variables are orthogonal; MSE is squared distance under it.</span></span></li>
+    <li><span class="sym math" data-tex="Y-\mathbb{E}[Y\mid X]"></span><span class="def">the <b>residual</b> — the part of Y unpredictable from X. <span class="n">Orthogonal to the whole subspace, by construction.</span></span></li>
+    <li><span class="sym math" data-tex="h(X)"></span><span class="def">any predictor built from X. <span class="n">Constants, lines, curves — the richer the family, the bigger the subspace.</span></span></li>
+  </ul>
+
+  <div class="sec">Why the projection wins — one line of Pythagoras</div>
+  <p class="step">Take any predictor g(X) and insert ± E[Y|X]. The cross term dies by orthogonality, leaving a sum of squares:</p>
+  <div class="mblock math" data-tex="\mathbb{E}[(Y-g)^{2}]=\underbrace{\mathbb{E}[(Y-\mathbb{E}[Y\mid X])^{2}]}_{\text{fixed floor}}+\underbrace{\mathbb{E}[(\mathbb{E}[Y\mid X]-g)^{2}]}_{\ge 0}" data-display="1"></div>
+  <p class="step">The second term is smallest — zero — exactly when g = E[Y|X]. Same algebra gives the <b>law of total variance</b>, which is Pythagoras with Y decomposed into signal + noise:</p>
+  <div class="mblock math" data-tex="\operatorname{Var}(Y)=\underbrace{\operatorname{Var}\big(\mathbb{E}[Y\mid X]\big)}_{\text{explained}}+\underbrace{\mathbb{E}\big[\operatorname{Var}(Y\mid X)\big]}_{\text{unexplained}}" data-display="1"></div>
+
+  <div class="sec">See it — project onto bigger and bigger subspaces</div>
+  <div class="panel">
+    <div class="seg" id="seg">
+      <button data-m="0" class="on">Constant ȳ</button>
+      <button data-m="1">Linear (OLS)</button>
+      <button data-m="2">E[Y|X]</button>
+    </div>
+    <div class="ctrls">
+      <div class="field"><label>noise σ <b id="tauOut">1.1</b></label><input type="range" id="tau" min="0.2" max="3" value="1.1" step="0.1" /></div>
+    </div>
+    <div class="btns">
+      <button class="act" id="new">New sample</button>
+      <button class="act" id="reset">Reset</button>
+    </div>
+    <svg id="plot" viewBox="0 0 680 380" role="img" aria-label="Scatter of Y against X with the chosen predictor and residuals"></svg>
+    <div class="tally">
+      <div class="stat"><div class="k">MSE</div><div class="v" id="mse">—</div></div>
+      <div class="stat"><div class="k">R² (variance explained)</div><div class="v" id="r2">—</div></div>
+      <div class="stat"><div class="k">corr(resid, X)</div><div class="v" id="cx">—</div></div>
+      <div class="stat"><div class="k">corr(resid, X²)</div><div class="v" id="cx2">—</div></div>
+    </div>
+    <p class="callout" id="note"></p>
+  </div>
+
+  <div class="theorem">
+    <p class="lbl">The precise statement</p>
+    <p>E[Y|X] is the orthogonal projection of Y onto L²(σ(X)), the space of square-integrable functions of X. It is the unique minimiser of E[(Y−g(X))²]; its residual is orthogonal to every function of X; and Var(Y) = Var(E[Y|X]) + E[Var(Y|X)] is the Pythagorean identity for that projection.</p>
+  </div>
+
+  <div class="twist">
+    <p class="lbl">The twist — OLS is a smaller projection, and loss chooses the target</p>
+    <p>Least-squares regression projects only onto <b>span{1, X}</b> — straight lines. It equals E[Y|X] only when the conditional mean truly is linear; otherwise OLS is the best <i>linear</i> approximation and can hide real structure (watch corr(resid, X²) stay large in Linear mode — the line removed the trend but not the curve). And the target itself depends on the loss: minimising squared error gives the conditional <b>mean</b>, but minimising absolute error E|Y−g(X)| gives the conditional <b>median</b>, and a tilted absolute loss gives conditional <b>quantiles</b> — the whole of quantile regression. "Best predictor" is only defined once you fix what you're paying for errors.</p>
+  </div>
+
+  <div class="vol">
+    <p class="lbl">Why this matters · volarixs</p>
+    <p>This is the operation under your cross-sectional machinery, not an analogy. A factor model <i>is</i> a projection: regressing returns on factor exposures projects Y onto the factor subspace, and your <b>alpha is the residual</b> — orthogonal to the factors by construction. <code>R² = Var(E[Y|X])/Var(Y)</code> is exactly "how much does this signal explain", read straight off the Pythagorean split.</p>
+    <p>Neutralising a signal against sector or size is this same move: project onto the nuisance subspace and keep the orthogonal residual. And the twist is a standing hazard for you — a signal can look predictive under a linear fit while E[Y|X] is genuinely nonlinear (saturation, regime-dependence). That's your regime cross-matrix in this language: the shape of E[Y|X] changing across conditioning states is the thing a single linear projection cannot see.</p>
+  </div>
+
+  <div class="sec">Check yourself</div>
+  <div class="q" id="q1"><p class="stem">Among all functions g(X), the minimiser of E[(Y−g(X))²] is:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q2"><p class="stem">Ordinary least-squares regression of Y on X gives:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q3"><p class="stem">The identity Var(Y) = Var(E[Y|X]) + E[Var(Y|X)] is:</p><div class="opts"></div><p class="fb"></p></div>
+
+  <div class="checkRow">
+    <button class="act" id="check" style="background:var(--accent);border-color:var(--accent);color:#fff">Check answers</button>
+    <span class="hint" id="hint">Select an answer for all three first.</span>
+  </div>
+  <div class="done" id="done">Phase 1 complete. Four projections down: interval, bias, likelihood, and the conditional mean itself.</div>
+</div>
+
+<script>
+/* storage shim: window.storage (Claude artifacts) or localStorage (web) */
+if(!window.storage){window.storage={async get(k){const v=localStorage.getItem(k);if(v==null)throw new Error('missing');return{key:k,value:v}},async set(k,v){localStorage.setItem(k,v);return{key:k,value:v}},async delete(k){localStorage.removeItem(k);return{key:k,deleted:true}},async list(p){const ks=[];for(let i=0;i<localStorage.length;i++){const kk=localStorage.key(i);if(!p||kk.startsWith(p))ks.push(kk)}return{keys:ks}}};}
+function renderMath(){
+  document.querySelectorAll('.math').forEach(el=>{
+    const tex=el.getAttribute('data-tex'); if(!tex||el.dataset.done)return;
+    try{ if(window.katex){katex.render(tex,el,{displayMode:el.dataset.display==='1',throwOnError:false});el.dataset.done='1';} else {el.textContent=tex;} }
+    catch(e){ el.textContent=tex; }
+  });
+}
+const N=140, XR=[-3.3,3.3];
+const X=[],Y=[]; let mode=0, yLo=0, yHi=1;
+const mTrue=x=>0.45*x+0.35*x*x;
+const tauVal=()=>parseFloat(document.getElementById('tau').value);
+function randn(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+function gen(){
+  X.length=0;Y.length=0;const tau=tauVal();
+  for(let i=0;i<N;i++){const x=-3+6*Math.random();X.push(x);Y.push(mTrue(x)+tau*randn());}
+  let lo=Infinity,hi=-Infinity;for(const y of Y){if(y<lo)lo=y;if(y>hi)hi=y;}
+  const pad=(hi-lo)*0.1;yLo=lo-pad;yHi=hi+pad;
+}
+function mean(a){let s=0;for(const v of a)s+=v;return s/a.length;}
+function corr(a,b){const ma=mean(a),mb=mean(b);let sab=0,sa=0,sb=0;for(let i=0;i<a.length;i++){const da=a[i]-ma,db=b[i]-mb;sab+=da*db;sa+=da*da;sb+=db*db;}return sab/Math.sqrt(sa*sb||1);}
+function ols(){const mx=mean(X),my=mean(Y);let cov=0,vx=0;for(let i=0;i<N;i++){cov+=(X[i]-mx)*(Y[i]-my);vx+=(X[i]-mx)**2;}const b=cov/vx;return{a:my-b*mx,b};}
+function pred(x,o){ if(mode===0)return mean(Y); if(mode===1)return o.a+o.b*x; return mTrue(x); }
+function render(){
+  const o=ols();
+  const PW=680,PH=380,padL=44,padR=16,padT=16,padB=34,iw=PW-padL-padR,ih=PH-padT-padB,y0=padT+ih;
+  const sx=x=>padL+((x-XR[0])/(XR[1]-XR[0]))*iw, sy=y=>padT+(1-(y-yLo)/(yHi-yLo))*ih;
+  let s='';
+  s+=`<line x1="${padL}" y1="${y0}" x2="${PW-padR}" y2="${y0}" stroke="var(--hair2)" stroke-width="1"/>`;
+  if(0>=yLo&&0<=yHi){s+=`<line x1="${sx(0)}" y1="${padT}" x2="${sx(0)}" y2="${y0}" stroke="var(--hair)" stroke-width="1"/>`;}
+  [-3,0,3].forEach(v=>{s+=`<text x="${sx(v)}" y="${y0+18}" text-anchor="middle" font-family="var(--mono)" font-size="11" fill="var(--faint)">${v}</text>`;});
+  // residuals
+  const resid=[],X2=[];
+  for(let i=0;i<N;i++){const p=pred(X[i],o);resid.push(Y[i]-p);X2.push(X[i]*X[i]);
+    s+=`<line x1="${sx(X[i]).toFixed(1)}" y1="${sy(Y[i]).toFixed(1)}" x2="${sx(X[i]).toFixed(1)}" y2="${sy(p).toFixed(1)}" stroke="var(--series)" stroke-width="1" opacity="0.30"/>`;}
+  // points
+  for(let i=0;i<N;i++){s+=`<circle cx="${sx(X[i]).toFixed(1)}" cy="${sy(Y[i]).toFixed(1)}" r="2.6" fill="var(--ink)" opacity="0.60"/>`;}
+  // predictor
+  if(mode===0){const m=mean(Y);s+=`<line x1="${sx(XR[0])}" y1="${sy(m)}" x2="${sx(XR[1])}" y2="${sy(m)}" stroke="var(--accent)" stroke-width="2.4"/>`;}
+  else if(mode===1){s+=`<line x1="${sx(XR[0])}" y1="${sy(o.a+o.b*XR[0])}" x2="${sx(XR[1])}" y2="${sy(o.a+o.b*XR[1])}" stroke="var(--accent)" stroke-width="2.4"/>`;}
+  else{let p='';for(let i=0;i<=90;i++){const x=XR[0]+(i/90)*(XR[1]-XR[0]);p+=(i?'L':'M')+sx(x).toFixed(1)+' '+sy(mTrue(x)).toFixed(1)+' ';}s+=`<path d="${p}" fill="none" stroke="var(--accent)" stroke-width="2.4"/>`;}
+  document.getElementById('plot').innerHTML=s;
+  // stats
+  const mse=mean(resid.map(r=>r*r)), vary=mean(Y.map(y=>(y-mean(Y))**2));
+  const r2=Math.max(0,1-mse/vary), cx=corr(resid,X), cx2=corr(resid,X2);
+  document.getElementById('mse').textContent=mse.toFixed(2);
+  document.getElementById('r2').textContent=(r2*100).toFixed(0)+'%';
+  const near=v=>Math.abs(v)<0.06;
+  const cxEl=document.getElementById('cx'),cx2El=document.getElementById('cx2');
+  cxEl.textContent=cx.toFixed(2); cx2El.textContent=cx2.toFixed(2);
+  cxEl.className='v '+(near(cx)?'good':'warn'); cx2El.className='v '+(near(cx2)?'good':'warn');
+  const notes=[
+    "Constant ȳ — projection onto just the constants. Residuals still slope with X (corr≠0): a single number throws away everything X tells you. Highest MSE.",
+    "OLS — projection onto span{1, X}, the best straight line. corr(resid, X) collapses to ≈0, but corr(resid, X²) stays large: the line removed the trend, not the curvature. Not yet E[Y|X].",
+    "E[Y|X] — projection onto ALL functions of X. Both correlations ≈0: nothing predictable remains, MSE has hit its noise floor, and Var(Y) splits cleanly into explained + noise. This is the best predictor."
+  ];
+  document.getElementById('note').textContent=notes[mode];
+}
+function boot(){renderMath();gen();render();}
+document.querySelectorAll('#seg button').forEach(b=>b.onclick=()=>{mode=+b.dataset.m;document.querySelectorAll('#seg button').forEach(x=>x.classList.toggle('on',x===b));render();});
+document.getElementById('tau').addEventListener('input',e=>{document.getElementById('tauOut').textContent=e.target.value;});
+document.getElementById('tau').addEventListener('change',()=>{gen();render();});
+document.getElementById('new').onclick=()=>{gen();render();};
+document.getElementById('reset').onclick=()=>{document.getElementById('tau').value='1.1';document.getElementById('tauOut').textContent='1.1';mode=0;document.querySelectorAll('#seg button').forEach(x=>x.classList.toggle('on',x.dataset.m==='0'));gen();render();};
+
+const QS={
+  q1:{opts:["The linear regression of Y on X","E[Y|X], the conditional expectation","The overall sample mean of Y","The conditional median of Y given X"],a:1,
+    fb:"E[Y|X] is the orthogonal projection of Y onto all functions of X, so it is the unique minimiser of mean squared error. (The conditional median minimises absolute error instead.)"},
+  q2:{opts:["E[Y|X] exactly, for any data","The best *linear* predictor — projection onto span{1,X} — equal to E[Y|X] only if the conditional mean is linear","The conditional median of Y","An unbiased estimate of Var(Y)"],a:1,
+    fb:"OLS projects onto straight lines only. When E[Y|X] is nonlinear, OLS is merely its best linear approximation — as the lingering corr(resid, X²) in Linear mode shows."},
+  q3:{opts:["A coincidence special to the normal distribution","The Pythagorean theorem in L²: explained variance plus unexplained variance","True only when X and Y are independent","Just the definition of covariance"],a:1,
+    fb:"It is Pythagoras for the projection: Y = E[Y|X] + residual with the two orthogonal, so their squared lengths (variances) add. It holds for any Y with finite variance."}
+};
+const sel={q1:null,q2:null,q3:null};let revealed=false;
+Object.keys(QS).forEach(id=>{
+  const holder=document.querySelector('#'+id+' .opts');
+  QS[id].opts.forEach((txt,i)=>{
+    const b=document.createElement('button');b.className='opt';b.textContent=String.fromCharCode(65+i)+'.  '+txt;
+    b.onclick=()=>{if(revealed)return;sel[id]=i;[...holder.children].forEach((c,ci)=>c.classList.toggle('sel',ci===i));document.getElementById('hint').style.display='none';};
+    holder.appendChild(b);
+  });
+});
+document.getElementById('check').onclick=async()=>{
+  if(revealed)return;
+  if(sel.q1===null||sel.q2===null||sel.q3===null){document.getElementById('hint').style.display='inline';return;}
+  revealed=true;let score=0;
+  Object.keys(QS).forEach(id=>{
+    const a=QS[id].a,holder=document.querySelector('#'+id+' .opts'),fb=document.querySelector('#'+id+' .fb');
+    [...holder.children].forEach((c,ci)=>{c.style.cursor='default';c.classList.remove('sel');if(ci===a)c.classList.add('correct');else if(ci===sel[id])c.classList.add('wrong');});
+    if(sel[id]===a)score++;fb.textContent=QS[id].fb;fb.classList.add('show');
+  });
+  const btn=document.getElementById('check');btn.style.opacity='0.5';btn.textContent='Checked · '+score+'/3';
+  document.getElementById('done').classList.add('show');
+  try{await window.storage.set('mfs:lesson04',JSON.stringify({done:true,retrieval:score+'/3',ts:Date.now()}),false);}catch(e){}
+};
+if(window.katex)boot();else window.addEventListener('load',boot);
+(async()=>{try{const r=await window.storage.get('mfs:lesson04',false);if(r&&r.value){const v=JSON.parse(r.value);if(v.done){const c=document.getElementById('chip');c.classList.add('show');c.textContent='completed · '+v.retrieval;}}}catch(e){}})();
+</script>
+</body>
+</html>

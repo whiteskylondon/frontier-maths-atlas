@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lesson 11 — Tensors & the einsum world</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<style>
+  :root{--paper:#FAFAF6;--ink:#1A1C22;--muted:#63676E;--faint:#9A9EA4;--hair:#E4E3DB;--hair2:#D4D3CA;--panel:#FFFFFF;--accent:#24507A;--accent-bg:#EAF0F6;--series:#B07A2E;--miss:#B23A3A;--ok:#2F6B4F;--ok-bg:#E9F1EC;--sum:#B0442E;--sum-bg:#F6E7E2;--free:#24507A;--vol:#8A5A2B;--vol-bg:#F6EFE6;--serif:Iowan Old Style,Palatino,Georgia,serif;--sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;}
+  @media (prefers-color-scheme:dark){:root{--paper:#15161A;--ink:#E9E8E2;--muted:#A2A6AC;--faint:#71757B;--hair:#2A2C31;--hair2:#3A3C42;--panel:#1B1D22;--accent:#7FB0E0;--accent-bg:#1E2A38;--series:#D9A85E;--miss:#E07A7A;--ok:#7FC49F;--ok-bg:#1C2A22;--sum:#E08A6E;--sum-bg:#2E1E17;--free:#7FB0E0;--vol:#D9A066;--vol-bg:#2A2115;}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.62;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:750px;margin:0 auto;padding:32px 24px 60px}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 6px}
+  h1{font-family:var(--serif);font-weight:600;font-size:27px;line-height:1.22;margin:0 0 6px;letter-spacing:-.01em}
+  .chip{display:none;font-family:var(--mono);font-size:11px;color:var(--ok);border:1px solid var(--ok);border-radius:20px;padding:3px 10px;vertical-align:middle;margin-left:10px}
+  .chip.show{display:inline-block}
+  .sub{color:var(--muted);font-size:15px;margin:0 0 18px}
+  .levels{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 26px}
+  .levels .lk{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+  .levels .pill{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-family:var(--mono);color:var(--muted);background:var(--panel);border:1px solid var(--hair2);border-radius:20px;padding:4px 11px}
+  .levels .pill b{color:var(--accent);font-weight:700}
+  p.lead{font-size:16px;margin:0 0 22px}p.lead b{font-weight:600}
+  .sec{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:36px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--hair)}
+  .mblock{margin:16px 0;overflow-x:auto}
+  .glo{list-style:none;padding:0;margin:14px 0 0}
+  .glo li{display:flex;gap:14px;padding:9px 0;border-top:1px solid var(--hair);align-items:baseline}
+  .glo li:first-child{border-top:none}
+  .glo .sym{flex:0 0 116px;text-align:right;padding-top:2px;font-family:var(--mono);font-size:13px;color:var(--accent)}
+  .glo .def{font-size:14.5px}.glo .def .n{color:var(--muted)}
+  .step{font-size:14.5px;color:var(--muted);margin:10px 0}
+  .panel{background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:20px;margin:14px 0}
+  .seg{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 16px}
+  .seg button{font-family:var(--mono);font-size:12px;padding:6px 10px;border:1px solid var(--hair2);border-radius:7px;background:var(--panel);color:var(--muted);cursor:pointer}
+  .seg button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .expr{font-family:var(--mono);font-size:20px;text-align:center;margin:6px 0 4px;letter-spacing:.02em}
+  .exprdesc{font-size:13.5px;color:var(--muted);text-align:center;margin:0 0 16px}
+  .flow{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:14px;margin:8px 0}
+  .mat{display:flex;flex-direction:column;align-items:center;gap:5px}
+  .mat .nm{font-family:var(--mono);font-size:12px;color:var(--muted)}
+  table.t{border-collapse:separate;border-spacing:3px}
+  table.t td{width:34px;height:30px;text-align:center;font-family:var(--mono);font-size:13px;border:1px solid var(--hair2);border-radius:5px;background:var(--paper)}
+  table.t td.out{background:var(--accent-bg);border-color:var(--accent);color:var(--accent);font-weight:600}
+  table.t td.hl{background:var(--sum-bg);border-color:var(--sum);color:var(--sum);font-weight:700}
+  .arrow{font-size:22px;color:var(--faint)}
+  .idx{display:flex;gap:16px;flex-wrap:wrap;margin:14px 0 2px;font-family:var(--mono);font-size:13px;justify-content:center}
+  .idx b.f{color:var(--free)}.idx b.s{color:var(--sum)}
+  .work{background:var(--paper);border-radius:9px;padding:11px 14px;margin:12px 0 0;font-family:var(--mono);font-size:13px;color:var(--ink);overflow-x:auto}
+  .callout{font-size:14px;color:var(--muted);border-left:2px solid var(--accent);padding:2px 0 2px 14px;margin:14px 0 2px}
+  .theorem{background:var(--accent-bg);border-radius:12px;padding:18px 20px;margin:16px 0}
+  .theorem .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
+  .theorem p{font-family:var(--serif);font-size:16px;line-height:1.55;margin:0}
+  .twist{border:1px dashed var(--hair2);border-radius:12px;padding:16px 18px;margin:16px 0;background:var(--panel)}
+  .twist .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+  .twist p{margin:0;font-size:14.6px}
+  .vol{background:var(--vol-bg);border:1px solid var(--vol);border-radius:12px;padding:18px 20px;margin:16px 0}
+  .vol .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:var(--vol);margin:0 0 8px}
+  .vol p{margin:0 0 10px;font-size:14.8px}.vol p:last-child{margin-bottom:0}
+  .vol code{font-family:var(--mono);font-size:13px;background:rgba(138,90,43,.12);padding:1px 5px;border-radius:4px}
+  .q{border:1px solid var(--hair);border-radius:12px;padding:16px 18px;margin:12px 0;background:var(--panel)}
+  .q .stem{font-size:15px;font-weight:500;margin:0 0 12px}
+  .opt{display:block;width:100%;text-align:left;font-size:14px;padding:10px 12px;margin:0 0 8px;border:1px solid var(--hair2);border-radius:8px;background:transparent;color:var(--ink);cursor:pointer;line-height:1.45}
+  .opt:last-child{margin-bottom:0}.opt:hover{border-color:var(--accent)}
+  .opt.sel{border-color:var(--accent);background:var(--accent-bg)}
+  .opt.correct{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+  .opt.wrong{background:#F7ECEC;border-color:var(--miss);color:var(--miss)}
+  @media (prefers-color-scheme:dark){.opt.wrong{background:#2E1E1E}}
+  .fb{font-size:13.5px;color:var(--muted);margin:10px 0 0;line-height:1.5;display:none}.fb.show{display:block}
+  .checkRow{display:flex;align-items:center;gap:14px;margin:18px 0 0;flex-wrap:wrap}
+  .hint{font-size:13px;color:var(--miss);display:none}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-family:var(--sans);font-size:14px;padding:8px 14px;border-radius:8px;border:1px solid var(--accent);cursor:pointer}
+  .scoreOut{font-family:var(--mono);font-size:14px;font-weight:600}
+  .done{display:none;align-items:center;gap:10px;background:var(--ok-bg);color:var(--ok);border-radius:10px;padding:12px 16px;font-size:14px;margin:14px 0 0}
+  .done.show{display:flex}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">Lesson 11 · Wing I — the linear-algebra substrate</p>
+  <h1>Tensors &amp; the einsum world<span class="chip" id="chip"></span></h1>
+  <p class="sub">Almost every operation in a neural network is one line of Einstein summation.</p>
+  <div class="levels"><span class="lk">Level</span><span class="pill"><b>US</b> Advanced undergrad → graduate</span><span class="pill"><b>FR</b> Master M1 · ENSAE 2A</span></div>
+
+  <p class="lead">A <b>tensor</b> is just a multi-dimensional array — a scalar has no indices, a vector one, a matrix two, an attention score-block three or four. The single notation that unifies every operation on them is <b>Einstein summation</b>: write which indices each input carries, which the output keeps, and any index that appears on the left but not the right is <i>summed over</i>. Matmul, dot products, transposes, batched attention — all one einsum string. Learn to read the string and you can read any layer.</p>
+
+  <div class="sec">The one rule</div>
+  <div class="mblock math" data-tex="\text{out}[\underbrace{\text{free indices}}_{\text{kept}}]=\sum_{\underbrace{\text{repeated indices}}_{\text{summed}}}\ \prod(\text{inputs})" data-display="1"></div>
+  <p class="step">Matrix multiplication is the canonical case — the shared index j is repeated in the inputs and absent from the output, so it's contracted away:</p>
+  <div class="mblock math" data-tex="C_{ik}=\sum_j A_{ij}B_{jk}\qquad\longleftrightarrow\qquad \texttt{einsum(\"ij,jk->ik\")}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym">order / rank</span><span class="def">the <b>number of indices</b> (dimensions). <span class="n">Scalar 0, vector 1, matrix 2, … — this is NOT the matrix/SVD rank from Lesson 8.</span></span></li>
+    <li><span class="sym">free index</span><span class="def">appears in output — <b>kept</b>. <span class="n">Each free index becomes an axis of the result.</span></span></li>
+    <li><span class="sym">summed index</span><span class="def">repeated, absent from output — <b>contracted</b>. <span class="n">The dimension that disappears; it must match across inputs.</span></span></li>
+  </ul>
+
+  <div class="sec">Play — one contraction, many operations</div>
+  <div class="panel">
+    <div class="seg" id="ops"></div>
+    <div class="expr" id="expr"></div>
+    <div class="exprdesc" id="edesc"></div>
+    <div class="flow" id="flow"></div>
+    <div class="idx" id="idx"></div>
+    <div class="work" id="work"></div>
+    <p class="callout" id="cnote"></p>
+  </div>
+
+  <div class="theorem">
+    <p class="lbl">The precise statement</p>
+    <p>A tensor of order k is an element of a tensor product of k vector spaces, addressed by k indices. Einstein summation contracts an expression by summing over every index that is repeated across the operands and omitted from the result; the free (output) indices index the result's axes. Contraction generalizes the dot product (⟨u,v⟩ = Σᵢ uᵢvᵢ, "i,i->"), matrix product ("ij,jk->ik"), trace ("ii->"), and outer product ("i,j->ij"). It is associative and commutative in value but not in cost.</p>
+  </div>
+
+  <div class="twist">
+    <p class="lbl">The twist — same value, wildly different cost</p>
+    <p>An einsum's <i>result</i> doesn't depend on the order you contract, but its <b>FLOP count</b> does — dramatically. Multiplying a chain A(1×1000)·B(1000×1000)·C(1000×1) left-to-right costs ~10⁹ operations; right-to-left costs ~2×10⁶. Choosing that order optimally is the classic <b>matrix-chain</b> problem, and it's why libraries have an <code>optimize</code> path and why <b>FlashAttention</b> is "just" a re-ordered, re-tiled version of the same attention einsum that never materializes the big score matrix. Two more traps worth naming: a tensor's <b>order</b> (how many indices) is unrelated to its <b>rank</b> in the SVD/decomposition sense (Lessons 8 and 12) — a 3-index tensor can be rank-1; and broadcasting is einsum with a silently repeated singleton axis. The notation is universal, but performance lives entirely in how you contract it.</p>
+  </div>
+
+  <div class="vol">
+    <p class="lbl">Why this matters · volarixs</p>
+    <p>Your Cross-Matrix output <i>is</i> a tensor: the design doc names it <code>(target, driver, regime, estimator) → CellEstimate</code> — a 4-index object. Every heatmap slice, every "rank the drivers for this target in regime r," every aggregation across estimators is an index contraction or selection on that tensor. Thinking in einsum makes those slices one clean expression instead of nested loops.</p>
+    <p>And when you vectorize the regressions themselves — fitting many (target, driver) cells at once, or scoring a whole panel — the batched operation is a contraction like <code>"btf,bfk->btk"</code>. The attention score you'll meet in Wing IV, <code>"qd,kd->qk"</code>, is the same move: contract away the feature dimension, keep the pair. One language, from your matrix to the transformer.</p>
+  </div>
+
+  <div class="sec">Check yourself</div>
+  <div class="q" id="q1"><p class="stem">In an einsum, an index that appears in the inputs but not the output is:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q2"><p class="stem">The einsum "ij,jk->ik" computes:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q3"><p class="stem">The "order" (rank) of a tensor refers to:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q4"><p class="stem">Attention scores S = QKᵀ, contracting over the feature dimension d, are written:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q5"><p class="stem">The order in which you contract a chain of tensors matters because:</p><div class="opts"></div><p class="fb"></p></div>
+
+  <div class="checkRow"><button class="primary" id="check">Check answers</button><span class="scoreOut" id="scoreOut"></span><span class="hint" id="hint">Answer all five first.</span></div>
+  <div class="done" id="done">Notation unlocked. Next in Wing I: fast matrix multiplication — Strassen to AlphaTensor.</div>
+</div>
+
+<script>
+/* storage shim: window.storage (Claude artifacts) or localStorage (web) */
+if(!window.storage){window.storage={async get(k){const v=localStorage.getItem(k);if(v==null)throw new Error('missing');return{key:k,value:v}},async set(k,v){localStorage.setItem(k,v);return{key:k,value:v}},async delete(k){localStorage.removeItem(k);return{key:k,deleted:true}},async list(p){const ks=[];for(let i=0;i<localStorage.length;i++){const kk=localStorage.key(i);if(!p||kk.startsWith(p))ks.push(kk)}return{keys:ks}}};}
+function renderMath(){document.querySelectorAll('.math').forEach(el=>{const tex=el.getAttribute('data-tex');if(!tex||el.dataset.done)return;try{if(window.katex){katex.render(tex,el,{displayMode:el.dataset.display==='1',throwOnError:false});el.dataset.done='1';}else el.textContent=tex;}catch(e){el.textContent=tex;}});}
+
+const A=[[1,2,3],[4,5,6]];          // 2x3
+const B=[[1,0],[0,1],[1,1]];        // 3x2
+const S=[[2,1],[3,4]];              // 2x2 square (for trace)
+const u=[1,2,3], w=[4,5];
+const Q=[[1,0,1],[0,2,1]], Kk=[[1,1,0],[2,0,1]]; // 2x3 each
+
+function gridHTML(name,data,hl){ // data: 2D array | 1D array | number ; hl:{r,c} highlight or {col:c}/{row:r}
+  let body='';
+  const is2D=Array.isArray(data)&&Array.isArray(data[0]);
+  if(typeof data==='number'){body=`<td class="out">${data}</td>`;return `<div class="mat"><span class="nm">${name}</span><table class="t"><tr>${body}</tr></table></div>`;}
+  if(!is2D){ // vector as a row
+    body='<tr>'+data.map((v,j)=>`<td class="${hl&&hl.i===j?'hl':''}">${v}</td>`).join('')+'</tr>';
+    return `<div class="mat"><span class="nm">${name}</span><table class="t">${body}</table></div>`;
+  }
+  body=data.map((row,i)=>'<tr>'+row.map((v,j)=>{
+    let cls='';
+    if(hl){ if(hl.out&&hl.out.r===i&&hl.out.c===j)cls='out';
+      else if(hl.rowIdx!==undefined&&hl.rowIdx===i)cls='hl';
+      else if(hl.colIdx!==undefined&&hl.colIdx===j)cls='hl'; }
+    return `<td class="${cls}">${v}</td>`;
+  }).join('')+'</tr>').join('');
+  return `<div class="mat"><span class="nm">${name}</span><table class="t">${body}</table></div>`;
+}
+
+const OPS={
+  matmul:{expr:'"ij,jk->ik"',desc:'matrix multiplication — contract the shared inner dimension j',
+    free:'i, k',sum:'j',
+    render:()=>{
+      const C=[[0,0],[0,0]];for(let i=0;i<2;i++)for(let k=0;k<2;k++){let s=0;for(let j=0;j<3;j++)s+=A[i][j]*B[j][k];C[i][k]=s;}
+      const flow=gridHTML('A (2×3)',A,{rowIdx:1})+'<span class="arrow">·</span>'+gridHTML('B (3×2)',B,{colIdx:1})+'<span class="arrow">=</span>'+gridHTML('C (2×2)',C,{out:{r:1,c:1}});
+      const work=`C[2][2] = Σ_j A[2][j]·B[j][2] = ${A[1][0]}·${B[0][1]} + ${A[1][1]}·${B[1][1]} + ${A[1][2]}·${B[2][1]} = ${A[1][0]*B[0][1]+A[1][1]*B[1][1]+A[1][2]*B[2][1]}`;
+      return {flow,work,note:'The 3-long index j is summed away; the 2×2 grid of (i,k) pairs survives. Highlighted: row 2 of A · column 2 of B → C[2][2].'};}},
+  attn:{expr:'"qd,kd->qk"',desc:'attention scores S = Q Kᵀ — contract the feature dimension d',
+    free:'q, k',sum:'d',
+    render:()=>{
+      const Sm=[[0,0],[0,0]];for(let q=0;q<2;q++)for(let k=0;k<2;k++){let s=0;for(let d=0;d<3;d++)s+=Q[q][d]*Kk[k][d];Sm[q][k]=s;}
+      const flow=gridHTML('Q (2×3)',Q,{rowIdx:0})+'<span class="arrow">·</span>'+gridHTML('K (2×3)',Kk,{rowIdx:1})+'<span class="arrow">=</span>'+gridHTML('S (2×2)',Sm,{out:{r:0,c:1}});
+      const work=`S[1][2] = Σ_d Q[1][d]·K[2][d] = ${Q[0][0]}·${Kk[1][0]} + ${Q[0][1]}·${Kk[1][1]} + ${Q[0][2]}·${Kk[1][2]} = ${Q[0][0]*Kk[1][0]+Q[0][1]*Kk[1][1]+Q[0][2]*Kk[1][2]}`;
+      return {flow,work,note:'Every query row q dotted with every key row k, contracting the model dimension d. This one line is the heart of attention (Wing IV) — same contraction as matmul, different names.'};}},
+  outer:{expr:'"i,j->ij"',desc:'outer product — no index is shared, so nothing is summed',
+    free:'i, j',sum:'(none)',
+    render:()=>{
+      const O=u.map(a=>w.map(b=>a*b));
+      const flow=gridHTML('u (3)',u,{i:2})+'<span class="arrow">⊗</span>'+gridHTML('w (2)',w,{i:1})+'<span class="arrow">=</span>'+gridHTML('O (3×2)',O,{out:{r:2,c:1}});
+      const work=`O[3][2] = u[3]·w[2] = ${u[2]}·${w[1]} = ${u[2]*w[1]}`;
+      return {flow,work,note:'With no repeated index there is no sum — every (i,j) pair is just a product. This rank-1 layer is exactly the σ·uvᵀ building block of the SVD (Lesson 8).'};}},
+  transpose:{expr:'"ij->ji"',desc:'transpose — one input, indices swapped, nothing summed',
+    free:'j, i',sum:'(none)',
+    render:()=>{
+      const T=[[A[0][0],A[1][0]],[A[0][1],A[1][1]],[A[0][2],A[1][2]]];
+      const flow=gridHTML('A (2×3)',A)+'<span class="arrow">→</span>'+gridHTML('Aᵀ (3×2)',T,{out:{r:2,c:1}});
+      const work=`Aᵀ[i][j] = A[j][i]  →  Aᵀ[3][2] = A[2][3] = ${A[1][2]}`;
+      return {flow,work,note:'A pure relabelling: the same numbers, indices reordered. No summation at all — output order equals input order (2).'};}},
+  trace:{expr:'"ii->"',desc:'trace — the repeated index i is summed with no free index left',
+    free:'(none — scalar)',sum:'i',
+    render:()=>{
+      const tr=S[0][0]+S[1][1];
+      const flow=gridHTML('S (2×2)',S,{})+'<span class="arrow">→</span>'+gridHTML('tr',tr);
+      const work=`tr(S) = Σ_i S[i][i] = S[1][1] + S[2][2] = ${S[0][0]} + ${S[1][1]} = ${tr}`;
+      return {flow,work,note:'Both indices coincide and are summed, leaving no free index — the result is a scalar (order 0). Diagonal in, single number out.'};}},
+  rowsum:{expr:'"ij->i"',desc:'row sums — keep i, sum over j (a reduction)',
+    free:'i',sum:'j',
+    render:()=>{
+      const r=A.map(row=>row.reduce((a,b)=>a+b,0));
+      const flow=gridHTML('A (2×3)',A,{rowIdx:0})+'<span class="arrow">→</span>'+gridHTML('r (2)',r,{i:0});
+      const work=`r[1] = Σ_j A[1][j] = ${A[0][0]} + ${A[0][1]} + ${A[0][2]} = ${A[0][0]+A[0][1]+A[0][2]}`;
+      return {flow,work,note:'Dropping an index without a second operand is a reduction — here, summing each row. Keep i, contract j.'};}},
+};
+const ORDER=[['matmul','matmul'],['attn','attention QKᵀ'],['outer','outer product'],['transpose','transpose'],['trace','trace'],['rowsum','row sum']];
+let curOp='matmul';
+const segEl=document.getElementById('ops');
+ORDER.forEach(([k,label])=>{const b=document.createElement('button');b.textContent=label;b.className=k===curOp?'on':'';b.onclick=()=>{curOp=k;[...segEl.children].forEach(c=>c.classList.toggle('on',c===b));draw();};segEl.appendChild(b);});
+function draw(){
+  const o=OPS[curOp],r=o.render();
+  document.getElementById('expr').innerHTML='einsum( '+o.expr+' )';
+  document.getElementById('edesc').textContent=o.desc;
+  document.getElementById('flow').innerHTML=r.flow;
+  document.getElementById('idx').innerHTML=`<span>free: <b class="f">${o.free}</b></span><span>summed: <b class="s">${o.sum}</b></span>`;
+  document.getElementById('work').textContent=r.work;
+  document.getElementById('cnote').textContent=r.note;
+}
+
+const QS={
+  q1:{opts:["kept as an output axis","summed (contracted) over","ignored entirely","transposed"],a:1,
+    fb:"That's the Einstein rule: any index repeated in the inputs and missing from the output is summed away. It's the dimension that disappears in the contraction."},
+  q2:{opts:["element-wise (Hadamard) product","matrix multiplication — contract the shared inner index j","the outer product","the transpose"],a:1,
+    fb:"C_ik = Σ_j A_ij B_jk is exactly matrix multiplication: i and k are kept, j is contracted. The inner dimensions (the j's) must match."},
+  q3:{opts:["its SVD/decomposition rank","the number of indices (axes) it has — scalar 0, vector 1, matrix 2, …","the largest singular value","the number of nonzero entries"],a:1,
+    fb:"Tensor 'order/rank' counts indices, and is unrelated to the SVD rank of Lesson 8 — a 3-index tensor can still be rank-1 in the decomposition sense."},
+  q4:{opts:['"qk,qk->qk"','"qd,kd->qk"','"qd,dk->qdk"','"qk->kq"'],a:1,
+    fb:"Q is (queries × d), K is (keys × d); contracting d and keeping (q,k) gives the score matrix S = QKᵀ. Same contraction shape as matmul — the workhorse of attention."},
+  q5:{opts:["it changes the result","it changes the FLOP cost (matrix-chain ordering), though the result is identical","it changes which indices are free","only the first order is valid"],a:1,
+    fb:"Contraction is associative in value but not in cost — a good order can cut operations by orders of magnitude (the matrix-chain problem), which is what FlashAttention and einsum 'optimize' exploit."}
+};
+const sel={q1:null,q2:null,q3:null,q4:null,q5:null};let revealed=false;
+Object.keys(QS).forEach(id=>{const holder=document.querySelector('#'+id+' .opts');QS[id].opts.forEach((txt,i)=>{const b=document.createElement('button');b.className='opt';b.textContent=String.fromCharCode(65+i)+'.  '+txt;b.onclick=()=>{if(revealed)return;sel[id]=i;[...holder.children].forEach((c,ci)=>c.classList.toggle('sel',ci===i));document.getElementById('hint').style.display='none';};holder.appendChild(b);});});
+document.getElementById('check').onclick=async()=>{
+  if(revealed)return;if(Object.values(sel).some(v=>v===null)){document.getElementById('hint').style.display='inline';return;}
+  revealed=true;let score=0;
+  Object.keys(QS).forEach(id=>{const a=QS[id].a,holder=document.querySelector('#'+id+' .opts'),fb=document.querySelector('#'+id+' .fb');[...holder.children].forEach((c,ci)=>{c.style.cursor='default';c.classList.remove('sel');if(ci===a)c.classList.add('correct');else if(ci===sel[id])c.classList.add('wrong');});if(sel[id]===a)score++;fb.textContent=QS[id].fb;fb.classList.add('show');});
+  document.getElementById('check').style.opacity='0.5';document.getElementById('check').textContent='Checked';
+  document.getElementById('scoreOut').textContent=score+' / 5';document.getElementById('done').classList.add('show');
+  try{await window.storage.set('mfs:lesson11',JSON.stringify({done:true,retrieval:score+'/5',ts:Date.now()}),false);}catch(e){}
+};
+function boot(){renderMath();draw();}
+if(window.katex)boot();else window.addEventListener('load',boot);
+(async()=>{try{const r=await window.storage.get('mfs:lesson11',false);if(r&&r.value){const v=JSON.parse(r.value);if(v.done){const c=document.getElementById('chip');c.classList.add('show');c.textContent='completed · '+v.retrieval;}}}catch(e){}})();
+</script>
+</body>
+</html>

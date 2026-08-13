@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>XᵀX at the intersection</title>
+<style>
+  :root{
+    --paper:#FAFAF6; --ink:#1A1C22; --muted:#63676E; --faint:#9A9EA4;
+    --hair:#E4E3DB; --hair2:#D4D3CA; --panel:#FFFFFF;
+    --accent:#24507A; --accent-bg:#E6EEF6; --series:#B07A2E;
+    --diag:#E9F1EC; --diagbd:#2F6B4F; --pair:#F6E7D6; --pairbd:#B07A2E;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --serif:Iowan Old Style,Palatino,Georgia,serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#15161A; --ink:#E9E8E2; --muted:#A2A6AC; --faint:#71757B;
+      --hair:#2A2C31; --hair2:#3A3C42; --panel:#1B1D22;
+      --accent:#7FB0E0; --accent-bg:#1E2A38; --series:#D9A85E;
+      --diag:#1C2A22; --diagbd:#7FC49F; --pair:#2E2114; --pairbd:#D9A85E;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.6;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:680px;margin:0 auto;padding:28px 22px 46px}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 6px}
+  h1{font-family:var(--serif);font-weight:600;font-size:24px;margin:0 0 8px}
+  p{font-size:15px;margin:0 0 14px}
+  .muted{color:var(--muted);font-size:14px}
+
+  .mc{width:46px;height:38px;box-sizing:border-box;font-family:var(--mono);font-size:14px;border:1px solid var(--hair2);border-radius:6px;background:var(--panel);color:var(--ink)}
+  div.mc{display:flex;align-items:center;justify-content:center}
+  input.mc{text-align:center;padding:0}
+  input.mc:focus{outline:none;border-color:var(--accent)}
+  .mc-ro{color:var(--muted)}
+  .mc-prod{cursor:pointer}
+  .mc-prod.diag{background:var(--diag);border-color:var(--diagbd)}
+  .mc.hl{background:var(--pair);border-color:var(--pairbd);font-weight:700;color:var(--ink)}
+  .mc.hlop{background:var(--accent-bg);border-color:var(--accent)}
+  .mtab{border-collapse:separate;border-spacing:4px}
+  .mtab td{padding:0}
+
+  .falk{display:grid;grid-template-columns:auto auto;grid-template-rows:auto auto;gap:22px;justify-content:start;margin:30px 0 30px}
+  .slot{position:relative}
+  .slot.top{align-self:end;justify-self:start}
+  .slot.left{align-self:start;justify-self:end}
+  .slot.prod{align-self:start;justify-self:start}
+  .mlabel{position:absolute;font-family:var(--mono);font-size:12px;color:var(--accent);white-space:nowrap;font-weight:600}
+  .slot.top .mlabel{top:-19px;left:2px}
+  .slot.left .mlabel{top:-19px;right:2px}
+  .slot.prod .mlabel{bottom:-21px;left:2px}
+
+  .toggle{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:6px 0}
+  .toggle .tl{font-family:var(--mono);font-size:12px;color:var(--faint);letter-spacing:.06em;text-transform:uppercase}
+  .toggle .seg{display:inline-flex;border:1px solid var(--hair2);border-radius:8px;overflow:hidden}
+  .toggle .seg button{font-family:var(--mono);font-size:13px;padding:7px 13px;border:none;border-right:1px solid var(--hair2);background:var(--panel);color:var(--muted);cursor:pointer}
+  .toggle .seg button:last-child{border-right:none}
+  .toggle .seg button.on{background:var(--accent);color:#fff}
+  .dimtag{font-family:var(--mono);font-size:13px;color:var(--series);margin:4px 0 0}
+  .note{background:var(--panel);border:1px solid var(--hair);border-radius:10px;padding:14px 16px;margin:16px 0;font-size:14px;min-height:2.4em}
+  .note .mono{font-family:var(--mono);font-size:13.5px}
+  .note .eq{color:var(--series);font-weight:700}
+  .idbox{background:var(--accent-bg);border-radius:10px;padding:12px 16px;margin:14px 0;font-family:var(--mono);font-size:14px;color:var(--accent);text-align:center}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted);font-family:var(--mono);margin:8px 0}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .sw{width:13px;height:11px;border-radius:3px;border:1px solid}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">Linear algebra · the multiplication laid out</p>
+  <h1>The product sits at the intersection</h1>
+  <p class="muted">The top matrix and the left matrix meet in the corner: each product cell (i, j) is exactly where <b>row i of the left matrix</b> crosses <b>column j of the top matrix</b>. Click any product cell — its source row and column light up. Notice they hold the <span style="color:var(--accent);font-weight:600">same numbers</span> (one matrix is the other's transpose), which is why the product comes out symmetric. Edit X; everything recomputes.</p>
+
+  <div class="falk">
+    <div class="slot tl"></div>
+    <div class="slot top"><span class="mlabel" id="lblTop"></span><div id="slotTop"></div></div>
+    <div class="slot left"><span class="mlabel" id="lblLeft"></span><div id="slotLeft"></div></div>
+    <div class="slot prod"><span class="mlabel" id="lblProd"></span><div id="slotProd"></div></div>
+  </div>
+
+  <div class="toggle">
+    <span class="tl">compute</span>
+    <div class="seg">
+      <button id="mGram" class="on">XᵀX · features (3×3)</button>
+      <button id="mKernel">XXᵀ · observations (4×4)</button>
+    </div>
+  </div>
+  <div class="dimtag" id="dimtag"></div>
+  <div class="legend">
+    <span><i class="sw" style="background:var(--accent-bg);border-color:var(--accent)"></i>source row &amp; column</span>
+    <span><i class="sw" style="background:var(--pair);border-color:var(--pairbd)"></i>the cell &amp; its mirror</span>
+    <span><i class="sw" style="background:var(--diag);border-color:var(--diagbd)"></i>diagonal = ‖·‖²</span>
+  </div>
+
+  <div class="note" id="note">Click any cell of the product to expand it.</div>
+
+  <div class="idbox" id="idbox"></div>
+  <p class="muted" id="whypar"></p>
+</div>
+
+<script>
+/* storage shim: window.storage (Claude artifacts) or localStorage (web) */
+if(!window.storage){window.storage={async get(k){const v=localStorage.getItem(k);if(v==null)throw new Error('missing');return{key:k,value:v}},async set(k,v){localStorage.setItem(k,v);return{key:k,value:v}},async delete(k){localStorage.removeItem(k);return{key:k,deleted:true}},async list(p){const ks=[];for(let i=0;i<localStorage.length;i++){const kk=localStorage.key(i);if(!p||kk.startsWith(p))ks.push(kk)}return{keys:ks}}};}
+let X=[[2,1,0],[1,3,1],[0,1,2],[1,0,1]];
+const NR=4,NC=3;               // X is NR×NC (4 obs × 3 features)
+let mode='gram';               // 'gram' = XᵀX (features), 'kernel' = XXᵀ (observations)
+
+function Pdim(){return mode==='gram'?NC:NR;}   // product is P×P
+function Kdim(){return mode==='gram'?NR:NC;}    // summed-over (inner) dimension
+function el(i,k){return mode==='gram'?X[k][i]:X[i][k];}
+function G(i,j){let s=0,K=Kdim();for(let k=0;k<K;k++)s+=el(i,k)*el(j,k);return s;}
+function expandStr(i,j){const t=[],K=Kdim();for(let k=0;k<K;k++)t.push(el(i,k)+'·'+el(j,k));return t.join(' + ')+' = '+G(i,j);}
+
+// persistent editable X (built once so typing keeps focus)
+const xEl=document.createElement('table');xEl.className='mtab';
+(function(){
+  for(let r=0;r<NR;r++){const tr=xEl.insertRow();
+    for(let c=0;c<NC;c++){const td=tr.insertCell();
+      const inp=document.createElement('input');inp.className='mc';inp.type='number';inp.value=X[r][c];
+      inp.dataset.r=r;inp.dataset.c=c;
+      inp.oninput=()=>{const v=parseFloat(inp.value);X[r][c]=isNaN(v)?0:v;fillXt();fillProd();clearNote();};
+      td.appendChild(inp);}}
+})();
+
+const xtEl=document.createElement('table');xtEl.className='mtab';
+function fillXt(){ // Xᵀ is NC×NR, cell (i,k)=X[k][i]
+  xtEl.innerHTML='';
+  for(let i=0;i<NC;i++){const tr=xtEl.insertRow();
+    for(let k=0;k<NR;k++){const td=tr.insertCell();
+      const d=document.createElement('div');d.className='mc mc-ro';d.textContent=X[k][i];
+      d.dataset.r=i;d.dataset.c=k;td.appendChild(d);}}
+}
+const prodEl=document.createElement('table');prodEl.className='mtab';
+function fillProd(){
+  prodEl.innerHTML='';const P=Pdim();
+  for(let i=0;i<P;i++){const tr=prodEl.insertRow();
+    for(let j=0;j<P;j++){const td=tr.insertCell();
+      const d=document.createElement('div');d.className='mc mc-prod'+(i===j?' diag':'');
+      d.textContent=G(i,j);d.dataset.i=i;d.dataset.j=j;
+      d.onclick=()=>expand(i,j);td.appendChild(d);}}
+}
+function clearHL(){document.querySelectorAll('.mc').forEach(c=>c.classList.remove('hl','hlop'));}
+function clearNote(){clearHL();document.getElementById('note').innerHTML='Click any cell of the product to expand it.';}
+
+function expand(i,j){
+  clearHL();
+  const rows=new Set([i,j]);
+  document.querySelectorAll('#slotProd .mc-prod').forEach(c=>{const ci=+c.dataset.i,cj=+c.dataset.j;
+    if((ci===i&&cj===j)||(ci===j&&cj===i))c.classList.add('hl');});
+  document.querySelectorAll('#slotLeft .mc').forEach(c=>{if(rows.has(+c.dataset.r))c.classList.add('hlop');});
+  document.querySelectorAll('#slotTop .mc').forEach(c=>{if(rows.has(+c.dataset.c))c.classList.add('hlop');});
+  const unit=mode==='gram'?'column':'row', L=mode==='gram'?'Xᵀ':'X', T=mode==='gram'?'X':'Xᵀ';
+  const n=document.getElementById('note');
+  if(i===j){
+    n.innerHTML=`<b>Diagonal cell (${i+1},${i+1})</b> — row ${i+1} of ${L} meets column ${i+1} of ${T}, and they're the same vector:<br>`+
+      `<span class="mono">‖${unit} ${i+1}‖² = ${expandStr(i,i)}</span><br>`+
+      `<span class="muted">A sum of squares — that ${unit}'s squared length, always ≥ 0.</span>`;
+  }else{
+    n.innerHTML=`<b>Cell (${i+1},${j+1})</b> = row ${i+1} of ${L} · column ${j+1} of ${T}:<br>`+
+      `<span class="mono">${expandStr(i,j)}</span><br>`+
+      `<b>Mirror (${j+1},${i+1})</b>:<span class="mono"> ${expandStr(j,i)}</span><br>`+
+      `<span class="eq">Same sum → equal cells.</span> <span class="muted">Row i of ${L} and column i of ${T} hold identical numbers (${T} = ${L}ᵀ), so swapping i and j can't change the total.</span>`;
+  }
+}
+
+function place(){
+  const top=document.getElementById('slotTop'), left=document.getElementById('slotLeft'), prod=document.getElementById('slotProd');
+  top.innerHTML='';left.innerHTML='';prod.innerHTML='';
+  if(mode==='gram'){top.appendChild(xEl);left.appendChild(xtEl);}
+  else{top.appendChild(xtEl);left.appendChild(xEl);}
+  prod.appendChild(prodEl);
+}
+function setMode(m){
+  mode=m;
+  document.getElementById('mGram').classList.toggle('on',m==='gram');
+  document.getElementById('mKernel').classList.toggle('on',m==='kernel');
+  fillXt();fillProd();place();
+  const P=Pdim();
+  document.getElementById('lblTop').textContent   = m==='gram'?'X  (4×3)':'Xᵀ  (3×4)';
+  document.getElementById('lblLeft').textContent  = m==='gram'?'Xᵀ  (3×4)':'X  (4×3)';
+  document.getElementById('lblProd').textContent  = (m==='gram'?'XᵀX':'XXᵀ')+`  (${P}×${P})`;
+  document.getElementById('dimtag').textContent   = m==='gram'
+    ? '(3×4)(4×3) → 3×3   ·   inner dim 4 (observations) cancels'
+    : '(4×3)(3×4) → 4×4   ·   inner dim 3 (features) cancels';
+  document.getElementById('idbox').innerHTML = m==='gram'
+    ? '(XᵀX)ᵀ = Xᵀ(Xᵀ)ᵀ = XᵀX &nbsp;→&nbsp; equals its own transpose'
+    : '(XXᵀ)ᵀ = (Xᵀ)ᵀXᵀ = XXᵀ &nbsp;→&nbsp; equals its own transpose';
+  const un=m==='gram'?'column':'row';
+  document.getElementById('whypar').innerHTML=`Why it can't fail: the product is symmetric because row i of the left matrix and column i of the top matrix are literally the same numbers (the two matrices are transposes). So cell (i,j) and cell (j,i) are the same dot product with the ${un}s swapped — and a dot product ignores order. True for every X.`;
+  clearNote();
+}
+document.getElementById('mGram').onclick=()=>setMode('gram');
+document.getElementById('mKernel').onclick=()=>setMode('kernel');
+setMode('gram');
+</script>
+</body>
+</html>

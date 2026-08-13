@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lesson 02 — Estimators, bias, and the n−1 story</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<style>
+  :root{
+    --paper:#FAFAF6; --ink:#1A1C22; --muted:#63676E; --faint:#9A9EA4;
+    --hair:#E4E3DB; --hair2:#D4D3CA; --panel:#FFFFFF;
+    --accent:#24507A; --accent-bg:#EAF0F6;
+    --series:#B07A2E; --series-bg:#F6EEE1;
+    --miss:#B23A3A; --ok:#2F6B4F; --ok-bg:#E9F1EC;
+    --vol:#8A5A2B; --vol-bg:#F6EFE6;
+    --serif:Iowan Old Style,Palatino,"Palatino Linotype",Georgia,serif;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#15161A; --ink:#E9E8E2; --muted:#A2A6AC; --faint:#71757B;
+      --hair:#2A2C31; --hair2:#3A3C42; --panel:#1B1D22;
+      --accent:#7FB0E0; --accent-bg:#1E2A38;
+      --series:#D9A85E; --series-bg:#2A2013;
+      --miss:#E07A7A; --ok:#7FC49F; --ok-bg:#1C2A22;
+      --vol:#D9A066; --vol-bg:#2A2115;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.62;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:740px;margin:0 auto;padding:32px 24px 60px}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 6px}
+  h1{font-family:var(--serif);font-weight:600;font-size:29px;line-height:1.2;margin:0 0 6px;letter-spacing:-.01em}
+  .chip{display:none;font-family:var(--mono);font-size:11px;letter-spacing:.05em;color:var(--ok);border:1px solid var(--ok);border-radius:20px;padding:3px 10px;vertical-align:middle;margin-left:10px}
+  .chip.show{display:inline-block}
+  .sub{color:var(--muted);font-size:15px;margin:0 0 18px}
+  .levels{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 26px}
+  .levels .lk{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+  .levels .pill{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-family:var(--mono);color:var(--muted);background:var(--panel);border:1px solid var(--hair2);border-radius:20px;padding:4px 11px}
+  .levels .pill b{color:var(--accent);font-weight:700;letter-spacing:.03em}
+  p.lead{font-size:16px;margin:0 0 22px}
+  p.lead b{font-weight:600}
+  .sec{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:34px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--hair)}
+  .mblock{margin:16px 0;overflow-x:auto}
+  .glo{list-style:none;padding:0;margin:14px 0 0}
+  .glo li{display:flex;gap:14px;padding:9px 0;border-top:1px solid var(--hair);align-items:baseline}
+  .glo li:first-child{border-top:none}
+  .glo .sym{flex:0 0 118px;text-align:right;padding-top:2px}
+  .glo .def{font-size:14.5px}
+  .glo .def .n{color:var(--muted)}
+  .step{font-size:14.5px;color:var(--muted);margin:10px 0}
+  .panel{background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:20px;margin:14px 0}
+  .ctrls{display:flex;flex-wrap:wrap;gap:18px 28px;align-items:flex-end;margin:0 0 14px}
+  .field{display:flex;flex-direction:column;gap:6px;min-width:150px;flex:1}
+  .field label{font-size:12px;color:var(--muted);font-family:var(--mono);letter-spacing:.03em;display:flex;justify-content:space-between}
+  .field label b{color:var(--ink);font-weight:600}
+  input[type=range]{width:100%;accent-color:var(--accent);height:20px}
+  .btns{display:flex;flex-wrap:wrap;gap:8px;margin:2px 0 12px}
+  button.act{font-family:var(--sans);font-size:14px;padding:8px 14px;border-radius:8px;border:1px solid var(--hair2);background:var(--panel);color:var(--ink);cursor:pointer}
+  button.act:hover{border-color:var(--accent);color:var(--accent)}
+  button.act.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  button.act.primary:hover{color:#fff;opacity:.92}
+  svg{max-width:100%;height:auto;display:block}
+  .legend{display:flex;flex-wrap:wrap;gap:16px;margin:10px 0 2px;font-size:12.5px;color:var(--muted);font-family:var(--mono)}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .sw{width:14px;height:10px;border-radius:2px;display:inline-block}
+  .tally{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 2px}
+  .stat{flex:1;min-width:120px;background:var(--paper);border-radius:9px;padding:9px 12px}
+  .stat .k{font-size:11px;font-family:var(--mono);letter-spacing:.05em;color:var(--muted);text-transform:uppercase}
+  .stat .v{font-size:21px;font-weight:600;font-family:var(--mono);margin-top:2px}
+  .stat .v.neg{color:var(--series)}
+  .callout{font-size:14px;color:var(--muted);border-left:2px solid var(--accent);padding:2px 0 2px 14px;margin:16px 0 2px}
+  .theorem{background:var(--accent-bg);border-radius:12px;padding:18px 20px;margin:16px 0}
+  .theorem .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
+  .theorem p{font-family:var(--serif);font-size:16.5px;line-height:1.55;margin:0}
+  .twist{border:1px dashed var(--hair2);border-radius:12px;padding:16px 18px;margin:16px 0;background:var(--panel)}
+  .twist .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+  .twist p{margin:0 0 12px;font-size:14.6px}
+  .mserow{display:flex;flex-wrap:wrap;gap:8px}
+  .mse{flex:1;min-width:110px;background:var(--paper);border-radius:8px;padding:8px 10px;border:1px solid var(--hair)}
+  .mse.win{border-color:var(--ok);background:var(--ok-bg)}
+  .mse .k{font-size:11px;font-family:var(--mono);color:var(--muted)}
+  .mse .v{font-size:16px;font-weight:600;font-family:var(--mono);margin-top:2px}
+  .vol{background:var(--vol-bg);border:1px solid var(--vol);border-radius:12px;padding:18px 20px;margin:16px 0}
+  .vol .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:var(--vol);margin:0 0 8px}
+  .vol p{margin:0 0 10px;font-size:14.8px}
+  .vol p:last-child{margin-bottom:0}
+  .vol code{font-family:var(--mono);font-size:13px;background:rgba(138,90,43,.12);padding:1px 5px;border-radius:4px}
+  .q{border:1px solid var(--hair);border-radius:12px;padding:16px 18px;margin:12px 0;background:var(--panel)}
+  .q .stem{font-size:15px;font-weight:500;margin:0 0 12px}
+  .opt{display:block;width:100%;text-align:left;font-size:14px;padding:10px 12px;margin:0 0 8px;border:1px solid var(--hair2);border-radius:8px;background:transparent;color:var(--ink);cursor:pointer;line-height:1.45}
+  .opt:last-child{margin-bottom:0}
+  .opt:hover{border-color:var(--accent)}
+  .opt.sel{border-color:var(--accent);background:var(--accent-bg)}
+  .opt.correct{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+  .opt.wrong{background:#F7ECEC;border-color:var(--miss);color:var(--miss)}
+  @media (prefers-color-scheme: dark){ .opt.wrong{background:#2E1E1E} }
+  .fb{font-size:13.5px;color:var(--muted);margin:10px 0 0;line-height:1.5;display:none}
+  .fb.show{display:block}
+  .checkRow{display:flex;align-items:center;gap:14px;margin:16px 0 0;flex-wrap:wrap}
+  .hint{font-size:13px;color:var(--miss);display:none}
+  .done{display:none;align-items:center;gap:10px;background:var(--ok-bg);color:var(--ok);border-radius:10px;padding:12px 16px;font-size:14px;margin:14px 0 0}
+  .done.show{display:flex}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">Lesson 02 · Estimation &amp; inference</p>
+  <h1>Estimators, bias, and the n−1 story<span class="chip" id="chip"></span></h1>
+  <p class="sub">Why dividing by n understates the spread — and why "unbiased" still isn't "best".</p>
+  <div class="levels">
+    <span class="lk">Level</span>
+    <span class="pill"><b>US</b> Advanced undergraduate</span>
+    <span class="pill"><b>FR</b> Licence L3 – Master M1 · ENSAE 1A</span>
+  </div>
+
+  <p class="lead">Same world as before: draws from a population with true variance <b>σ² = 144</b> (σ = 12), but now both μ and σ² are unknown. To estimate the spread you sum squared deviations — from <b>x̄</b>, because μ isn't available. That single substitution is the whole story: x̄ is fit to your data, so it sits closer to the points than the true μ does, and the deviations come out systematically too small.</p>
+
+  <div class="sec">The two estimators</div>
+  <div class="mblock math" data-tex="S^2_{n}=\frac{1}{n}\sum_{i=1}^{n}(x_i-\bar{x})^2\qquad\qquad S^2_{n-1}=\frac{1}{n-1}\sum_{i=1}^{n}(x_i-\bar{x})^2" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="\bar{x}"></span><span class="def">the <b>sample mean</b> we subtract. <span class="n">Being chosen to fit the sample, it minimises Σ(xᵢ−c)² over c — so deviations from x̄ are the smallest they can be, smaller than from the true μ.</span></span></li>
+    <li><span class="sym math" data-tex="\sum(x_i-\bar{x})^2"></span><span class="def">the <b>sum of squares</b> (SS) — total squared spread around x̄. <span class="n">Both estimators share this numerator; they differ only in the divisor.</span></span></li>
+    <li><span class="sym math" data-tex="S^2_{n}"></span><span class="def">the <b>MLE</b> (divide by n). <span class="n">This is what maximum likelihood hands you for a normal — and it is biased low.</span></span></li>
+    <li><span class="sym math" data-tex="S^2_{n-1}"></span><span class="def">the <b>Bessel-corrected</b> estimator (divide by n−1). <span class="n">Exactly unbiased for the variance of any distribution with finite variance.</span></span></li>
+    <li><span class="sym math" data-tex="n-1"></span><span class="def"><b>degrees of freedom</b>: n data points minus the 1 constraint spent computing x̄. <span class="n">The correction is nothing more than "give back the freedom you used".</span></span></li>
+  </ul>
+
+  <div class="sec">Why ÷ n is biased — the derivation</div>
+  <p class="step">Split each deviation through the true μ (algebraic identity, exact for every sample):</p>
+  <div class="mblock math" data-tex="\sum_{i}(x_i-\bar{x})^2=\sum_{i}(x_i-\mu)^2-\,n(\bar{x}-\mu)^2" data-display="1"></div>
+  <p class="step">Take expectations. The first term averages to nσ²; the second is n·Var(x̄) = n·(σ²/n) = σ²:</p>
+  <div class="mblock math" data-tex="\mathbb{E}\!\left[\sum_i(x_i-\bar{x})^2\right]=n\sigma^2-\sigma^2=(n-1)\,\sigma^2" data-display="1"></div>
+  <p class="step">So the honest divisor is n−1, and dividing by n falls short by the factor (n−1)/n:</p>
+  <div class="mblock math" data-tex="\mathbb{E}[S^2_{n-1}]=\sigma^2\quad(\text{unbiased})\qquad\qquad\mathbb{E}[S^2_{n}]=\frac{n-1}{n}\,\sigma^2\quad(\text{biased low})" data-display="1"></div>
+  <p class="step">At n = 2 that factor is ½: the MLE expects <i>half</i> the true variance. The gap fades as n grows — both estimators are consistent.</p>
+
+  <div class="sec">See it — sampling distributions of the two estimators</div>
+  <div class="panel">
+    <div class="ctrls">
+      <div class="field">
+        <label>sample size <i>n</i> <b id="nOut">5</b></label>
+        <input type="range" id="n" min="2" max="120" value="5" step="1" />
+      </div>
+    </div>
+    <div class="btns">
+      <button class="act" id="one">Draw one</button>
+      <button class="act primary" id="many">Run 400</button>
+      <button class="act" id="reset">Reset</button>
+    </div>
+    <svg id="plot" viewBox="0 0 680 340" role="img" aria-label="Overlaid sampling distributions of the two variance estimators against the true variance"></svg>
+    <div class="legend">
+      <span><i class="sw" style="background:var(--accent);opacity:.5"></i>S²₍ₙ₋₁₎ unbiased</span>
+      <span><i class="sw" style="background:var(--series);opacity:.5"></i>S²₍ₙ₎ MLE (biased)</span>
+      <span><i class="sw" style="background:var(--ink)"></i>true σ² = 144</span>
+    </div>
+    <div class="tally">
+      <div class="stat"><div class="k">mean of S²₍ₙ₋₁₎</div><div class="v" id="mNm1">—</div></div>
+      <div class="stat"><div class="k">mean of S²₍ₙ₎</div><div class="v" id="mN">—</div></div>
+      <div class="stat"><div class="k">bias of S²₍ₙ₎</div><div class="v neg" id="bN">—</div></div>
+    </div>
+    <p class="callout" id="note">At small n the biased MLE's mean sits visibly left of the true line. Drag n up and the two distributions slide together — bias vanishes as n → ∞.</p>
+  </div>
+
+  <div class="theorem">
+    <p class="lbl">The precise statement</p>
+    <p>For i.i.d. data with finite variance σ², E[S²₍ₙ₋₁₎] = σ² exactly — unbiasedness needs no normality assumption. The MLE satisfies E[S²₍ₙ₎] = (n−1)/n · σ², biased downward. Both converge to σ² as n → ∞ (consistency); normality is required only for the estimator's exact sampling distribution, not for these expectations.</p>
+  </div>
+
+  <div class="twist">
+    <p class="lbl">The twist — unbiased is not "best"</p>
+    <p>Accuracy is mean squared error, MSE = variance + bias². Minimising MSE over divisors S = Σ(xᵢ−x̄)²/k gives, for normal data, <b>k = n+1</b> — not n−1. Trading a little bias for enough variance reduction wins. The full ordering is <b>MSE(÷(n+1)) &lt; MSE(÷n) &lt; MSE(÷(n−1))</b>: the unbiased estimator has the <i>worst</i> MSE of the three, and the "wrong" MLE beats it. This is the bias–variance trade-off in one line, and the reason shrinkage estimators exist. Watch it below (clearest at small n):</p>
+    <div class="mserow">
+      <div class="mse" id="mse-np1"><div class="k">MSE ÷(n+1)</div><div class="v" id="v-np1">—</div></div>
+      <div class="mse" id="mse-n"><div class="k">MSE ÷n</div><div class="v" id="v-n">—</div></div>
+      <div class="mse" id="mse-nm1"><div class="k">MSE ÷(n−1)</div><div class="v" id="v-nm1">—</div></div>
+    </div>
+  </div>
+
+  <div class="vol">
+    <p class="lbl">Why this matters · volarixs</p>
+    <p>Variance bias isn't academic for you — it's the vol you annualise and, more sharply, the <b>covariance matrices</b> under your factor and regime models. On a short window (exactly when regimes shift and you <i>want</i> short windows), the ÷n estimator understates realised vol; the correction bites most when data is scarce.</p>
+    <p>One dimension up it gets worse: the sample covariance matrix is unbiased entry-by-entry but a poor estimate of the <i>matrix</i> once the number of assets approaches the number of observations — its eigenvalues fan out and the inverse (what any Markowitz or factor step needs) explodes. The fix is precisely the twist above: deliberately bias toward a simpler target to cut variance — <code>Ledoit–Wolf shrinkage</code>. Same bias–variance trade you just watched, now on <code>Σ̂</code>.</p>
+  </div>
+
+  <div class="sec">Check yourself</div>
+  <div class="q" id="q1"><p class="stem">The MLE estimator S²₍ₙ₎ (divide by n) systematically:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q2"><p class="stem">We divide by n−1 rather than n because:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q3"><p class="stem">Among estimators Σ(xᵢ−x̄)²/k for normal data, which k minimises mean squared error?</p><div class="opts"></div><p class="fb"></p></div>
+
+  <div class="checkRow">
+    <button class="act primary" id="check">Check answers</button>
+    <span class="hint" id="hint">Select an answer for all three first.</span>
+  </div>
+  <div class="done" id="done">Lesson complete — saved. Next: MLE done properly — consistency, and the sampling distribution behind these estimates.</div>
+</div>
+
+<script>
+/* storage shim: window.storage (Claude artifacts) or localStorage (web) */
+if(!window.storage){window.storage={async get(k){const v=localStorage.getItem(k);if(v==null)throw new Error('missing');return{key:k,value:v}},async set(k,v){localStorage.setItem(k,v);return{key:k,value:v}},async delete(k){localStorage.removeItem(k);return{key:k,deleted:true}},async list(p){const ks=[];for(let i=0;i<localStorage.length;i++){const kk=localStorage.key(i);if(!p||kk.startsWith(p))ks.push(kk)}return{keys:ks}}};}
+function renderMath(){
+  document.querySelectorAll('.math').forEach(el=>{
+    const tex=el.getAttribute('data-tex'); if(!tex||el.dataset.done)return;
+    try{ if(window.katex){katex.render(tex,el,{displayMode:el.dataset.display==='1',throwOnError:false});el.dataset.done='1';} else {el.textContent=tex;} }
+    catch(e){ el.textContent=tex; }
+  });
+}
+
+const MU=50,SIGMA=12,TRUE=144;
+const XMAX=3*TRUE, B=46;
+const estNm1=[],estN=[],ss=[];
+const nVal=()=>parseInt(document.getElementById('n').value,10);
+function randn(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+function drawSamples(k){
+  const n=nVal();
+  for(let r=0;r<k;r++){
+    let s=0;const xs=[];for(let j=0;j<n;j++){const x=MU+SIGMA*randn();xs.push(x);s+=x;}
+    const xbar=s/n;let S=0;for(const x of xs)S+=(x-xbar)*(x-xbar);
+    ss.push(S);estNm1.push(S/(n-1));estN.push(S/n);
+  }
+  const cap=4000;if(estN.length>cap){const o=estN.length-cap;estN.splice(0,o);estNm1.splice(0,o);ss.splice(0,o);}
+  renderPlot();
+}
+function mean(a){let s=0;for(const v of a)s+=v;return a.length?s/a.length:0;}
+function renderPlot(){
+  const PW=680,PH=340,padL=44,padR=16,padT=16,padB=34,iw=PW-padL-padR,ih=PH-padT-padB,y0=padT+ih;
+  const X=v=>padL+Math.max(0,Math.min(1,v/XMAX))*iw;
+  const binW=XMAX/B, hN=new Array(B).fill(0), hNm1=new Array(B).fill(0);
+  estN.forEach(v=>{let b=Math.floor(v/binW);if(b<0)b=0;if(b>=B)b=B-1;hN[b]++;});
+  estNm1.forEach(v=>{let b=Math.floor(v/binW);if(b<0)b=0;if(b>=B)b=B-1;hNm1[b]++;});
+  let mx=1;for(let i=0;i<B;i++){mx=Math.max(mx,hN[i],hNm1[i]);}
+  const bw=iw/B;
+  let s='';
+  s+=`<line x1="${padL}" y1="${y0}" x2="${PW-padR}" y2="${y0}" stroke="var(--hair2)" stroke-width="1"/>`;
+  [0,TRUE,2*TRUE,XMAX].forEach(v=>{s+=`<text x="${X(v)}" y="${y0+18}" text-anchor="middle" font-family="var(--mono)" font-size="11" fill="var(--faint)">${v}</text>`;});
+  function bars(h,fill){let p='';for(let i=0;i<B;i++){if(!h[i])continue;const bh=(h[i]/mx)*ih;p+=`<rect x="${(padL+i*bw).toFixed(1)}" y="${(y0-bh).toFixed(1)}" width="${(bw+0.5).toFixed(1)}" height="${bh.toFixed(1)}" fill="${fill}" opacity="0.45"/>`;}return p;}
+  s+=bars(hNm1,'var(--accent)');
+  s+=bars(hN,'var(--series)');
+  // true plumb
+  s+=`<line x1="${X(TRUE)}" y1="${padT-2}" x2="${X(TRUE)}" y2="${y0}" stroke="var(--ink)" stroke-width="1.6"/>`;
+  s+=`<text x="${X(TRUE)}" y="${padT+8}" text-anchor="middle" font-family="var(--mono)" font-size="11" fill="var(--ink)">σ²=144</text>`;
+  if(estN.length){
+    const mN=mean(estN),mNm1=mean(estNm1);
+    [['var(--series)',mN],['var(--accent)',mNm1]].forEach(([c,m])=>{
+      s+=`<line x1="${X(m)}" y1="${padT}" x2="${X(m)}" y2="${y0}" stroke="${c}" stroke-width="1.6" stroke-dasharray="5 4"/>`;
+    });
+  }
+  document.getElementById('plot').innerHTML=s;
+  // stats
+  const n=nVal(),count=estN.length;
+  const mN=count?mean(estN):null,mNm1=count?mean(estNm1):null;
+  document.getElementById('mNm1').textContent=count?mNm1.toFixed(1):'—';
+  document.getElementById('mN').textContent=count?mN.toFixed(1):'—';
+  document.getElementById('bN').textContent=count?(mN-TRUE>=0?'+':'')+(mN-TRUE).toFixed(1):'—';
+  // MSE for three divisors from stored SS
+  if(count){
+    let seN=0,seNm1=0,seNp1=0;
+    for(let i=0;i<ss.length;i++){const S=ss[i];
+      const eN=S/n,eNm1=S/(n-1),eNp1=S/(n+1);
+      seN+=(eN-TRUE)**2;seNm1+=(eNm1-TRUE)**2;seNp1+=(eNp1-TRUE)**2;}
+    const mseN=seN/count,mseNm1=seNm1/count,mseNp1=seNp1/count;
+    document.getElementById('v-n').textContent=Math.round(mseN);
+    document.getElementById('v-nm1').textContent=Math.round(mseNm1);
+    document.getElementById('v-np1').textContent=Math.round(mseNp1);
+    const wins=[['mse-np1',mseNp1],['mse-n',mseN],['mse-nm1',mseNm1]].sort((a,b)=>a[1]-b[1])[0][0];
+    ['mse-np1','mse-n','mse-nm1'].forEach(id=>document.getElementById(id).classList.toggle('win',id===wins&&count>=50));
+    if(count>=40){document.getElementById('note').textContent=`Mean of S²₍ₙ₋₁₎ sits on 144; mean of S²₍ₙ₎ sits low at about ${(TRUE*(n-1)/n).toFixed(0)} = (n−1)/n·σ². Raise n and the gap closes. The MSE row confirms the twist: ÷(n+1) wins, ÷(n−1) loses.`;}
+  } else {
+    ['v-n','v-nm1','v-np1'].forEach(id=>document.getElementById(id).textContent='—');
+    ['mse-np1','mse-n','mse-nm1'].forEach(id=>document.getElementById(id).classList.remove('win'));
+  }
+}
+function resetSim(){estN.length=0;estNm1.length=0;ss.length=0;renderPlot();document.getElementById('note').textContent='At small n the biased MLE\u2019s mean sits visibly left of the true line. Drag n up and the two distributions slide together \u2014 bias vanishes as n \u2192 \u221e.';}
+
+document.getElementById('n').addEventListener('input',e=>{document.getElementById('nOut').textContent=e.target.value;});
+document.getElementById('n').addEventListener('change',()=>{const had=estN.length;estN.length=0;estNm1.length=0;ss.length=0;drawSamples(had>0?Math.min(Math.max(had,400),1600):400);});
+document.getElementById('one').onclick=()=>drawSamples(1);
+document.getElementById('many').onclick=()=>drawSamples(400);
+document.getElementById('reset').onclick=resetSim;
+
+const QS={
+  q1:{opts:["overestimates σ²","underestimates σ²","is exactly unbiased","has larger variance than S²₍ₙ₋₁₎"],a:1,
+    fb:"Deviations are measured from x̄, which is pulled toward the sample, so the squared spread comes out too small — the MLE sits at (n−1)/n·σ², below the truth."},
+  q2:{opts:["there are n−1 distinct data points","one degree of freedom is spent estimating x̄, so deviations from it understate the true spread","it lowers the estimator's variance","it is only a convention with no real justification"],a:1,
+    fb:"Computing x̄ imposes one constraint (Σ(xᵢ−x̄)=0), leaving n−1 free deviations. Dividing by n−1 exactly returns the freedom used, giving E[S²₍ₙ₋₁₎]=σ²."},
+  q3:{opts:["k = n−1 (the unbiased choice)","k = n (the MLE)","k = n+1","the unbiased estimator minimises MSE by definition"],a:2,
+    fb:"MSE = variance + bias². Optimising the divisor gives k=n+1 for normal data. Unbiased ≠ minimum-MSE — in fact ÷(n−1) has the worst MSE of the three, as the panel shows."}
+};
+const sel={q1:null,q2:null,q3:null};let revealed=false;
+Object.keys(QS).forEach(id=>{
+  const holder=document.querySelector('#'+id+' .opts');
+  QS[id].opts.forEach((txt,i)=>{
+    const b=document.createElement('button');b.className='opt';b.textContent=String.fromCharCode(65+i)+'.  '+txt;
+    b.onclick=()=>{if(revealed)return;sel[id]=i;[...holder.children].forEach((c,ci)=>c.classList.toggle('sel',ci===i));document.getElementById('hint').style.display='none';};
+    holder.appendChild(b);
+  });
+});
+document.getElementById('check').onclick=async()=>{
+  if(revealed)return;
+  if(sel.q1===null||sel.q2===null||sel.q3===null){document.getElementById('hint').style.display='inline';return;}
+  revealed=true;let score=0;
+  Object.keys(QS).forEach(id=>{
+    const a=QS[id].a,holder=document.querySelector('#'+id+' .opts'),fb=document.querySelector('#'+id+' .fb');
+    [...holder.children].forEach((c,ci)=>{c.style.cursor='default';c.classList.remove('sel');if(ci===a)c.classList.add('correct');else if(ci===sel[id])c.classList.add('wrong');});
+    if(sel[id]===a)score++;fb.textContent=QS[id].fb;fb.classList.add('show');
+  });
+  const btn=document.getElementById('check');btn.style.opacity='0.5';btn.textContent='Checked · '+score+'/3';
+  document.getElementById('done').classList.add('show');
+  try{await window.storage.set('mfs:lesson02',JSON.stringify({done:true,retrieval:score+'/3',ts:Date.now()}),false);}catch(e){}
+};
+
+function boot(){renderMath();drawSamples(400);}
+if(window.katex)boot();else window.addEventListener('load',boot);
+(async()=>{try{const r=await window.storage.get('mfs:lesson02',false);if(r&&r.value){const v=JSON.parse(r.value);if(v.done){const c=document.getElementById('chip');c.classList.add('show');c.textContent='completed · '+v.retrieval;}}}catch(e){}})();
+</script>
+</body>
+</html>

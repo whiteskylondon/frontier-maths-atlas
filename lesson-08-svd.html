@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lesson 08 — SVD & low-rank structure</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<style>
+  :root{
+    --paper:#FAFAF6;--ink:#1A1C22;--muted:#63676E;--faint:#9A9EA4;--hair:#E4E3DB;--hair2:#D4D3CA;--panel:#FFFFFF;
+    --accent:#24507A;--accent-bg:#EAF0F6;--series:#B07A2E;--miss:#B23A3A;--ok:#2F6B4F;--ok-bg:#E9F1EC;
+    --vol:#8A5A2B;--vol-bg:#F6EFE6;--serif:Iowan Old Style,Palatino,Georgia,serif;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme:dark){:root{--paper:#15161A;--ink:#E9E8E2;--muted:#A2A6AC;--faint:#71757B;--hair:#2A2C31;--hair2:#3A3C42;--panel:#1B1D22;--accent:#7FB0E0;--accent-bg:#1E2A38;--series:#D9A85E;--miss:#E07A7A;--ok:#7FC49F;--ok-bg:#1C2A22;--vol:#D9A066;--vol-bg:#2A2115;}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.62;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:750px;margin:0 auto;padding:32px 24px 60px}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 6px}
+  h1{font-family:var(--serif);font-weight:600;font-size:27px;line-height:1.22;margin:0 0 6px;letter-spacing:-.01em}
+  .chip{display:none;font-family:var(--mono);font-size:11px;letter-spacing:.05em;color:var(--ok);border:1px solid var(--ok);border-radius:20px;padding:3px 10px;vertical-align:middle;margin-left:10px}
+  .chip.show{display:inline-block}
+  .sub{color:var(--muted);font-size:15px;margin:0 0 18px}
+  .levels{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 26px}
+  .levels .lk{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+  .levels .pill{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-family:var(--mono);color:var(--muted);background:var(--panel);border:1px solid var(--hair2);border-radius:20px;padding:4px 11px}
+  .levels .pill b{color:var(--accent);font-weight:700;letter-spacing:.03em}
+  p.lead{font-size:16px;margin:0 0 22px}
+  p.lead b{font-weight:600}
+  .sec{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:36px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--hair)}
+  .mblock{margin:16px 0;overflow-x:auto}
+  .glo{list-style:none;padding:0;margin:14px 0 0}
+  .glo li{display:flex;gap:14px;padding:9px 0;border-top:1px solid var(--hair);align-items:baseline}
+  .glo li:first-child{border-top:none}
+  .glo .sym{flex:0 0 92px;text-align:right;padding-top:2px}
+  .glo .def{font-size:14.5px}
+  .glo .def .n{color:var(--muted)}
+  .step{font-size:14.5px;color:var(--muted);margin:10px 0}
+  .panel{background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:20px;margin:14px 0}
+  .imgs{display:flex;flex-wrap:wrap;gap:22px;align-items:flex-start}
+  .imgs figure{margin:0;display:flex;flex-direction:column;gap:6px}
+  .imgs figcaption{font-family:var(--mono);font-size:12px;color:var(--muted)}
+  canvas{image-rendering:pixelated;border:1px solid var(--hair2);border-radius:6px;width:196px;height:196px;background:var(--panel)}
+  .ctrls{display:flex;flex-wrap:wrap;gap:16px 26px;align-items:flex-end;margin:16px 0 6px}
+  .field{display:flex;flex-direction:column;gap:6px;min-width:220px;flex:1}
+  .field label{font-size:12px;color:var(--muted);font-family:var(--mono);letter-spacing:.03em;display:flex;justify-content:space-between}
+  .field label b{color:var(--ink);font-weight:600}
+  input[type=range]{width:100%;accent-color:var(--accent);height:20px}
+  svg{max-width:100%;height:auto;display:block}
+  .tally{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 2px}
+  .stat{flex:1;min-width:120px;background:var(--paper);border-radius:9px;padding:9px 12px}
+  .stat .k{font-size:11px;font-family:var(--mono);letter-spacing:.04em;color:var(--muted);text-transform:uppercase}
+  .stat .v{font-size:19px;font-weight:600;font-family:var(--mono);margin-top:2px}
+  .stat .v.a{color:var(--accent)}.stat .v.g{color:var(--ok)}
+  .callout{font-size:14px;color:var(--muted);border-left:2px solid var(--accent);padding:2px 0 2px 14px;margin:16px 0 2px;min-height:1.4em}
+  .theorem{background:var(--accent-bg);border-radius:12px;padding:18px 20px;margin:16px 0}
+  .theorem .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
+  .theorem p{font-family:var(--serif);font-size:16px;line-height:1.55;margin:0}
+  .twist{border:1px dashed var(--hair2);border-radius:12px;padding:16px 18px;margin:16px 0;background:var(--panel)}
+  .twist .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+  .twist p{margin:0;font-size:14.6px}
+  .vol{background:var(--vol-bg);border:1px solid var(--vol);border-radius:12px;padding:18px 20px;margin:16px 0}
+  .vol .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:var(--vol);margin:0 0 8px}
+  .vol p{margin:0 0 10px;font-size:14.8px}.vol p:last-child{margin-bottom:0}
+  .vol code{font-family:var(--mono);font-size:13px;background:rgba(138,90,43,.12);padding:1px 5px;border-radius:4px}
+  .q{border:1px solid var(--hair);border-radius:12px;padding:16px 18px;margin:12px 0;background:var(--panel)}
+  .q .stem{font-size:15px;font-weight:500;margin:0 0 12px}
+  .opt{display:block;width:100%;text-align:left;font-size:14px;padding:10px 12px;margin:0 0 8px;border:1px solid var(--hair2);border-radius:8px;background:transparent;color:var(--ink);cursor:pointer;line-height:1.45}
+  .opt:last-child{margin-bottom:0}
+  .opt:hover{border-color:var(--accent)}
+  .opt.sel{border-color:var(--accent);background:var(--accent-bg)}
+  .opt.correct{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+  .opt.wrong{background:#F7ECEC;border-color:var(--miss);color:var(--miss)}
+  @media (prefers-color-scheme:dark){.opt.wrong{background:#2E1E1E}}
+  .fb{font-size:13.5px;color:var(--muted);margin:10px 0 0;line-height:1.5;display:none}
+  .fb.show{display:block}
+  .checkRow{display:flex;align-items:center;gap:14px;margin:18px 0 0;flex-wrap:wrap}
+  .hint{font-size:13px;color:var(--miss);display:none}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-family:var(--sans);font-size:14px;padding:8px 14px;border-radius:8px;border:1px solid var(--accent);cursor:pointer}
+  .scoreOut{font-family:var(--mono);font-size:14px;font-weight:600}
+  .done{display:none;align-items:center;gap:10px;background:var(--ok-bg);color:var(--ok);border-radius:10px;padding:12px 16px;font-size:14px;margin:14px 0 0}
+  .done.show{display:flex}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">Lesson 08 · Wing I — the linear-algebra substrate</p>
+  <h1>SVD &amp; low-rank structure<span class="chip" id="chip"></span></h1>
+  <p class="sub">Every matrix is a rotation, a scaling, and a rotation — and most of the scaling is negligible.</p>
+  <div class="levels">
+    <span class="lk">Level</span>
+    <span class="pill"><b>US</b> Advanced undergrad → graduate</span>
+    <span class="pill"><b>FR</b> Licence L3 – Master 1 · ENSAE 2A</span>
+  </div>
+
+  <p class="lead">The singular value decomposition is the master factorization of applied maths: <b>any</b> matrix, square or not, splits into an orthonormal rotation, a non-negative diagonal stretch, and another rotation. The stretch factors — the <b>singular values</b> — are sorted largest-first, and in real data they collapse fast. That collapse is why compression, PCA, dimensionality reduction, and low-rank fine-tuning all work: the object lives in far fewer dimensions than it appears to.</p>
+
+  <div class="sec">The decomposition</div>
+  <div class="mblock math" data-tex="A \;=\; U\,\Sigma\,V^{\top} \;=\; \sum_{i=1}^{r}\sigma_i\,u_i\,v_i^{\top}" data-display="1"></div>
+  <p class="step">Left of the equals: a single matrix as a product of three. Right of it: the same matrix as a <b>sum of rank-1 layers</b>, each layer an outer product weighted by a singular value. Truncating that sum is the whole game. The singular values connect straight back to Lessons 6–7 — they are the square roots of the eigenvalues of the Gram matrix:</p>
+  <div class="mblock math" data-tex="\sigma_i^2=\lambda_i\big(A^{\top}A\big),\qquad v_i=\text{eigvec}_i\big(A^{\top}A\big),\qquad u_i=\tfrac{1}{\sigma_i}\,A v_i" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="U"></span><span class="def"><b>left singular vectors</b> (orthonormal columns). <span class="n">Eigenvectors of AAᵀ — the observation-space directions (the XXᵀ side from Lesson 6).</span></span></li>
+    <li><span class="sym math" data-tex="\Sigma"></span><span class="def"><b>singular values</b> on the diagonal, σ₁ ≥ σ₂ ≥ … ≥ 0. <span class="n">The stretch along each direction; their decay is the effective dimensionality.</span></span></li>
+    <li><span class="sym math" data-tex="V"></span><span class="def"><b>right singular vectors</b> (orthonormal). <span class="n">Eigenvectors of AᵀX — the feature-space principal axes (the XᵀX side).</span></span></li>
+    <li><span class="sym math" data-tex="\sigma_i u_i v_i^{\top}"></span><span class="def">one <b>rank-1 layer</b>. <span class="n">A is the sum of these; the big-σ layers carry the signal, the small-σ layers the noise.</span></span></li>
+  </ul>
+
+  <div class="sec">See it — rank-k reconstruction &amp; the singular spectrum</div>
+  <div class="panel">
+    <div class="imgs">
+      <figure><canvas id="orig" width="48" height="48"></canvas><figcaption>original (rank 48)</figcaption></figure>
+      <figure><canvas id="recon" width="48" height="48"></canvas><figcaption id="rcap">rank-k reconstruction</figcaption></figure>
+      <figure style="flex:1;min-width:240px">
+        <svg id="spectrum" viewBox="0 0 320 200" role="img" aria-label="Singular value spectrum, first k highlighted"></svg>
+        <figcaption>singular values σ₁…σ₂₄ (kept ones filled)</figcaption>
+      </figure>
+    </div>
+    <div class="ctrls">
+      <div class="field"><label>rank k (layers kept) <b id="kOut">3</b></label><input type="range" id="k" min="1" max="24" value="3" step="1" /></div>
+    </div>
+    <div class="tally">
+      <div class="stat"><div class="k">energy captured</div><div class="v g" id="energy">—</div></div>
+      <div class="stat"><div class="k">numbers stored</div><div class="v a" id="store">—</div></div>
+      <div class="stat"><div class="k">vs full matrix</div><div class="v" id="ratio">—</div></div>
+    </div>
+    <p class="callout" id="cnote"></p>
+  </div>
+
+  <div class="sec">The reason it matters — Eckart–Young</div>
+  <p class="step">Keeping the top k layers isn't just <i>a</i> low-rank approximation — it's provably the <b>best</b> one, in both Frobenius and spectral norm. This is the exact fact from your placement quiz:</p>
+  <div class="mblock math" data-tex="\min_{\operatorname{rank}(B)\le k}\lVert A-B\rVert \;=\; \Big\lVert A-\textstyle\sum_{i=1}^{k}\sigma_i u_i v_i^{\top}\Big\rVert,\qquad \lVert A-A_k\rVert_F=\sqrt{\textstyle\sum_{i>k}\sigma_i^2}" data-display="1"></div>
+  <p class="step">The approximation error is just the tail of singular values you dropped. Fast decay ⇒ tiny tail ⇒ a handful of layers reconstructs almost everything — which is what you watched above.</p>
+
+  <div class="theorem">
+    <p class="lbl">The precise statement</p>
+    <p>Every real m×n matrix admits A = UΣVᵀ with U, V orthogonal and Σ diagonal with entries σ₁ ≥ … ≥ σ_r &gt; 0 (r = rank). The σᵢ are the square roots of the eigenvalues of AᵀA (equivalently AAᵀ). The truncated sum Aₖ = Σᵢ₌₁ᵏ σᵢuᵢvᵢᵀ is the unique best rank-≤k approximation in every unitarily-invariant norm (Eckart–Young–Mirsky), with Frobenius error √(Σ_{i&gt;k} σᵢ²). The Moore–Penrose pseudoinverse is A⁺ = VΣ⁺Uᵀ.</p>
+  </div>
+
+  <div class="twist">
+    <p class="lbl">The twist — SVD is the numerically honest regression</p>
+    <p>Lesson 5 solved least squares with (XᵀX)⁻¹Xᵀy, and Lesson 5's own twist warned that a tiny eigenvalue of XᵀX blows the inverse up. The SVD is the cure: the pseudoinverse <code>A⁺ = VΣ⁺Uᵀ</code> inverts each singular value <i>separately</i>, so you can see and truncate the near-zero directions instead of dividing by them — that's exactly what "truncated-SVD regression" and ridge do to collinear features. More broadly: exact low rank is rare, but <i>approximate</i> low rank is everywhere in ML — weight matrices, attention maps, embedding tables all have fast-decaying spectra, which is the entire premise behind <code>LoRA</code> (fine-tune a big weight W by a low-rank update ΔW = BAᵀ) and behind why models compress at all. The singular spectrum, not the nominal shape, is a matrix's true size.</p>
+  </div>
+
+  <div class="vol">
+    <p class="lbl">Why this matters · volarixs</p>
+    <p>SVD <i>is</i> your <code>pca_factors</code> driver: run it on the centred returns panel and the right singular vectors are the principal components / eigen-portfolios, with σᵢ² the variance each carries — the same spectrum whose small tail was the collinear-driver instability in Lessons 5 and 7. "How many factors really drive the universe?" is literally "where does the singular spectrum bend."</p>
+    <p>Two operational uses: the <b>numerical rank</b> (count of non-negligible σ) is your honest count of independent drivers, a cleaner collinearity read than eyeballing correlations; and when a factor regression is ill-conditioned, fit it through the <b>truncated pseudoinverse</b> rather than the raw normal equations — you drop the noise directions instead of amplifying them.</p>
+  </div>
+
+  <div class="sec">Check yourself</div>
+  <div class="q" id="q1"><p class="stem">In A = UΣVᵀ, the matrices U and V are ___ and Σ is ___:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q2"><p class="stem">The best rank-k approximation of A in Frobenius norm is:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q3"><p class="stem">The singular values of A relate to AᵀA how?</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q4"><p class="stem">A rapidly decaying singular-value spectrum means:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q5"><p class="stem">The pseudoinverse A⁺ = VΣ⁺Uᵀ is safer than (XᵀX)⁻¹Xᵀ for collinear X because:</p><div class="opts"></div><p class="fb"></p></div>
+
+  <div class="checkRow">
+    <button class="primary" id="check">Check answers</button>
+    <span class="scoreOut" id="scoreOut"></span>
+    <span class="hint" id="hint">Answer all five first.</span>
+  </div>
+  <div class="done" id="done">Substrate laid. Next in Wing I: the geometry of high-dimensional embeddings.</div>
+</div>
+
+<script>
+/* storage shim: window.storage (Claude artifacts) or localStorage (web) */
+if(!window.storage){window.storage={async get(k){const v=localStorage.getItem(k);if(v==null)throw new Error('missing');return{key:k,value:v}},async set(k,v){localStorage.setItem(k,v);return{key:k,value:v}},async delete(k){localStorage.removeItem(k);return{key:k,deleted:true}},async list(p){const ks=[];for(let i=0;i<localStorage.length;i++){const kk=localStorage.key(i);if(!p||kk.startsWith(p))ks.push(kk)}return{keys:ks}}};}
+function renderMath(){document.querySelectorAll('.math').forEach(el=>{const tex=el.getAttribute('data-tex');if(!tex||el.dataset.done)return;try{if(window.katex){katex.render(tex,el,{displayMode:el.dataset.display==='1',throwOnError:false});el.dataset.done='1';}else el.textContent=tex;}catch(e){el.textContent=tex;}});}
+
+/* ---------- build a smooth (approximately low-rank) image ---------- */
+const N=48;
+const A=new Float64Array(N*N);
+(function(){
+  for(let i=0;i<N;i++)for(let j=0;j<N;j++){
+    let v=0.5+0.30*Math.sin(i*0.27)*Math.cos(j*0.21)
+          +0.28*Math.exp(-(((i-15)**2)+((j-31)**2))/140)
+          -0.22*((i+j)/(2*N))
+          +0.16*Math.sin((i+j)*0.14)
+          +0.12*Math.cos((i-j)*0.19);
+    A[i*N+j]=Math.max(0,Math.min(1,v));
+  }
+})();
+let totalE=0; for(let t=0;t<A.length;t++) totalE+=A[t]*A[t];
+
+/* ---------- top-K SVD by power iteration + deflation ---------- */
+function svdTopK(M,n,K){
+  const R=Float64Array.from(M);const tri=[];
+  for(let t=0;t<K;t++){
+    let v=new Float64Array(n);for(let j=0;j<n;j++)v[j]=Math.random()-0.5;
+    let nrm=Math.hypot(...v);for(let j=0;j<n;j++)v[j]/=nrm;
+    let u=new Float64Array(n),sigma=0;
+    for(let it=0;it<90;it++){
+      for(let i=0;i<n;i++){let s=0;for(let j=0;j<n;j++)s+=R[i*n+j]*v[j];u[i]=s;} // u=Rv
+      let z=new Float64Array(n);for(let j=0;j<n;j++){let s=0;for(let i=0;i<n;i++)s+=R[i*n+j]*u[i];z[j]=s;} // z=Rᵀu
+      let zn=Math.hypot(...z)||1e-12;for(let j=0;j<n;j++)v[j]=z[j]/zn;
+    }
+    for(let i=0;i<n;i++){let s=0;for(let j=0;j<n;j++)s+=R[i*n+j]*v[j];u[i]=s;}
+    sigma=Math.hypot(...u)||1e-12;for(let i=0;i<n;i++)u[i]/=sigma;
+    tri.push({s:sigma,u:Float64Array.from(u),v:Float64Array.from(v)});
+    for(let i=0;i<n;i++)for(let j=0;j<n;j++)R[i*n+j]-=sigma*u[i]*v[j]; // deflate
+  }
+  return tri;
+}
+const K=24;
+const TRI=svdTopK(A,N,K);
+
+/* ---------- rendering ---------- */
+function draw(canvas,data){
+  const ctx=canvas.getContext('2d'),img=ctx.createImageData(N,N);
+  for(let t=0;t<N*N;t++){const g=Math.max(0,Math.min(1,data[t]))*255|0;img.data[t*4]=g;img.data[t*4+1]=g;img.data[t*4+2]=g;img.data[t*4+3]=255;}
+  ctx.putImageData(img,0,0);
+}
+function reconstruct(k){
+  const out=new Float64Array(N*N);
+  for(let t=0;t<k;t++){const{s,u,v}=TRI[t];for(let i=0;i<N;i++){const su=s*u[i];for(let j=0;j<N;j++)out[i*N+j]+=su*v[j];}}
+  return out;
+}
+function drawSpectrum(k){
+  const W=320,H=200,padL=8,padR=8,padT=10,padB=22,iw=W-padL-padR,ih=H-padT-padB;
+  const mx=TRI[0].s,bw=iw/K;let s='';
+  s+=`<line x1="${padL}" y1="${padT+ih}" x2="${W-padR}" y2="${padT+ih}" stroke="var(--hair2)"/>`;
+  TRI.forEach((tr,i)=>{const h=(tr.s/mx)*ih,x=padL+i*bw;s+=`<rect x="${(x+1).toFixed(1)}" y="${(padT+ih-h).toFixed(1)}" width="${(bw-2).toFixed(1)}" height="${h.toFixed(1)}" fill="${i<k?'var(--accent)':'var(--hair2)'}" opacity="${i<k?0.9:0.5}"/>`;});
+  s+=`<text x="${padL}" y="${H-6}" font-family="var(--mono)" font-size="10" fill="var(--faint)">σ₁</text>`;
+  s+=`<text x="${W-padR}" y="${H-6}" text-anchor="end" font-family="var(--mono)" font-size="10" fill="var(--faint)">σ₂₄</text>`;
+  document.getElementById('spectrum').innerHTML=s;
+}
+function update(){
+  const k=+document.getElementById('k').value;
+  document.getElementById('kOut').textContent=k;
+  draw(document.getElementById('recon'),reconstruct(k));
+  drawSpectrum(k);
+  let cap=0;for(let t=0;t<k;t++)cap+=TRI[t].s*TRI[t].s;
+  const energy=Math.min(100,100*cap/totalE);
+  const stored=k*(2*N+1),full=N*N;
+  document.getElementById('energy').textContent=energy.toFixed(1)+'%';
+  document.getElementById('store').textContent=stored.toLocaleString()+' / '+full.toLocaleString();
+  document.getElementById('ratio').textContent=(100*stored/full).toFixed(0)+'% of full';
+  document.getElementById('rcap').textContent='rank-'+k+' reconstruction';
+  document.getElementById('cnote').textContent = energy>99
+    ? `At rank ${k} the reconstruction captures ${energy.toFixed(1)}% of the matrix's energy using ${(100*stored/full).toFixed(0)}% of the storage — the dropped ${K-k}+ layers were essentially noise. This is compression by throwing away small singular values.`
+    : `Rank ${k}: ${energy.toFixed(1)}% of the energy in ${(100*stored/full).toFixed(0)}% of the numbers. Drag k up — each added layer adds σₖ²/total energy, and the gains shrink because the spectrum decays.`;
+}
+document.getElementById('k').addEventListener('input',update);
+
+/* ---------- retrieval ---------- */
+const QS={
+  q1:{opts:["diagonal; orthogonal","orthogonal; diagonal with non-negative entries","symmetric; triangular","invertible; sparse"],a:1,
+    fb:"U and V are orthogonal (rotations/reflections, orthonormal columns); Σ is diagonal with non-negative singular values σ₁ ≥ σ₂ ≥ …. So A rotates, scales along axes, then rotates."},
+  q2:{opts:["the top-k rows of A","the truncated SVD Σᵢ≤ₖ σᵢuᵢvᵢᵀ (Eckart–Young)","the k largest entries of A","the first k eigenvectors of A"],a:1,
+    fb:"Eckart–Young–Mirsky: truncating the SVD to the top k singular triplets is optimal in every unitarily-invariant norm, with error √(Σ_{i>k} σᵢ²)."},
+  q3:{opts:["σᵢ = the diagonal of AᵀA","σᵢ² = the eigenvalues of AᵀA (and right singular vectors = its eigenvectors)","σᵢ = the trace of AᵀA","they are unrelated"],a:1,
+    fb:"AᵀA is symmetric PSD; its eigenvalues are σᵢ², its eigenvectors are the right singular vectors vᵢ. This is the XᵀX object from Lessons 6–7, spectrally decomposed."},
+  q4:{opts:["the matrix is full rank and incompressible","the data is approximately low-rank — a few components capture most of the energy","the matrix is singular and cannot be inverted","the singular vectors are not orthogonal"],a:1,
+    fb:"Fast decay means the tail Σ_{i>k} σᵢ² is tiny, so a low-rank truncation loses almost nothing — the object effectively lives in few dimensions. This is why PCA, compression, and LoRA work."},
+  q5:{opts:["it is faster to compute","it inverts each singular value separately, so near-zero directions can be truncated instead of blown up","it makes the estimate unbiased","it requires fewer observations"],a:1,
+    fb:"(XᵀX)⁻¹ divides by tiny eigenvalues and explodes; A⁺ = VΣ⁺Uᵀ inverts each σᵢ on its own, so you can drop or damp the near-zero σ (truncated-SVD / ridge) and keep the fit stable."}
+};
+const sel={q1:null,q2:null,q3:null,q4:null,q5:null};let revealed=false;
+Object.keys(QS).forEach(id=>{const holder=document.querySelector('#'+id+' .opts');QS[id].opts.forEach((txt,i)=>{const b=document.createElement('button');b.className='opt';b.textContent=String.fromCharCode(65+i)+'.  '+txt;b.onclick=()=>{if(revealed)return;sel[id]=i;[...holder.children].forEach((c,ci)=>c.classList.toggle('sel',ci===i));document.getElementById('hint').style.display='none';};holder.appendChild(b);});});
+document.getElementById('check').onclick=async()=>{
+  if(revealed)return;if(Object.values(sel).some(v=>v===null)){document.getElementById('hint').style.display='inline';return;}
+  revealed=true;let score=0;
+  Object.keys(QS).forEach(id=>{const a=QS[id].a,holder=document.querySelector('#'+id+' .opts'),fb=document.querySelector('#'+id+' .fb');[...holder.children].forEach((c,ci)=>{c.style.cursor='default';c.classList.remove('sel');if(ci===a)c.classList.add('correct');else if(ci===sel[id])c.classList.add('wrong');});if(sel[id]===a)score++;fb.textContent=QS[id].fb;fb.classList.add('show');});
+  document.getElementById('check').style.opacity='0.5';document.getElementById('check').textContent='Checked';
+  document.getElementById('scoreOut').textContent=score+' / 5';document.getElementById('done').classList.add('show');
+  try{await window.storage.set('mfs:lesson08',JSON.stringify({done:true,retrieval:score+'/5',ts:Date.now()}),false);}catch(e){}
+};
+function boot(){renderMath();draw(document.getElementById('orig'),A);update();}
+if(window.katex)boot();else window.addEventListener('load',boot);
+(async()=>{try{const r=await window.storage.get('mfs:lesson08',false);if(r&&r.value){const v=JSON.parse(r.value);if(v.done){const c=document.getElementById('chip');c.classList.add('show');c.textContent='completed · '+v.retrieval;}}}catch(e){}})();
+</script>
+</body>
+</html>

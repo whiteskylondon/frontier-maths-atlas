@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lesson 05 — Least squares in matrix form</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<style>
+  :root{
+    --paper:#FAFAF6; --ink:#1A1C22; --muted:#63676E; --faint:#9A9EA4;
+    --hair:#E4E3DB; --hair2:#D4D3CA; --panel:#FFFFFF;
+    --accent:#24507A; --accent-bg:#EAF0F6; --series:#B07A2E;
+    --miss:#B23A3A; --ok:#2F6B4F; --ok-bg:#E9F1EC;
+    --vol:#8A5A2B; --vol-bg:#F6EFE6;
+    --serif:Iowan Old Style,Palatino,"Palatino Linotype",Georgia,serif;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#15161A; --ink:#E9E8E2; --muted:#A2A6AC; --faint:#71757B;
+      --hair:#2A2C31; --hair2:#3A3C42; --panel:#1B1D22;
+      --accent:#7FB0E0; --accent-bg:#1E2A38; --series:#D9A85E;
+      --miss:#E07A7A; --ok:#7FC49F; --ok-bg:#1C2A22;
+      --vol:#D9A066; --vol-bg:#2A2115;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.62;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:740px;margin:0 auto;padding:32px 24px 60px}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 6px}
+  h1{font-family:var(--serif);font-weight:600;font-size:27px;line-height:1.22;margin:0 0 6px;letter-spacing:-.01em}
+  .chip{display:none;font-family:var(--mono);font-size:11px;letter-spacing:.05em;color:var(--ok);border:1px solid var(--ok);border-radius:20px;padding:3px 10px;vertical-align:middle;margin-left:10px}
+  .chip.show{display:inline-block}
+  .sub{color:var(--muted);font-size:15px;margin:0 0 18px}
+  .levels{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 26px}
+  .levels .lk{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+  .levels .pill{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-family:var(--mono);color:var(--muted);background:var(--panel);border:1px solid var(--hair2);border-radius:20px;padding:4px 11px}
+  .levels .pill b{color:var(--accent);font-weight:700;letter-spacing:.03em}
+  p.lead{font-size:16px;margin:0 0 22px}
+  p.lead b{font-weight:600}
+  .sec{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:34px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--hair)}
+  .mblock{margin:16px 0;overflow-x:auto}
+  .glo{list-style:none;padding:0;margin:14px 0 0}
+  .glo li{display:flex;gap:14px;padding:9px 0;border-top:1px solid var(--hair);align-items:baseline}
+  .glo li:first-child{border-top:none}
+  .glo .sym{flex:0 0 118px;text-align:right;padding-top:2px}
+  .glo .def{font-size:14.5px}
+  .glo .def .n{color:var(--muted)}
+  .step{font-size:14.5px;color:var(--muted);margin:10px 0}
+  .rule{background:var(--accent-bg);border-radius:10px;padding:12px 16px;margin:14px 0;font-size:14px}
+  .rule .rl{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
+  .panel{background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:20px;margin:14px 0}
+  .ctrls{display:flex;flex-wrap:wrap;gap:16px 26px;align-items:flex-end;margin:0 0 12px}
+  .field{display:flex;flex-direction:column;gap:6px;min-width:150px;flex:1}
+  .field label{font-size:12px;color:var(--muted);font-family:var(--mono);letter-spacing:.03em;display:flex;justify-content:space-between}
+  .field label b{color:var(--ink);font-weight:600}
+  input[type=range]{width:100%;accent-color:var(--accent);height:20px}
+  .btns{display:flex;flex-wrap:wrap;gap:8px;margin:2px 0 12px}
+  button.act{font-family:var(--sans);font-size:14px;padding:8px 14px;border-radius:8px;border:1px solid var(--hair2);background:var(--panel);color:var(--ink);cursor:pointer}
+  button.act:hover{border-color:var(--accent);color:var(--accent)}
+  button.act.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  button.act.primary:hover{color:#fff;opacity:.92}
+  svg{max-width:100%;height:auto;display:block}
+  .legend{display:flex;flex-wrap:wrap;gap:16px;margin:10px 0 2px;font-size:12.5px;color:var(--muted);font-family:var(--mono)}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .dot{width:9px;height:9px;border-radius:50%;display:inline-block}
+  .matwrap{display:flex;flex-wrap:wrap;gap:18px;align-items:center;margin:6px 0 4px}
+  .mtx{display:inline-grid;grid-template-columns:repeat(2,minmax(64px,auto));gap:2px;border-left:2px solid var(--ink);border-right:2px solid var(--ink);padding:6px 10px;font-family:var(--mono);font-size:14px}
+  .mtx div{text-align:right;padding:2px 8px}
+  .mtx .lbl{grid-column:1 / span 2;text-align:center;font-size:11px;color:var(--muted);border:none;letter-spacing:.08em}
+  .eig{font-family:var(--mono);font-size:13px;color:var(--muted);line-height:1.7}
+  .eig b{color:var(--ink)}
+  .eig .kap{color:var(--series)}
+  .tally{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 2px}
+  .stat{flex:1;min-width:120px;background:var(--paper);border-radius:9px;padding:9px 12px}
+  .stat .k{font-size:11px;font-family:var(--mono);letter-spacing:.04em;color:var(--muted);text-transform:uppercase}
+  .stat .v{font-size:19px;font-weight:600;font-family:var(--mono);margin-top:2px}
+  .stat .v.a{color:var(--accent)} .stat .v.s{color:var(--series)}
+  .callout{font-size:14px;color:var(--muted);border-left:2px solid var(--accent);padding:2px 0 2px 14px;margin:16px 0 2px}
+  .theorem{background:var(--accent-bg);border-radius:12px;padding:18px 20px;margin:16px 0}
+  .theorem .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
+  .theorem p{font-family:var(--serif);font-size:16px;line-height:1.55;margin:0}
+  .twist{border:1px dashed var(--hair2);border-radius:12px;padding:16px 18px;margin:16px 0;background:var(--panel)}
+  .twist .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+  .twist p{margin:0;font-size:14.6px}
+  .vol{background:var(--vol-bg);border:1px solid var(--vol);border-radius:12px;padding:18px 20px;margin:16px 0}
+  .vol .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:var(--vol);margin:0 0 8px}
+  .vol p{margin:0 0 10px;font-size:14.8px}
+  .vol p:last-child{margin-bottom:0}
+  .vol code{font-family:var(--mono);font-size:13px;background:rgba(138,90,43,.12);padding:1px 5px;border-radius:4px}
+  .q{border:1px solid var(--hair);border-radius:12px;padding:16px 18px;margin:12px 0;background:var(--panel)}
+  .q .stem{font-size:15px;font-weight:500;margin:0 0 12px}
+  .opt{display:block;width:100%;text-align:left;font-size:14px;padding:10px 12px;margin:0 0 8px;border:1px solid var(--hair2);border-radius:8px;background:transparent;color:var(--ink);cursor:pointer;line-height:1.45}
+  .opt:last-child{margin-bottom:0}
+  .opt:hover{border-color:var(--accent)}
+  .opt.sel{border-color:var(--accent);background:var(--accent-bg)}
+  .opt.correct{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+  .opt.wrong{background:#F7ECEC;border-color:var(--miss);color:var(--miss)}
+  @media (prefers-color-scheme: dark){ .opt.wrong{background:#2E1E1E} }
+  .fb{font-size:13.5px;color:var(--muted);margin:10px 0 0;line-height:1.5;display:none}
+  .fb.show{display:block}
+  .checkRow{display:flex;align-items:center;gap:14px;margin:16px 0 0;flex-wrap:wrap}
+  .hint{font-size:13px;color:var(--miss);display:none}
+  .done{display:none;align-items:center;gap:10px;background:var(--ok-bg);color:var(--ok);border-radius:10px;padding:12px 16px;font-size:14px;margin:14px 0 0}
+  .done.show{display:flex}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">Lesson 05 · Linear models &amp; ML</p>
+  <h1>Least squares in matrix form: XᵀX, the normal equations, and ridge<span class="chip" id="chip"></span></h1>
+  <p class="sub">One gradient turns fitting a model into a matrix equation — and XᵀX runs the show.</p>
+  <div class="levels">
+    <span class="lk">Level</span>
+    <span class="pill"><b>US</b> Graduate · ML / linear models</span>
+    <span class="pill"><b>FR</b> Master M2 · ENSAE 3A</span>
+  </div>
+
+  <p class="lead">Stack the data: an <b>n×p design matrix X</b> (rows = observations, columns = features) and a response vector <b>y</b>. A linear model predicts ŷ = Xβ, and least squares asks for the β minimising the squared error ‖y − Xβ‖². Differentiate once and the answer collapses to a single matrix equation whose entire behaviour — stability, precision, when it fails — is governed by the <b>p×p Gram matrix XᵀX</b>.</p>
+
+  <div class="sec">The objective, then one gradient</div>
+  <div class="mblock math" data-tex="\hat{y}=X\beta,\qquad \mathrm{RSS}(\beta)=\lVert y-X\beta\rVert^{2}=(y-X\beta)^{\top}(y-X\beta)" data-display="1"></div>
+  <p class="step">Expand the quadratic (the middle two terms are equal scalars, so they combine):</p>
+  <div class="mblock math" data-tex="\mathrm{RSS}(\beta)=y^{\top}y\;-\;2\,\beta^{\top}X^{\top}y\;+\;\beta^{\top}\,X^{\top}X\,\beta" data-display="1"></div>
+  <div class="rule">
+    <p class="rl">The vector-calculus rules doing the work</p>
+    <div class="mblock math" data-tex="\nabla_{\beta}\big(\beta^{\top}b\big)=b\qquad\qquad \nabla_{\beta}\big(\beta^{\top}A\beta\big)=(A+A^{\top})\beta=2A\beta\ \ \text{for symmetric }A" data-display="1"></div>
+    <p style="margin:6px 0 0;color:var(--muted)">XᵀX is symmetric, so the second rule fires with A = XᵀX and gives the factor of 2 — the step that's easy to drop.</p>
+  </div>
+  <p class="step">Apply them, set the gradient to zero, and read off the <b>normal equations</b>:</p>
+  <div class="mblock math" data-tex="\nabla_{\beta}\,\mathrm{RSS}=-2X^{\top}y+2X^{\top}X\beta\;=\;0\quad\Longrightarrow\quad X^{\top}X\,\hat\beta=X^{\top}y\quad\Longrightarrow\quad \boxed{\;\hat\beta=(X^{\top}X)^{-1}X^{\top}y\;}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="X"></span><span class="def"><b>design matrix</b> (n×p). <span class="n">Each column a feature, each row an observation.</span></span></li>
+    <li><span class="sym math" data-tex="X^{\top}X"></span><span class="def">the <b>Gram matrix</b> (p×p), symmetric and positive semidefinite. <span class="n">Invertible ⟺ the columns of X are linearly independent (full column rank). Everything hinges on it.</span></span></li>
+    <li><span class="sym math" data-tex="X^{\top}y"></span><span class="def">feature–response cross-products (p×1).</span></li>
+    <li><span class="sym math" data-tex="\hat\beta"></span><span class="def">the <b>OLS estimate</b>. <span class="n">The unique RSS-minimiser when XᵀX is invertible.</span></span></li>
+  </ul>
+
+  <div class="sec">The hat matrix — it's the Lesson-4 projection, in matrix form</div>
+  <div class="mblock math" data-tex="\hat{y}=X\hat\beta=\underbrace{X(X^{\top}X)^{-1}X^{\top}}_{H}\,y,\qquad H^{2}=H,\quad H^{\top}=H,\quad \operatorname{tr}(H)=p" data-display="1"></div>
+  <p class="step">H is the orthogonal projector onto the column space of X: ŷ = Hy is Lesson 4's "closest point in the subspace", now the subspace is span of the feature columns. The residual is orthogonal to every feature — which is just the normal equations rearranged, <span class="math" data-tex="X^{\top}(y-\hat y)=0"></span>.</p>
+
+  <div class="sec">See it — XᵀX conditioning, coefficient blow-up, and ridge</div>
+  <div class="panel">
+    <div class="ctrls">
+      <div class="field"><label>feature correlation ρ(x₁,x₂) <b id="rhoOut">0.90</b></label><input type="range" id="rho" min="0" max="0.99" value="0.90" step="0.01" /></div>
+      <div class="field"><label>ridge penalty λ <b id="lamOut">8</b></label><input type="range" id="lam" min="0" max="40" value="8" step="0.5" /></div>
+      <div class="field"><label>noise σ <b id="noiseOut">1.0</b></label><input type="range" id="noise" min="0.2" max="3" value="1.0" step="0.1" /></div>
+    </div>
+    <div class="btns">
+      <button class="act" id="one">New sample</button>
+      <button class="act primary" id="many">Run 200 resamples</button>
+      <button class="act" id="reset">Reset</button>
+    </div>
+    <div class="matwrap">
+      <div class="mtx" id="mtx">
+        <div class="lbl">XᵀX (latest sample)</div>
+        <div id="m00">—</div><div id="m01">—</div>
+        <div id="m10">—</div><div id="m11">—</div>
+      </div>
+      <div class="eig" id="eig">eigenvalues —<br>condition number —</div>
+    </div>
+    <svg id="plot" viewBox="0 0 680 380" role="img" aria-label="Estimated coefficient cloud in (beta1, beta2) space for OLS versus ridge"></svg>
+    <div class="legend">
+      <span><i class="dot" style="background:var(--accent)"></i>OLS β̂ = (XᵀX)⁻¹Xᵀy</span>
+      <span><i class="dot" style="background:var(--series)"></i>ridge β̂ = (XᵀX+λI)⁻¹Xᵀy</span>
+      <span><i class="dot" style="background:var(--ink)"></i>true β</span>
+      <span><i class="dot" style="border:1px solid var(--faint);background:transparent"></i>origin</span>
+    </div>
+    <div class="tally">
+      <div class="stat"><div class="k">condition number κ</div><div class="v s" id="kap">—</div></div>
+      <div class="stat"><div class="k">spread of OLS β̂</div><div class="v a" id="vols">—</div></div>
+      <div class="stat"><div class="k">spread of ridge β̂</div><div class="v s" id="vrid">—</div></div>
+      <div class="stat"><div class="k">resamples</div><div class="v" id="cnt">0</div></div>
+    </div>
+    <p class="callout" id="note"></p>
+  </div>
+
+  <div class="theorem">
+    <p class="lbl">The precise statement</p>
+    <p>When X has full column rank, RSS is strictly convex and β̂ = (XᵀX)⁻¹Xᵀy is its unique global minimiser; ŷ = Hy is the orthogonal projection of y onto col(X), with residual orthogonal to every column. The estimator's variance is Var(β̂) = σ²(XᵀX)⁻¹, so small eigenvalues of XᵀX mean large coefficient variance. Ridge, β̂λ = (XᵀX+λI)⁻¹Xᵀy, is defined for every λ&gt;0 — even when XᵀX is singular.</p>
+  </div>
+
+  <div class="twist">
+    <p class="lbl">The twist — XᵀX's eigenvalues are the whole story</p>
+    <p>Because Var(β̂) = σ²(XᵀX)⁻¹, a single tiny eigenvalue of XᵀX — the signature of near-collinear features — inflates coefficient variance without bound: the estimate becomes a wild, unreliable number that flips sign from sample to sample. Ridge adds λ to every eigenvalue, so (XᵀX+λI) can't be singular and the small directions stop exploding — you accept a little bias to buy a lot of variance back, the same shrinkage trade as Lessons 2 and 3. Two connections worth carrying: XᵀX/σ² is exactly the <b>Fisher information</b> for β in the Gaussian model, so "well-conditioned XᵀX" literally means "lots of information, tight coefficients" — Lesson 3 in matrix form. And when <b>p &gt; n</b>, XᵀX is singular and OLS simply does not exist; regularisation isn't a refinement, it's the only way to get an answer.</p>
+  </div>
+
+  <div class="vol">
+    <p class="lbl">Why this matters · volarixs</p>
+    <p>A cross-sectional factor regression <i>is</i> this object: returns on a design matrix of factor exposures, β̂ = (XᵀX)⁻¹Xᵀy the loadings, ŷ = Hy the factor-explained return, and your <b>alpha the residual (I−H)y</b> — orthogonal to the factors by construction, straight from Lesson 4. When factors are correlated (value/quality, size/liquidity), XᵀX is ill-conditioned and loadings flip sign across samples — the coefficient cloud above, in your panel.</p>
+    <p>Two operational takeaways: the <b>condition number of XᵀX</b> is a diagnostic you can compute on any factor panel to know whether the loadings are trustworthy before you act on them; and with many signals on limited history you drift toward <code>p &gt; n</code>, where OLS is undefined and ridge (or its cousins — lasso, elastic net, the same Ledoit–Wolf shrinkage spirit) is mandatory, not optional.</p>
+  </div>
+
+  <div class="sec">Check yourself</div>
+  <div class="q" id="q1"><p class="stem">Differentiating RSS(β) = ‖y − Xβ‖² and setting the gradient to zero gives:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q2"><p class="stem">If two columns of X are nearly collinear, then:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q3"><p class="stem">Ridge replaces (XᵀX)⁻¹ with (XᵀX + λI)⁻¹, which:</p><div class="opts"></div><p class="fb"></p></div>
+
+  <div class="checkRow">
+    <button class="act primary" id="check">Check answers</button>
+    <span class="hint" id="hint">Select an answer for all three first.</span>
+  </div>
+  <div class="done" id="done">Phase 2 underway — the matrix machinery is now in place for everything that follows.</div>
+</div>
+
+<script>
+/* storage shim: window.storage (Claude artifacts) or localStorage (web) */
+if(!window.storage){window.storage={async get(k){const v=localStorage.getItem(k);if(v==null)throw new Error('missing');return{key:k,value:v}},async set(k,v){localStorage.setItem(k,v);return{key:k,value:v}},async delete(k){localStorage.removeItem(k);return{key:k,deleted:true}},async list(p){const ks=[];for(let i=0;i<localStorage.length;i++){const kk=localStorage.key(i);if(!p||kk.startsWith(p))ks.push(kk)}return{keys:ks}}};}
+function renderMath(){
+  document.querySelectorAll('.math').forEach(el=>{
+    const tex=el.getAttribute('data-tex'); if(!tex||el.dataset.done)return;
+    try{ if(window.katex){katex.render(tex,el,{displayMode:el.dataset.display==='1',throwOnError:false});el.dataset.done='1';} else {el.textContent=tex;} }
+    catch(e){ el.textContent=tex; }
+  });
+}
+const N=50, BTRUE=[1.5,-1.0], RANGE=5;
+const olsB=[], ridB=[]; let latest=null;
+const rho=()=>parseFloat(document.getElementById('rho').value);
+const lam=()=>parseFloat(document.getElementById('lam').value);
+const noise=()=>parseFloat(document.getElementById('noise').value);
+function randn(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+function sample(){
+  const r=rho(),s=noise(),root=Math.sqrt(1-r*r);
+  const x1=[],x2=[],y=[];let m1=0,m2=0,my=0;
+  for(let i=0;i<N;i++){const z1=randn(),z2=randn();const a=z1,b=r*z1+root*z2;
+    const yy=BTRUE[0]*a+BTRUE[1]*b+s*randn();x1.push(a);x2.push(b);y.push(yy);m1+=a;m2+=b;my+=yy;}
+  m1/=N;m2/=N;my/=N;
+  let s11=0,s22=0,s12=0,g1=0,g2=0;
+  for(let i=0;i<N;i++){const a=x1[i]-m1,b=x2[i]-m2,c=y[i]-my;s11+=a*a;s22+=b*b;s12+=a*b;g1+=a*c;g2+=b*c;}
+  const XtX=[[s11,s12],[s12,s22]], Xty=[g1,g2];
+  const inv2=(M)=>{const d=M[0][0]*M[1][1]-M[0][1]*M[1][0];return [[M[1][1]/d,-M[0][1]/d],[-M[1][0]/d,M[0][0]/d]];};
+  const mv=(M,v)=>[M[0][0]*v[0]+M[0][1]*v[1],M[1][0]*v[0]+M[1][1]*v[1]];
+  const bOLS=mv(inv2(XtX),Xty);
+  const l=lam(),Ml=[[s11+l,s12],[s12,s22+l]];
+  const bRID=mv(inv2(Ml),Xty);
+  olsB.push(bOLS);ridB.push(bRID);
+  if(olsB.length>2000){olsB.shift();ridB.shift();}
+  // eigen of XtX (symmetric 2x2)
+  const tr=(s11+s22)/2, disc=Math.sqrt(((s11-s22)/2)**2+s12*s12);
+  latest={XtX,l1:tr+disc,l2:tr-disc};
+}
+function meanVec(A){let a=0,b=0;for(const p of A){a+=p[0];b+=p[1];}return [a/A.length,b/A.length];}
+function spread(A){const m=meanVec(A);let s=0;for(const p of A)s+=(p[0]-m[0])**2+(p[1]-m[1])**2;return s/A.length;}
+function render(){
+  const PW=680,PH=380,padL=44,padR=16,padT=16,padB=34,iw=PW-padL-padR,ih=PH-padT-padB;
+  const b1lo=BTRUE[0]-RANGE,b1hi=BTRUE[0]+RANGE,b2lo=BTRUE[1]-RANGE,b2hi=BTRUE[1]+RANGE;
+  const sx=b=>padL+((b-b1lo)/(b1hi-b1lo))*iw, sy=b=>padT+(1-(b-b2lo)/(b2hi-b2lo))*ih;
+  const inBox=p=>p[0]>=b1lo&&p[0]<=b1hi&&p[1]>=b2lo&&p[1]<=b2hi;
+  let s='';
+  // axes
+  if(0>=b1lo&&0<=b1hi)s+=`<line x1="${sx(0)}" y1="${padT}" x2="${sx(0)}" y2="${padT+ih}" stroke="var(--hair)" stroke-width="1"/>`;
+  if(0>=b2lo&&0<=b2hi)s+=`<line x1="${padL}" y1="${sy(0)}" x2="${PW-padR}" y2="${sy(0)}" stroke="var(--hair)" stroke-width="1"/>`;
+  [b1lo+1,BTRUE[0],b1hi-1].forEach(v=>{s+=`<text x="${sx(v)}" y="${padT+ih+18}" text-anchor="middle" font-family="var(--mono)" font-size="11" fill="var(--faint)">${v.toFixed(1)}</text>`;});
+  s+=`<text x="${padL-6}" y="${padT+8}" text-anchor="end" font-family="var(--mono)" font-size="11" fill="var(--faint)">β₂</text>`;
+  s+=`<text x="${PW-padR}" y="${padT+ih+18}" text-anchor="end" font-family="var(--mono)" font-size="11" fill="var(--faint)">β₁</text>`;
+  // clouds
+  olsB.forEach(p=>{if(inBox(p))s+=`<circle cx="${sx(p[0]).toFixed(1)}" cy="${sy(p[1]).toFixed(1)}" r="2.3" fill="var(--accent)" opacity="0.34"/>`;});
+  ridB.forEach(p=>{if(inBox(p))s+=`<circle cx="${sx(p[0]).toFixed(1)}" cy="${sy(p[1]).toFixed(1)}" r="2.3" fill="var(--series)" opacity="0.40"/>`;});
+  // origin + true
+  if(0>=b1lo&&0<=b1hi&&0>=b2lo&&0<=b2hi)s+=`<circle cx="${sx(0)}" cy="${sy(0)}" r="4" fill="none" stroke="var(--faint)" stroke-width="1.2"/>`;
+  s+=`<circle cx="${sx(BTRUE[0])}" cy="${sy(BTRUE[1])}" r="5" fill="var(--ink)"/>`;
+  s+=`<text x="${sx(BTRUE[0])+8}" y="${sy(BTRUE[1])-6}" font-family="var(--mono)" font-size="11" fill="var(--ink)">true β</text>`;
+  document.getElementById('plot').innerHTML=s;
+  // matrix panel
+  if(latest){const M=latest.XtX;
+    document.getElementById('m00').textContent=M[0][0].toFixed(1);
+    document.getElementById('m01').textContent=M[0][1].toFixed(1);
+    document.getElementById('m10').textContent=M[1][0].toFixed(1);
+    document.getElementById('m11').textContent=M[1][1].toFixed(1);
+    const kap=latest.l1/Math.max(latest.l2,1e-9);
+    document.getElementById('eig').innerHTML=`eigenvalues <b>${latest.l1.toFixed(1)}</b>, <b>${latest.l2.toFixed(2)}</b><br>condition number κ = <span class="kap">${kap.toFixed(0)}</span>`;
+    document.getElementById('kap').textContent=kap>=1000?Math.round(kap).toLocaleString():kap.toFixed(0);
+  }
+  document.getElementById('vols').textContent=olsB.length?spread(olsB).toFixed(2):'—';
+  document.getElementById('vrid').textContent=ridB.length?spread(ridB).toFixed(2):'—';
+  document.getElementById('cnt').textContent=olsB.length;
+  if(olsB.length>=30){
+    const r=rho(),l=lam();
+    document.getElementById('note').textContent=
+      `ρ=${r.toFixed(2)} makes XᵀX ${r>0.85?'badly':(r>0.5?'moderately':'well')}-conditioned (κ≈${(latest.l1/Math.max(latest.l2,1e-9)).toFixed(0)}). The blue OLS cloud stretches along the ill-conditioned direction — that spread is Var(β̂)=σ²(XᵀX)⁻¹ made visible. Ridge (λ=${l}) pulls the ochre cloud tight and toward the origin: smaller variance, at the cost of a bias away from the true β.`;
+  }
+}
+function reset(){olsB.length=0;ridB.length=0;latest=null;
+  document.getElementById('rho').value='0.90';document.getElementById('rhoOut').textContent='0.90';
+  document.getElementById('lam').value='8';document.getElementById('lamOut').textContent='8';
+  document.getElementById('noise').value='1.0';document.getElementById('noiseOut').textContent='1.0';
+  sample();render();
+  document.getElementById('note').textContent='Hit “Run 200 resamples”. Each draw re-estimates β̂ from fresh data; the clouds are the sampling distributions of OLS vs ridge. Push ρ toward 1 and watch the blue cloud explode along one direction.';}
+['rho','lam','noise'].forEach(id=>{
+  const out=id+'Out';
+  document.getElementById(id).addEventListener('input',e=>{document.getElementById(out).textContent=(id==='rho'?parseFloat(e.target.value).toFixed(2):e.target.value);});
+  document.getElementById(id).addEventListener('change',()=>{olsB.length=0;ridB.length=0;sample();render();});
+});
+document.getElementById('one').onclick=()=>{sample();render();};
+document.getElementById('many').onclick=()=>{for(let i=0;i<200;i++)sample();render();};
+document.getElementById('reset').onclick=reset;
+
+const QS={
+  q1:{opts:["Xβ̂ = y, so β̂ = X⁻¹y","XᵀXβ̂ = Xᵀy, so β̂ = (XᵀX)⁻¹Xᵀy","β̂ = Xᵀy","β̂ = X(XᵀX)⁻¹"],a:1,
+    fb:"∇RSS = −2Xᵀy + 2XᵀXβ; zeroing it gives the normal equations XᵀXβ̂ = Xᵀy. X itself is generally not square, so X⁻¹ doesn't exist — you invert the square Gram matrix XᵀX."},
+  q2:{opts:["XᵀX is near-singular, so β̂ has huge variance (Var β̂ = σ²(XᵀX)⁻¹)","OLS is unaffected by collinearity","the residuals stop being orthogonal to X","β̂ is forced to exactly zero"],a:0,
+    fb:"Collinear columns give XᵀX a tiny eigenvalue; (XᵀX)⁻¹ then has a huge eigenvalue, so Var(β̂)=σ²(XᵀX)⁻¹ blows up and the estimate flips sign across samples — the elongated blue cloud."},
+  q3:{opts:["makes the estimator unbiased","is invertible for every λ>0 and shrinks β̂, trading a little bias for much less variance","has no effect when features are correlated","only works when p<n"],a:1,
+    fb:"Adding λI lifts every eigenvalue by λ, so (XᵀX+λI) is always invertible and the small-eigenvalue directions stop exploding. Ridge is deliberately biased — that's the price for the variance reduction, and it's exactly why it works when p>n too."}
+};
+const sel={q1:null,q2:null,q3:null};let revealed=false;
+Object.keys(QS).forEach(id=>{
+  const holder=document.querySelector('#'+id+' .opts');
+  QS[id].opts.forEach((txt,i)=>{
+    const b=document.createElement('button');b.className='opt';b.textContent=String.fromCharCode(65+i)+'.  '+txt;
+    b.onclick=()=>{if(revealed)return;sel[id]=i;[...holder.children].forEach((c,ci)=>c.classList.toggle('sel',ci===i));document.getElementById('hint').style.display='none';};
+    holder.appendChild(b);
+  });
+});
+document.getElementById('check').onclick=async()=>{
+  if(revealed)return;
+  if(sel.q1===null||sel.q2===null||sel.q3===null){document.getElementById('hint').style.display='inline';return;}
+  revealed=true;let score=0;
+  Object.keys(QS).forEach(id=>{
+    const a=QS[id].a,holder=document.querySelector('#'+id+' .opts'),fb=document.querySelector('#'+id+' .fb');
+    [...holder.children].forEach((c,ci)=>{c.style.cursor='default';c.classList.remove('sel');if(ci===a)c.classList.add('correct');else if(ci===sel[id])c.classList.add('wrong');});
+    if(sel[id]===a)score++;fb.textContent=QS[id].fb;fb.classList.add('show');
+  });
+  const btn=document.getElementById('check');btn.style.opacity='0.5';btn.textContent='Checked · '+score+'/3';
+  document.getElementById('done').classList.add('show');
+  try{await window.storage.set('mfs:lesson05',JSON.stringify({done:true,retrieval:score+'/3',ts:Date.now()}),false);}catch(e){}
+};
+function boot(){renderMath();sample();render();document.getElementById('note').textContent='Hit “Run 200 resamples”. Each draw re-estimates β̂ from fresh data; the clouds are the sampling distributions of OLS vs ridge. Push ρ toward 1 and watch the blue cloud explode along one direction.';}
+if(window.katex)boot();else window.addEventListener('load',boot);
+(async()=>{try{const r=await window.storage.get('mfs:lesson05',false);if(r&&r.value){const v=JSON.parse(r.value);if(v.done){const c=document.getElementById('chip');c.classList.add('show');c.textContent='completed · '+v.retrieval;}}}catch(e){}})();
+</script>
+</body>
+</html>

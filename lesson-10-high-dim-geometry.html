@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lesson 10 — Geometry of high-dimensional embeddings</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<style>
+  :root{--paper:#FAFAF6;--ink:#1A1C22;--muted:#63676E;--faint:#9A9EA4;--hair:#E4E3DB;--hair2:#D4D3CA;--panel:#FFFFFF;--accent:#24507A;--accent-bg:#EAF0F6;--series:#B07A2E;--miss:#B23A3A;--ok:#2F6B4F;--ok-bg:#E9F1EC;--vol:#8A5A2B;--vol-bg:#F6EFE6;--serif:Iowan Old Style,Palatino,Georgia,serif;--sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;}
+  @media (prefers-color-scheme:dark){:root{--paper:#15161A;--ink:#E9E8E2;--muted:#A2A6AC;--faint:#71757B;--hair:#2A2C31;--hair2:#3A3C42;--panel:#1B1D22;--accent:#7FB0E0;--accent-bg:#1E2A38;--series:#D9A85E;--miss:#E07A7A;--ok:#7FC49F;--ok-bg:#1C2A22;--vol:#D9A066;--vol-bg:#2A2115;}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.62;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:750px;margin:0 auto;padding:32px 24px 60px}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 6px}
+  h1{font-family:var(--serif);font-weight:600;font-size:27px;line-height:1.22;margin:0 0 6px;letter-spacing:-.01em}
+  .chip{display:none;font-family:var(--mono);font-size:11px;color:var(--ok);border:1px solid var(--ok);border-radius:20px;padding:3px 10px;vertical-align:middle;margin-left:10px}
+  .chip.show{display:inline-block}
+  .sub{color:var(--muted);font-size:15px;margin:0 0 18px}
+  .levels{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 26px}
+  .levels .lk{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+  .levels .pill{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-family:var(--mono);color:var(--muted);background:var(--panel);border:1px solid var(--hair2);border-radius:20px;padding:4px 11px}
+  .levels .pill b{color:var(--accent);font-weight:700}
+  p.lead{font-size:16px;margin:0 0 22px}p.lead b{font-weight:600}
+  .sec{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:36px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--hair)}
+  .mblock{margin:16px 0;overflow-x:auto}
+  .glo{list-style:none;padding:0;margin:14px 0 0}
+  .glo li{display:flex;gap:14px;padding:9px 0;border-top:1px solid var(--hair);align-items:baseline}
+  .glo li:first-child{border-top:none}
+  .glo .sym{flex:0 0 96px;text-align:right;padding-top:2px}
+  .glo .def{font-size:14.5px}.glo .def .n{color:var(--muted)}
+  .step{font-size:14.5px;color:var(--muted);margin:10px 0}
+  .panel{background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:20px;margin:14px 0}
+  .ctrls{display:flex;flex-wrap:wrap;gap:16px 26px;align-items:flex-end;margin:0 0 10px}
+  .field{display:flex;flex-direction:column;gap:6px;min-width:240px;flex:1}
+  .field label{font-size:12px;color:var(--muted);font-family:var(--mono);display:flex;justify-content:space-between}
+  .field label b{color:var(--ink);font-weight:600}
+  input[type=range]{width:100%;accent-color:var(--accent);height:20px}
+  svg{max-width:100%;height:auto;display:block}
+  .tally{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0 2px}
+  .stat{flex:1;min-width:120px;background:var(--paper);border-radius:9px;padding:9px 12px}
+  .stat .k{font-size:11px;font-family:var(--mono);color:var(--muted);text-transform:uppercase}
+  .stat .v{font-size:18px;font-weight:600;font-family:var(--mono);margin-top:2px}
+  .stat .v.a{color:var(--accent)}.stat .v.g{color:var(--ok)}
+  .callout{font-size:14px;color:var(--muted);border-left:2px solid var(--accent);padding:2px 0 2px 14px;margin:14px 0 2px;min-height:1.4em}
+  .theorem{background:var(--accent-bg);border-radius:12px;padding:18px 20px;margin:16px 0}
+  .theorem .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
+  .theorem p{font-family:var(--serif);font-size:16px;line-height:1.55;margin:0}
+  .twist{border:1px dashed var(--hair2);border-radius:12px;padding:16px 18px;margin:16px 0;background:var(--panel)}
+  .twist .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+  .twist p{margin:0;font-size:14.6px}
+  .vol{background:var(--vol-bg);border:1px solid var(--vol);border-radius:12px;padding:18px 20px;margin:16px 0}
+  .vol .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:var(--vol);margin:0 0 8px}
+  .vol p{margin:0 0 10px;font-size:14.8px}.vol p:last-child{margin-bottom:0}
+  .vol code{font-family:var(--mono);font-size:13px;background:rgba(138,90,43,.12);padding:1px 5px;border-radius:4px}
+  .q{border:1px solid var(--hair);border-radius:12px;padding:16px 18px;margin:12px 0;background:var(--panel)}
+  .q .stem{font-size:15px;font-weight:500;margin:0 0 12px}
+  .opt{display:block;width:100%;text-align:left;font-size:14px;padding:10px 12px;margin:0 0 8px;border:1px solid var(--hair2);border-radius:8px;background:transparent;color:var(--ink);cursor:pointer;line-height:1.45}
+  .opt:last-child{margin-bottom:0}.opt:hover{border-color:var(--accent)}
+  .opt.sel{border-color:var(--accent);background:var(--accent-bg)}
+  .opt.correct{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+  .opt.wrong{background:#F7ECEC;border-color:var(--miss);color:var(--miss)}
+  @media (prefers-color-scheme:dark){.opt.wrong{background:#2E1E1E}}
+  .fb{font-size:13.5px;color:var(--muted);margin:10px 0 0;line-height:1.5;display:none}.fb.show{display:block}
+  .checkRow{display:flex;align-items:center;gap:14px;margin:18px 0 0;flex-wrap:wrap}
+  .hint{font-size:13px;color:var(--miss);display:none}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-family:var(--sans);font-size:14px;padding:8px 14px;border-radius:8px;border:1px solid var(--accent);cursor:pointer}
+  .scoreOut{font-family:var(--mono);font-size:14px;font-weight:600}
+  .done{display:none;align-items:center;gap:10px;background:var(--ok-bg);color:var(--ok);border-radius:10px;padding:12px 16px;font-size:14px;margin:14px 0 0}
+  .done.show{display:flex}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">Lesson 10 · Wing I — the linear-algebra substrate</p>
+  <h1>Geometry of high-dimensional embeddings<span class="chip" id="chip"></span></h1>
+  <p class="sub">In high dimensions everything is far, everything is orthogonal, and that turns out to be a gift.</p>
+  <div class="levels"><span class="lk">Level</span><span class="pill"><b>US</b> Graduate</span><span class="pill"><b>FR</b> Master M2 · ENSAE 3A</span></div>
+
+  <p class="lead">Every token, every feature vector in a modern model is a point in a space of hundreds or thousands of dimensions. Our 3-D intuition breaks there — and the way it breaks is lawful. Random vectors become <b>nearly orthogonal</b>, distances <b>concentrate</b> so that near and far blur together, and a Gaussian's mass drifts off the centre onto a thin <b>shell</b>. These aren't pathologies to avoid; they're the reason embeddings, cosine similarity, and superposition work at all.</p>
+
+  <div class="sec">The central fact — concentration</div>
+  <p class="step">Take two independent random unit vectors in ℝ^d. Their cosine similarity is their dot product, and it behaves like a mean-zero Gaussian whose spread <i>shrinks</i> with dimension:</p>
+  <div class="mblock math" data-tex="\cos\theta=\langle u,v\rangle,\qquad \mathbb{E}[\cos\theta]=0,\qquad \operatorname{Var}(\cos\theta)=\tfrac{1}{d}\;\Rightarrow\;\cos\theta\approx\mathcal{N}\!\big(0,\tfrac1d\big)" data-display="1"></div>
+  <p class="step">So the typical angle between two random vectors rushes toward 90° as d grows — a standard deviation of only 1/√d. In 1000 dimensions almost every pair of directions is essentially orthogonal. The companion fact for lengths: a standard Gaussian's norm concentrates tightly at √d.</p>
+  <div class="mblock math" data-tex="\lVert x\rVert \approx \sqrt{d}\,\Big(1\pm O\!\big(\tfrac{1}{\sqrt d}\big)\Big)\quad\text{— the mass lives on a thin shell of radius }\sqrt d\text{ (the ``soap bubble'')}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="\cos\theta"></span><span class="def"><b>cosine similarity</b> of two unit vectors. <span class="n">The survivor metric in high-d — angles stay meaningful where raw distances stop being.</span></span></li>
+    <li><span class="sym math" data-tex="\tfrac{1}{d}"></span><span class="def">the <b>variance</b> of that cosine. <span class="n">Concentration rate: double the dimension, tighten the spread by √2.</span></span></li>
+    <li><span class="sym math" data-tex="\sqrt{d}"></span><span class="def">the <b>shell radius</b>. <span class="n">Where a high-d Gaussian actually lives — not near its own mode at the origin.</span></span></li>
+  </ul>
+
+  <div class="sec">See it — random directions collapse toward orthogonal</div>
+  <div class="panel">
+    <p class="step" style="margin-top:0">Cosine similarity of ~1500 random unit-vector pairs. Slide the dimension up and watch a broad spread snap into a spike at zero — the concentration of measure, live.</p>
+    <div class="ctrls">
+      <div class="field"><label>dimension d <b id="dOut">3</b></label><input type="range" id="d" min="2" max="600" value="3" step="1" /></div>
+    </div>
+    <svg id="hist" viewBox="0 0 680 300" role="img" aria-label="Histogram of cosine similarity between random unit vectors"></svg>
+    <div class="tally">
+      <div class="stat"><div class="k">mean cos θ</div><div class="v" id="mean">—</div></div>
+      <div class="stat"><div class="k">std (≈ 1/√d)</div><div class="v a" id="std">—</div></div>
+      <div class="stat"><div class="k">within 5° of 90°</div><div class="v g" id="orth">—</div></div>
+      <div class="stat"><div class="k">mean ‖x‖ / √d</div><div class="v" id="shell">—</div></div>
+    </div>
+    <p class="callout" id="cnote"></p>
+  </div>
+
+  <div class="sec">The blessing — Johnson–Lindenstrauss</div>
+  <p class="step">Concentration cuts the other way too. Because random projections preserve geometry with high probability, you can crush n points from any dimension down to just <b>O(log n / ε²)</b> dimensions and keep every pairwise distance within a (1 ± ε) factor:</p>
+  <div class="mblock math" data-tex="k=O\!\Big(\tfrac{\log n}{\varepsilon^2}\Big)\ \Rightarrow\ (1-\varepsilon)\lVert x_i-x_j\rVert^2\le \lVert f(x_i)-f(x_j)\rVert^2\le(1+\varepsilon)\lVert x_i-x_j\rVert^2" data-display="1"></div>
+  <p class="step">The target size depends on the <i>number</i> of points and the tolerance — not on the original dimension. That's why approximate nearest-neighbour search, random-feature methods, and sketching all work: high-d structure is compressible precisely because it concentrates.</p>
+
+  <div class="theorem">
+    <p class="lbl">The precise statement</p>
+    <p>For u, v drawn uniformly on the unit sphere Sᵈ⁻¹, ⟨u,v⟩ has mean 0 and variance 1/d, and concentrates as 𝒩(0, 1/d) for large d — so random directions are asymptotically orthogonal. A standard Gaussian x ∈ ℝᵈ has ‖x‖ concentrated at √d with fluctuations O(1): ℙ(|‖x‖ − √d| ≥ t) ≤ 2e^{−ct²}. Johnson–Lindenstrauss: any n points admit a linear map into k = O(ε⁻²log n) dimensions preserving all pairwise squared distances within (1 ± ε), with high probability, via a random projection.</p>
+  </div>
+
+  <div class="twist">
+    <p class="lbl">The twist — the curse and the blessing are one fact</p>
+    <p>Concentration is usually taught as the "curse of dimensionality": when all pairwise distances converge, the nearest neighbour is barely closer than the farthest, so distance-based methods (kNN, k-means, radius queries) lose their grip — the <i>ratio</i> of nearest to farthest distance → 1. But the identical phenomenon is the blessing: near-orthogonality means you can pack an <b>exponential number of almost-orthogonal directions</b> into d dimensions (there are ~e^{cd} vectors pairwise within a few degrees of orthogonal), which is exactly how a network stores far more features than it has neurons — <b>superposition</b> (Lesson 20). And it's why <b>cosine</b>, not Euclidean distance, is the right embedding metric: angles carry the signal that lengths have washed out. Same maths, read as a warning or a superpower depending on whether you cluster by distance or separate by direction.</p>
+  </div>
+
+  <div class="vol">
+    <p class="lbl">Why this matters · volarixs</p>
+    <p>The moment you embed cells or assets as vectors and search by similarity — the pgvector <code>cell_card</code> similarity your design doc floats ("cells like dispersion → skew"), or clustering return-vectors of a large universe — you're in this regime. Use <b>cosine</b>, not raw Euclidean distance, and expect naive nearest-neighbour to degrade as the vector dimension climbs: that's concentration, not a bug in the index.</p>
+    <p>It also sharpens a Lesson-8 point: a high-dimensional factor space where "everything looks equidistant" is often a low-rank object in disguise — reduce first (SVD/PCA), then measure similarity in the compressed space where distances still mean something. And Johnson–Lindenstrauss is the license to do that fast: random-project to O(log n) dims for approximate similarity at scale.</p>
+  </div>
+
+  <div class="sec">Check yourself</div>
+  <div class="q" id="q1"><p class="stem">Two independent random unit vectors in ℝ^d have cosine similarity that, as d grows:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q2"><p class="stem">The mass of a standard Gaussian in ℝ^d concentrates:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q3"><p class="stem">The "curse of dimensionality" for nearest-neighbour search means:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q4"><p class="stem">Johnson–Lindenstrauss lets you reduce n points to k dimensions where k depends on:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q5"><p class="stem">Near-orthogonality of random directions is a blessing because:</p><div class="opts"></div><p class="fb"></p></div>
+
+  <div class="checkRow"><button class="primary" id="check">Check answers</button><span class="scoreOut" id="scoreOut"></span><span class="hint" id="hint">Answer all five first.</span></div>
+  <div class="done" id="done">Intuition rewired. Next in Wing I: tensors & the einsum world.</div>
+</div>
+
+<script>
+/* storage shim: window.storage (Claude artifacts) or localStorage (web) */
+if(!window.storage){window.storage={async get(k){const v=localStorage.getItem(k);if(v==null)throw new Error('missing');return{key:k,value:v}},async set(k,v){localStorage.setItem(k,v);return{key:k,value:v}},async delete(k){localStorage.removeItem(k);return{key:k,deleted:true}},async list(p){const ks=[];for(let i=0;i<localStorage.length;i++){const kk=localStorage.key(i);if(!p||kk.startsWith(p))ks.push(kk)}return{keys:ks}}};}
+function renderMath(){document.querySelectorAll('.math').forEach(el=>{const tex=el.getAttribute('data-tex');if(!tex||el.dataset.done)return;try{if(window.katex){katex.render(tex,el,{displayMode:el.dataset.display==='1',throwOnError:false});el.dataset.done='1';}else el.textContent=tex;}catch(e){el.textContent=tex;}});}
+function randn(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+
+const M=1500;
+function sampleCos(d){
+  const cosv=new Float64Array(M);let normSum=0;
+  for(let p=0;p<M;p++){
+    let a=new Float64Array(d),b=new Float64Array(d),na=0,nb=0;
+    for(let i=0;i<d;i++){a[i]=randn();b[i]=randn();na+=a[i]*a[i];nb+=b[i]*b[i];}
+    na=Math.sqrt(na);nb=Math.sqrt(nb);normSum+=na;
+    let dot=0;for(let i=0;i<d;i++)dot+=(a[i]/na)*(b[i]/nb);
+    cosv[p]=dot;
+  }
+  return {cosv,meanNorm:normSum/M};
+}
+const BINS=41;
+function render(){
+  const d=+document.getElementById('d').value;document.getElementById('dOut').textContent=d;
+  const {cosv,meanNorm}=sampleCos(d);
+  let mean=0;for(const c of cosv)mean+=c;mean/=M;
+  let varc=0;for(const c of cosv)varc+=(c-mean)**2;varc/=M;const std=Math.sqrt(varc);
+  const thr=Math.cos((85)*Math.PI/180); // |cos|<thr → within 5° of 90°
+  let orth=0;for(const c of cosv)if(Math.abs(c)<thr)orth++;
+  const counts=new Array(BINS).fill(0);
+  for(const c of cosv){let b=Math.floor((c+1)/2*BINS);if(b<0)b=0;if(b>=BINS)b=BINS-1;counts[b]++;}
+  const W=680,H=300,padL=8,padR=8,padT=14,padB=30,iw=W-padL-padR,ih=H-padT-padB,mx=Math.max(...counts),bw=iw/BINS;
+  let s='';
+  s+=`<line x1="${padL}" y1="${padT+ih}" x2="${W-padR}" y2="${padT+ih}" stroke="var(--hair2)"/>`;
+  const zx=padL+iw/2;s+=`<line x1="${zx}" y1="${padT}" x2="${zx}" y2="${padT+ih}" stroke="var(--series)" stroke-dasharray="4 4" opacity="0.7"/>`;
+  s+=`<text x="${zx}" y="${H-8}" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--series)">cos = 0 (90°)</text>`;
+  s+=`<text x="${padL}" y="${H-8}" font-family="var(--mono)" font-size="10" fill="var(--faint)">−1</text>`;
+  s+=`<text x="${W-padR}" y="${H-8}" text-anchor="end" font-family="var(--mono)" font-size="10" fill="var(--faint)">+1</text>`;
+  counts.forEach((c,i)=>{const h=mx?c/mx*ih:0,x=padL+i*bw;s+=`<rect x="${(x+0.6).toFixed(1)}" y="${(padT+ih-h).toFixed(1)}" width="${(bw-1.2).toFixed(1)}" height="${h.toFixed(1)}" fill="var(--accent)" opacity="0.85"/>`;});
+  document.getElementById('hist').innerHTML=s;
+  document.getElementById('mean').textContent=mean.toFixed(3);
+  document.getElementById('std').textContent=std.toFixed(3)+' · '+(1/Math.sqrt(d)).toFixed(3);
+  document.getElementById('orth').textContent=(100*orth/M).toFixed(0)+'%';
+  document.getElementById('shell').textContent=(meanNorm/Math.sqrt(d)).toFixed(3);
+  document.getElementById('cnote').textContent = d<=4
+    ? `In d=${d}, cosines spread across the whole range — random vectors point every which way, and "similar" vs "dissimilar" is a real distinction.`
+    : d<40
+      ? `By d=${d} the spread has tightened to std ≈ ${std.toFixed(2)} ≈ 1/√d, and ${(100*orth/M).toFixed(0)}% of pairs sit within 5° of orthogonal. The distribution is collapsing onto 0.`
+      : `At d=${d}, essentially every pair is near-orthogonal (std ≈ ${std.toFixed(3)}, ${(100*orth/M).toFixed(0)}% within 5° of 90°). This is the regime real embeddings live in — and why cosine, not distance, is the metric.`;
+}
+document.getElementById('d').addEventListener('input',render);
+
+const QS={
+  q1:{opts:["approaches ±1 (they align)","concentrates near 0 with variance 1/d — nearly orthogonal","stays uniform on [−1,1]","grows without bound"],a:1,
+    fb:"⟨u,v⟩ has mean 0 and variance 1/d, so it behaves like 𝒩(0,1/d): random directions become asymptotically orthogonal, with spread shrinking as 1/√d."},
+  q2:{opts:["at the origin, its mode","on a thin shell at radius √d","uniformly through the ball","at the corners of the space"],a:1,
+    fb:"Despite the density peaking at 0, there's exponentially more volume out near radius √d, so ‖x‖ concentrates there — the soap-bubble / shell phenomenon."},
+  q3:{opts:["distances become impossible to compute","the nearest and farthest points become almost equidistant, so distance stops discriminating","every point becomes identical","dimension makes search faster"],a:1,
+    fb:"Concentration drives the ratio of nearest-to-farthest distance toward 1, so distance-based methods (kNN, k-means) lose contrast. Angles/cosine survive better than raw distance."},
+  q4:{opts:["the original dimension d","the number of points n (and tolerance ε): k = O(ε⁻²log n)","the norm of the largest vector","nothing — it's always 2"],a:1,
+    fb:"JL's target dimension is O(log n / ε²) — it scales with how many points and how tight a distortion you allow, independent of the source dimension. That's why sketching/ANN scale."},
+  q5:{opts:["it makes all vectors equal","you can pack exponentially many almost-orthogonal directions into d dims — the basis for superposition","it removes the need for training","it eliminates noise"],a:1,
+    fb:"There are ~e^{cd} vectors pairwise near-orthogonal in ℝᵈ, so a model can represent far more features than it has neurons by assigning them near-orthogonal directions — superposition (Lesson 20)."}
+};
+const sel={q1:null,q2:null,q3:null,q4:null,q5:null};let revealed=false;
+Object.keys(QS).forEach(id=>{const holder=document.querySelector('#'+id+' .opts');QS[id].opts.forEach((txt,i)=>{const b=document.createElement('button');b.className='opt';b.textContent=String.fromCharCode(65+i)+'.  '+txt;b.onclick=()=>{if(revealed)return;sel[id]=i;[...holder.children].forEach((c,ci)=>c.classList.toggle('sel',ci===i));document.getElementById('hint').style.display='none';};holder.appendChild(b);});});
+document.getElementById('check').onclick=async()=>{
+  if(revealed)return;if(Object.values(sel).some(v=>v===null)){document.getElementById('hint').style.display='inline';return;}
+  revealed=true;let score=0;
+  Object.keys(QS).forEach(id=>{const a=QS[id].a,holder=document.querySelector('#'+id+' .opts'),fb=document.querySelector('#'+id+' .fb');[...holder.children].forEach((c,ci)=>{c.style.cursor='default';c.classList.remove('sel');if(ci===a)c.classList.add('correct');else if(ci===sel[id])c.classList.add('wrong');});if(sel[id]===a)score++;fb.textContent=QS[id].fb;fb.classList.add('show');});
+  document.getElementById('check').style.opacity='0.5';document.getElementById('check').textContent='Checked';
+  document.getElementById('scoreOut').textContent=score+' / 5';document.getElementById('done').classList.add('show');
+  try{await window.storage.set('mfs:lesson10',JSON.stringify({done:true,retrieval:score+'/5',ts:Date.now()}),false);}catch(e){}
+};
+function boot(){renderMath();render();}
+if(window.katex)boot();else window.addEventListener('load',boot);
+(async()=>{try{const r=await window.storage.get('mfs:lesson10',false);if(r&&r.value){const v=JSON.parse(r.value);if(v.done){const c=document.getElementById('chip');c.classList.add('show');c.textContent='completed · '+v.retrieval;}}}catch(e){}})();
+</script>
+</body>
+</html>

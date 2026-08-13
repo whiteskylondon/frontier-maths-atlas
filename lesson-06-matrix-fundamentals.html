@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lesson 06 — Matrix fundamentals</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<style>
+  :root{
+    --paper:#FAFAF6; --ink:#1A1C22; --muted:#63676E; --faint:#9A9EA4;
+    --hair:#E4E3DB; --hair2:#D4D3CA; --panel:#FFFFFF;
+    --accent:#24507A; --accent-bg:#EAF0F6; --series:#B07A2E;
+    --grid:#ECEBE3;
+    --miss:#B23A3A; --ok:#2F6B4F; --ok-bg:#E9F1EC;
+    --vol:#8A5A2B; --vol-bg:#F6EFE6;
+    --serif:Iowan Old Style,Palatino,"Palatino Linotype",Georgia,serif;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#15161A; --ink:#E9E8E2; --muted:#A2A6AC; --faint:#71757B;
+      --hair:#2A2C31; --hair2:#3A3C42; --panel:#1B1D22; --grid:#22242A;
+      --accent:#7FB0E0; --accent-bg:#1E2A38; --series:#D9A85E;
+      --miss:#E07A7A; --ok:#7FC49F; --ok-bg:#1C2A22;
+      --vol:#D9A066; --vol-bg:#2A2115;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.62;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:740px;margin:0 auto;padding:32px 24px 60px}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 6px}
+  h1{font-family:var(--serif);font-weight:600;font-size:28px;line-height:1.2;margin:0 0 6px;letter-spacing:-.01em}
+  .chip{display:none;font-family:var(--mono);font-size:11px;letter-spacing:.05em;color:var(--ok);border:1px solid var(--ok);border-radius:20px;padding:3px 10px;vertical-align:middle;margin-left:10px}
+  .chip.show{display:inline-block}
+  .sub{color:var(--muted);font-size:15px;margin:0 0 18px}
+  .levels{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 26px}
+  .levels .lk{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+  .levels .pill{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-family:var(--mono);color:var(--muted);background:var(--panel);border:1px solid var(--hair2);border-radius:20px;padding:4px 11px}
+  .levels .pill b{color:var(--accent);font-weight:700;letter-spacing:.03em}
+  p.lead{font-size:16px;margin:0 0 22px}
+  p.lead b{font-weight:600}
+  .sec{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:34px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--hair)}
+  .mblock{margin:16px 0;overflow-x:auto}
+  .glo{list-style:none;padding:0;margin:14px 0 0}
+  .glo li{display:flex;gap:14px;padding:9px 0;border-top:1px solid var(--hair);align-items:baseline}
+  .glo li:first-child{border-top:none}
+  .glo .sym{flex:0 0 120px;text-align:right;padding-top:2px}
+  .glo .def{font-size:14.5px}
+  .glo .def .n{color:var(--muted)}
+  .step{font-size:14.5px;color:var(--muted);margin:10px 0}
+  .panel{background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:20px;margin:14px 0}
+  .hintline{font-size:13px;color:var(--faint);font-family:var(--mono);margin:0 0 8px}
+  svg{max-width:100%;height:auto;display:block;touch-action:none}
+  .ctrls{display:flex;flex-wrap:wrap;gap:16px 24px;align-items:flex-end;margin:12px 0 6px}
+  .field{display:flex;flex-direction:column;gap:5px;min-width:120px;flex:1}
+  .field label{font-size:12px;color:var(--muted);font-family:var(--mono);letter-spacing:.03em;display:flex;justify-content:space-between}
+  .field label b{color:var(--ink);font-weight:600}
+  input[type=range]{width:100%;accent-color:var(--accent);height:20px}
+  .tally{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0 2px}
+  .stat{flex:1;min-width:104px;background:var(--paper);border-radius:9px;padding:8px 11px}
+  .stat .k{font-size:11px;font-family:var(--mono);letter-spacing:.03em;color:var(--muted);text-transform:uppercase}
+  .stat .v{font-size:18px;font-weight:600;font-family:var(--mono);margin-top:2px}
+  .stat .v.hot{color:var(--ok)}
+  .callout{font-size:14px;color:var(--muted);border-left:2px solid var(--accent);padding:2px 0 2px 14px;margin:14px 0 2px;min-height:1.4em}
+  .mtx{display:inline-grid;grid-template-columns:repeat(2,minmax(48px,auto));gap:2px;border-left:2px solid var(--ink);border-right:2px solid var(--ink);padding:5px 9px;font-family:var(--mono);font-size:14px;vertical-align:middle}
+  .mtx div{text-align:right;padding:2px 7px}
+  .theorem{background:var(--accent-bg);border-radius:12px;padding:18px 20px;margin:16px 0}
+  .theorem .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
+  .theorem p{font-family:var(--serif);font-size:16px;line-height:1.55;margin:0}
+  .twist{border:1px dashed var(--hair2);border-radius:12px;padding:16px 18px;margin:16px 0;background:var(--panel)}
+  .twist .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+  .twist p{margin:0;font-size:14.6px}
+  .vol{background:var(--vol-bg);border:1px solid var(--vol);border-radius:12px;padding:18px 20px;margin:16px 0}
+  .vol .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:var(--vol);margin:0 0 8px}
+  .vol p{margin:0 0 10px;font-size:14.8px}
+  .vol p:last-child{margin-bottom:0}
+  .vol code{font-family:var(--mono);font-size:13px;background:rgba(138,90,43,.12);padding:1px 5px;border-radius:4px}
+  .q{border:1px solid var(--hair);border-radius:12px;padding:16px 18px;margin:12px 0;background:var(--panel)}
+  .q .stem{font-size:15px;font-weight:500;margin:0 0 12px}
+  .opt{display:block;width:100%;text-align:left;font-size:14px;padding:10px 12px;margin:0 0 8px;border:1px solid var(--hair2);border-radius:8px;background:transparent;color:var(--ink);cursor:pointer;line-height:1.45}
+  .opt:last-child{margin-bottom:0}
+  .opt:hover{border-color:var(--accent)}
+  .opt.sel{border-color:var(--accent);background:var(--accent-bg)}
+  .opt.correct{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+  .opt.wrong{background:#F7ECEC;border-color:var(--miss);color:var(--miss)}
+  @media (prefers-color-scheme: dark){ .opt.wrong{background:#2E1E1E} }
+  .fb{font-size:13.5px;color:var(--muted);margin:10px 0 0;line-height:1.5;display:none}
+  .fb.show{display:block}
+  .checkRow{display:flex;align-items:center;gap:14px;margin:16px 0 0;flex-wrap:wrap}
+  .hint{font-size:13px;color:var(--miss);display:none}
+  button.act{font-family:var(--sans);font-size:14px;padding:8px 14px;border-radius:8px;border:1px solid var(--hair2);background:var(--panel);color:var(--ink);cursor:pointer}
+  button.act.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .done{display:none;align-items:center;gap:10px;background:var(--ok-bg);color:var(--ok);border-radius:10px;padding:12px 16px;font-size:14px;margin:14px 0 0}
+  .done.show{display:flex}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">Lesson 06 · Linear algebra foundations</p>
+  <h1>Matrix fundamentals: inner products, XᵀX, and eigenvectors<span class="chip" id="chip"></span></h1>
+  <p class="sub">The bedrock under Lesson 5 — the three primitives every matrix method is built from.</p>
+  <div class="levels">
+    <span class="lk">Level</span>
+    <span class="pill"><b>US</b> Undergraduate · linear-algebra core</span>
+    <span class="pill"><b>FR</b> Licence L1–L2 · prépa MPSI</span>
+  </div>
+
+  <p class="lead">Three ideas carry almost all of applied linear algebra: the <b>inner product</b> (how aligned two vectors are), the <b>Gram matrix XᵀX</b> (a whole table of inner products), and <b>eigenvectors</b> (the directions a matrix only stretches). Get these solid and the rest — regression, PCA, covariance — stops being formula-memorising and becomes geometry. Both panels below are draggable; move things and watch the numbers.</p>
+
+  <div class="sec">1 · The inner product</div>
+  <div class="mblock math" data-tex="\langle u,v\rangle=u^{\top}v=\sum_i u_i v_i=\lVert u\rVert\,\lVert v\rVert\cos\theta,\qquad \lVert u\rVert=\sqrt{\langle u,u\rangle}" data-display="1"></div>
+  <p class="step">It measures alignment. Zero means orthogonal (perpendicular). The <b>projection</b> of u onto v — the shadow u casts on v's line — is:</p>
+  <div class="mblock math" data-tex="\operatorname{proj}_v(u)=\frac{\langle u,v\rangle}{\langle v,v\rangle}\,v" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="\langle u,v\rangle"></span><span class="def"><b>inner (dot) product</b>. <span class="n">Positive = same general direction, negative = opposing, zero = orthogonal.</span></span></li>
+    <li><span class="sym math" data-tex="\lVert u\rVert"></span><span class="def"><b>norm</b> (length) = √⟨u,u⟩.</span></li>
+    <li><span class="sym math" data-tex="\cos\theta"></span><span class="def">the alignment, normalised to [−1,1]. <span class="n">This is exactly a correlation when u, v are centred.</span></span></li>
+  </ul>
+
+  <div class="panel">
+    <p class="hintline">Drag either arrow's tip · ⟨u,v⟩ → 0 when they're perpendicular</p>
+    <svg id="ip" viewBox="0 0 640 360" role="img" aria-label="Two draggable vectors with their inner product, norms, angle and projection"></svg>
+    <div class="tally">
+      <div class="stat"><div class="k">⟨u,v⟩</div><div class="v" id="ip-dot">—</div></div>
+      <div class="stat"><div class="k">‖u‖ · ‖v‖</div><div class="v" id="ip-norms">—</div></div>
+      <div class="stat"><div class="k">cos θ</div><div class="v" id="ip-cos">—</div></div>
+      <div class="stat"><div class="k">angle θ</div><div class="v" id="ip-ang">—</div></div>
+    </div>
+    <p class="callout" id="ip-note"></p>
+  </div>
+
+  <div class="sec">2 · XᵀX is a table of inner products</div>
+  <p class="step">Stack feature vectors as the columns of X. Then every entry of the Gram matrix is just one inner product — column i with column j:</p>
+  <div class="mblock math" data-tex="\big(X^{\top}X\big)_{ij}=x_i^{\top}x_j=\langle x_i,\,x_j\rangle" data-display="1"></div>
+  <p class="step">So the <b>diagonal</b> holds squared lengths ‖xᵢ‖² and the <b>off-diagonal</b> holds alignments between features. That's why XᵀX is symmetric, why its diagonal is non-negative, and — once features are centred — why it's the (unscaled) covariance matrix. Lesson 5's whole conditioning story was really a story about these inner products.</p>
+
+  <div class="sec">3 · Eigenvectors &amp; eigenvalues</div>
+  <div class="mblock math" data-tex="A v=\lambda v\qquad\text{— a direction the matrix only \emph{scales}, by the factor }\lambda,\text{ without rotating it.}" data-display="1"></div>
+  <p class="step">Most vectors get rotated when you apply A. A few special ones don't — they come out pointing the same way, just longer or shorter. Those are the eigenvectors; the stretch factor is the eigenvalue. Symmetric matrices (like XᵀX) are the well-behaved case:</p>
+  <div class="mblock math" data-tex="A=A^{\top}\ \Rightarrow\ \text{real eigenvalues, orthogonal eigenvectors, and}\ \ A=Q\Lambda Q^{\top}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="A v=\lambda v"></span><span class="def">the <b>eigen-equation</b>. <span class="n">v is a fixed direction of A; λ says how much it stretches (λ&lt;0 flips it, |λ|&lt;1 shrinks it).</span></span></li>
+    <li><span class="sym math" data-tex="Q\Lambda Q^{\top}"></span><span class="def"><b>spectral decomposition</b> of a symmetric A. <span class="n">Q's columns are the orthonormal eigenvectors; Λ is the diagonal of eigenvalues.</span></span></li>
+    <li><span class="sym math" data-tex="\lambda_{\max}/\lambda_{\min}"></span><span class="def">the <b>condition number</b>. <span class="n">Lesson 5's collinearity gauge — a big ratio means one direction is nearly flat.</span></span></li>
+  </ul>
+
+  <div class="panel">
+    <p class="hintline">Drag the probe vector x around the circle · at an eigenvector, Ax stays parallel to x</p>
+    <svg id="eg" viewBox="0 0 520 380" role="img" aria-label="Adjustable symmetric matrix acting on the unit circle, with eigenvectors and a draggable probe vector"></svg>
+    <div class="ctrls">
+      <div class="field"><label>a (top-left) <b id="ea-o">2.0</b></label><input type="range" id="ea" min="-2" max="3" value="2" step="0.1" /></div>
+      <div class="field"><label>b (off-diagonal) <b id="eb-o">0.8</b></label><input type="range" id="eb" min="-2.5" max="2.5" value="0.8" step="0.1" /></div>
+      <div class="field"><label>d (bottom-right) <b id="ed-o">1.0</b></label><input type="range" id="ed" min="-2" max="3" value="1" step="0.1" /></div>
+    </div>
+    <div class="tally">
+      <div class="stat"><div class="k">A = [[a,b],[b,d]]</div><div class="v" style="font-size:13px" id="eg-A">—</div></div>
+      <div class="stat"><div class="k">λ₁ , λ₂</div><div class="v" id="eg-lam">—</div></div>
+      <div class="stat"><div class="k">condition κ</div><div class="v" id="eg-kap">—</div></div>
+      <div class="stat"><div class="k">Ax ∥ x ?</div><div class="v" id="eg-par">no</div></div>
+    </div>
+    <p class="callout" id="eg-note"></p>
+  </div>
+
+  <div class="theorem">
+    <p class="lbl">The precise statement</p>
+    <p>(Spectral theorem.) Every real symmetric matrix A has real eigenvalues and an orthonormal basis of eigenvectors, so A = QΛQᵀ with Q orthogonal. XᵀX is symmetric and positive semidefinite, so all its eigenvalues are real and ≥ 0; its eigenvectors are the orthogonal principal axes, and the eigenvalues are the squared stretch factors along them.</p>
+  </div>
+
+  <div class="twist">
+    <p class="lbl">The twist — symmetry is what makes it clean</p>
+    <p>Drop symmetry and the guarantees go. A pure rotation has <b>complex</b> eigenvalues (no real direction is left unrotated). A shear like [[1,1],[0,1]] is <b>defective</b> — a single repeated eigenvalue with only one eigenvector, so it has no eigenbasis at all. General matrices can have eigenvectors that aren't orthogonal. This is exactly why XᵀX shows up everywhere instead of X: forming XᵀX manufactures a symmetric, real-spectrum, orthogonal-eigenvector object out of any X. The tool that tames the non-symmetric general case is the <b>SVD</b>, which is eigen-decomposition of XᵀX and XXᵀ stitched together — the natural next lesson.</p>
+  </div>
+
+  <div class="vol">
+    <p class="lbl">Why this matters · volarixs</p>
+    <p>Eigen-decomposing a covariance matrix (a centred XᵀX) <i>is</i> PCA: the eigenvectors are your principal risk factors / eigen-portfolios, and each eigenvalue is the variance that factor carries. The top eigenvector is the dominant co-movement mode of your universe; the tiny eigenvalues are the near-collinear directions that made loadings unstable in Lesson 5 — <code>κ = λ_max/λ_min</code> is that instability in one number, computable on any factor panel.</p>
+    <p>And the inner product is the quiet workhorse underneath: a stock's factor exposure is an inner product of its characteristics with a factor definition; a correlation is a normalised inner product. Getting these two primitives reflexive is what makes the covariance, regression and PCA machinery read as one idea instead of three.</p>
+  </div>
+
+  <div class="sec">Check yourself</div>
+  <div class="q" id="q1"><p class="stem">The inner product ⟨u,v⟩ = uᵀv equals zero exactly when:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q2"><p class="stem">The (i, j) entry of XᵀX equals:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q3"><p class="stem">A nonzero vector v is an eigenvector of A with eigenvalue λ when:</p><div class="opts"></div><p class="fb"></p></div>
+
+  <div class="checkRow">
+    <button class="act primary" id="check">Check answers</button>
+    <span class="hint" id="hint">Select an answer for all three first.</span>
+  </div>
+  <div class="done" id="done">Foundations locked. With inner products, XᵀX and eigenvectors solid, the SVD is the natural next step.</div>
+</div>
+
+<script>
+/* storage shim: window.storage (Claude artifacts) or localStorage (web) */
+if(!window.storage){window.storage={async get(k){const v=localStorage.getItem(k);if(v==null)throw new Error('missing');return{key:k,value:v}},async set(k,v){localStorage.setItem(k,v);return{key:k,value:v}},async delete(k){localStorage.removeItem(k);return{key:k,deleted:true}},async list(p){const ks=[];for(let i=0;i<localStorage.length;i++){const kk=localStorage.key(i);if(!p||kk.startsWith(p))ks.push(kk)}return{keys:ks}}};}
+function renderMath(){
+  document.querySelectorAll('.math').forEach(el=>{
+    const tex=el.getAttribute('data-tex'); if(!tex||el.dataset.done)return;
+    try{ if(window.katex){katex.render(tex,el,{displayMode:el.dataset.display==='1',throwOnError:false});el.dataset.done='1';} else {el.textContent=tex;} }
+    catch(e){ el.textContent=tex; }
+  });
+}
+function arrow(x1,y1,x2,y2,color,w){
+  const dx=x2-x1,dy=y2-y1,L=Math.hypot(dx,dy)||1,ux=dx/L,uy=dy/L,h=10,ww=6;
+  const bx=x2-ux*h,by=y2-uy*h,px=-uy,py=ux;
+  return `<line x1="${x1}" y1="${y1}" x2="${bx.toFixed(1)}" y2="${by.toFixed(1)}" stroke="${color}" stroke-width="${w}"/>`+
+    `<polygon points="${x2.toFixed(1)},${y2.toFixed(1)} ${(bx+px*ww).toFixed(1)},${(by+py*ww).toFixed(1)} ${(bx-px*ww).toFixed(1)},${(by-py*ww).toFixed(1)}" fill="${color}"/>`;
+}
+function attachDrag(svg,onMove){
+  let active=false;
+  const toData=e=>{const r=svg.getBoundingClientRect(),vb=svg.viewBox.baseVal;
+    return {vx:(e.clientX-r.left)/r.width*vb.width,vy:(e.clientY-r.top)/r.height*vb.height};};
+  svg.addEventListener('pointerdown',e=>{const h=e.target.getAttribute&&e.target.getAttribute('data-h');if(h){active=h;onMove(h,toData(e));e.preventDefault();}});
+  window.addEventListener('pointermove',e=>{if(active){onMove(active,toData(e));}});
+  window.addEventListener('pointerup',()=>{active=false;});
+}
+
+/* ---------- Panel 1 : inner product ---------- */
+(function(){
+  const svg=document.getElementById('ip'),W=640,H=360,cx=W/2,cy=H/2,sc=44;
+  let u={x:2.6,y:1.2}, v={x:1.0,y:2.4};
+  const PX=p=>[cx+p.x*sc,cy-p.y*sc];
+  function render(){
+    let s='';
+    for(let gx=-7;gx<=7;gx++){s+=`<line x1="${cx+gx*sc}" y1="0" x2="${cx+gx*sc}" y2="${H}" stroke="var(--grid)" stroke-width="1"/>`;}
+    for(let gy=-4;gy<=4;gy++){s+=`<line x1="0" y1="${cy-gy*sc}" x2="${W}" y2="${cy-gy*sc}" stroke="var(--grid)" stroke-width="1"/>`;}
+    s+=`<line x1="0" y1="${cy}" x2="${W}" y2="${cy}" stroke="var(--hair2)" stroke-width="1"/><line x1="${cx}" y1="0" x2="${cx}" y2="${H}" stroke="var(--hair2)" stroke-width="1"/>`;
+    const nv=Math.hypot(v.x,v.y), t=(u.x*v.x+u.y*v.y)/(nv*nv||1), pr={x:t*v.x,y:t*v.y};
+    const [ux,uy]=PX(u),[vx,vy]=PX(v),[px,py]=PX(pr);
+    // projection guide
+    s+=`<line x1="${ux}" y1="${uy}" x2="${px}" y2="${py}" stroke="var(--faint)" stroke-width="1.2" stroke-dasharray="4 4"/>`;
+    s+=`<circle cx="${px}" cy="${py}" r="3.5" fill="var(--faint)"/>`;
+    s+=arrow(cx,cy,vx,vy,'var(--series)',2.4);
+    s+=arrow(cx,cy,ux,uy,'var(--accent)',2.4);
+    s+=`<circle cx="${ux}" cy="${uy}" r="9" fill="var(--accent)" opacity="0.14" data-h="u"/><circle cx="${ux}" cy="${uy}" r="4.5" fill="var(--accent)" data-h="u"/>`;
+    s+=`<circle cx="${vx}" cy="${vy}" r="9" fill="var(--series)" opacity="0.14" data-h="v"/><circle cx="${vx}" cy="${vy}" r="4.5" fill="var(--series)" data-h="v"/>`;
+    s+=`<text x="${ux+10}" y="${uy-6}" font-family="var(--mono)" font-size="12" fill="var(--accent)">u</text>`;
+    s+=`<text x="${vx+10}" y="${vy-6}" font-family="var(--mono)" font-size="12" fill="var(--series)">v</text>`;
+    svg.innerHTML=s;
+    const dot=u.x*v.x+u.y*v.y, nu=Math.hypot(u.x,u.y), cos=dot/((nu*nv)||1), ang=Math.acos(Math.max(-1,Math.min(1,cos)))*180/Math.PI;
+    document.getElementById('ip-dot').textContent=dot.toFixed(2);
+    document.getElementById('ip-norms').textContent=nu.toFixed(2)+' · '+nv.toFixed(2);
+    document.getElementById('ip-cos').textContent=cos.toFixed(2);
+    document.getElementById('ip-ang').textContent=ang.toFixed(0)+'°';
+    const note=document.getElementById('ip-note');
+    if(Math.abs(dot)<0.2){note.textContent='⟨u,v⟩ ≈ 0 — the vectors are orthogonal (θ ≈ 90°). u casts no shadow on v: the projection collapses to the origin.';note.style.color='var(--ok)';}
+    else if(dot>0){note.textContent='Positive inner product — u and v point the same general way (θ < 90°). The grey dot is u\u2019s projection onto v; the dashed line (the residual) meets v at a right angle.';note.style.color='var(--muted)';}
+    else{note.textContent='Negative inner product — the vectors oppose (θ > 90°), so the projection lands on the far side of the origin along v.';note.style.color='var(--muted)';}
+  }
+  attachDrag(svg,(h,d)=>{const x=(d.vx-cx)/sc,y=(cy-d.vy)/sc;const p={x:Math.max(-7,Math.min(7,x)),y:Math.max(-4,Math.min(4,y))};if(h==='u')u=p;else v=p;render();});
+  window.__ipRender=render;
+})();
+
+/* ---------- Panel 2 : eigenvectors ---------- */
+(function(){
+  const svg=document.getElementById('eg'),W=520,H=380,cx=W/2,cy=H/2,sc=58;
+  let probe={x:1,y:0};
+  const PX=(x,y)=>[cx+x*sc,cy-y*sc];
+  const A=()=>{return {a:+document.getElementById('ea').value,b:+document.getElementById('eb').value,d:+document.getElementById('ed').value};};
+  const mul=(M,x,y)=>[M.a*x+M.b*y, M.b*x+M.d*y];
+  function eigs(M){const tr=(M.a+M.d)/2, disc=Math.sqrt(((M.a-M.d)/2)**2+M.b*M.b);
+    const l1=tr+disc,l2=tr-disc;
+    const vec=l=>{let vx,vy; if(Math.abs(M.b)>1e-9){vx=M.b;vy=l-M.a;} else {if(Math.abs(l-M.a)<1e-9){vx=1;vy=0;}else{vx=0;vy=1;}} const n=Math.hypot(vx,vy)||1;return [vx/n,vy/n];};
+    return {l1,l2,v1:vec(l1),v2:vec(l2)};};
+  function render(){
+    const M=A(),E=eigs(M);
+    let s='';
+    s+=`<line x1="0" y1="${cy}" x2="${W}" y2="${cy}" stroke="var(--hair2)" stroke-width="1"/><line x1="${cx}" y1="0" x2="${cx}" y2="${H}" stroke="var(--hair2)" stroke-width="1"/>`;
+    // unit circle
+    let uc='';for(let i=0;i<=72;i++){const a=i/72*2*Math.PI,[x,y]=PX(Math.cos(a),Math.sin(a));uc+=(i?'L':'M')+x.toFixed(1)+' '+y.toFixed(1)+' ';}
+    s+=`<path d="${uc}" fill="none" stroke="var(--faint)" stroke-width="1" stroke-dasharray="3 3"/>`;
+    // image ellipse
+    let el='';for(let i=0;i<=72;i++){const a=i/72*2*Math.PI,[mx,my]=mul(M,Math.cos(a),Math.sin(a)),[x,y]=PX(mx,my);el+=(i?'L':'M')+x.toFixed(1)+' '+y.toFixed(1)+' ';}
+    s+=`<path d="${el}" fill="var(--accent)" fill-opacity="0.05" stroke="var(--accent)" stroke-width="1.4" opacity="0.65"/>`;
+    // eigenvectors scaled by eigenvalue
+    [[E.v1,E.l1],[E.v2,E.l2]].forEach(([v,l])=>{const [ex,ey]=PX(v[0]*l,v[1]*l);s+=arrow(cx,cy,ex,ey,'var(--series)',2.2);
+      const [nx,ny]=PX(-v[0]*l,-v[1]*l);s+=`<line x1="${cx}" y1="${cy}" x2="${nx}" y2="${ny}" stroke="var(--series)" stroke-width="1" stroke-dasharray="2 3" opacity="0.5"/>`;});
+    // probe x and Ax
+    const [ax,ay]=mul(M,probe.x,probe.y);
+    const [pxx,pxy]=PX(probe.x,probe.y),[axx,axy]=PX(ax,ay);
+    s+=arrow(cx,cy,axx,axy,'var(--accent)',2.6);
+    s+=arrow(cx,cy,pxx,pxy,'var(--ink)',2);
+    s+=`<circle cx="${pxx}" cy="${pxy}" r="10" fill="var(--ink)" opacity="0.12" data-h="p"/><circle cx="${pxx}" cy="${pxy}" r="5" fill="var(--ink)" data-h="p"/>`;
+    s+=`<text x="${pxx+9}" y="${pxy-6}" font-family="var(--mono)" font-size="12" fill="var(--ink)">x</text>`;
+    s+=`<text x="${axx+9}" y="${axy-6}" font-family="var(--mono)" font-size="12" fill="var(--accent)">Ax</text>`;
+    svg.innerHTML=s;
+    // parallel test
+    const nax=Math.hypot(ax,ay)||1, align=Math.abs((probe.x*ax+probe.y*ay)/nax);
+    const par=align>0.992;
+    document.getElementById('eg-A').textContent=`[${M.a.toFixed(1)}, ${M.b.toFixed(1)}; ${M.b.toFixed(1)}, ${M.d.toFixed(1)}]`;
+    document.getElementById('eg-lam').textContent=E.l1.toFixed(2)+' , '+E.l2.toFixed(2);
+    const kap=Math.abs(E.l1)/Math.max(Math.abs(E.l2),1e-6);
+    document.getElementById('eg-kap').textContent=isFinite(kap)?kap.toFixed(1):'∞';
+    const parEl=document.getElementById('eg-par');parEl.textContent=par?'YES':'no';parEl.className='v'+(par?' hot':'');
+    const note=document.getElementById('eg-note');
+    if(par){const lam=(probe.x*ax+probe.y*ay)/(probe.x*probe.x+probe.y*probe.y);
+      note.textContent=`x is (near) an eigenvector: Ax points the same way as x, just scaled by λ ≈ ${lam.toFixed(2)}. Off these two directions, Ax visibly rotates away from x.`;note.style.color='var(--ok)';}
+    else{note.textContent='Away from the eigen-directions the blue Ax swings off the black x. The dashed ochre axes are the eigenvectors — drag x onto one and Ax snaps parallel.';note.style.color='var(--muted)';}
+  }
+  attachDrag(svg,(h,d)=>{if(h!=='p')return;const x=(d.vx-cx)/sc,y=(cy-d.vy)/sc,n=Math.hypot(x,y)||1;probe={x:x/n,y:y/n};render();});
+  ['ea','eb','ed'].forEach(id=>document.getElementById(id).addEventListener('input',e=>{document.getElementById(id[0]+id[1]+'-o').textContent=(+e.target.value).toFixed(1);render();}));
+  window.__egRender=render;
+})();
+
+/* ---------- retrieval ---------- */
+const QS={
+  q1:{opts:["u and v have equal length","u and v are orthogonal (perpendicular)","u equals v","both are unit vectors"],a:1,
+    fb:"⟨u,v⟩ = ‖u‖‖v‖cosθ, which is zero exactly when cosθ = 0, i.e. θ = 90°. Orthogonality is the geometric meaning of a zero inner product."},
+  q2:{opts:["the i-th entry of X times the j-th entry","the inner product of column i and column j of X","the determinant of X","an eigenvalue of X"],a:1,
+    fb:"(XᵀX)ᵢⱼ = xᵢᵀxⱼ = ⟨xᵢ, xⱼ⟩. The Gram matrix is literally the table of all pairwise inner products of the columns — diagonal = squared norms, off-diagonal = alignments."},
+  q3:{opts:["Av = λv — A scales v without rotating it","Av = 0","vᵀv = λ","A is symmetric"],a:0,
+    fb:"Av = λv is the eigen-equation: v is a direction the matrix leaves pointing the same way, stretched by λ. (Av = 0 would make v lie in the null space — the special case λ = 0.)"}
+};
+const sel={q1:null,q2:null,q3:null};let revealed=false;
+Object.keys(QS).forEach(id=>{
+  const holder=document.querySelector('#'+id+' .opts');
+  QS[id].opts.forEach((txt,i)=>{
+    const b=document.createElement('button');b.className='opt';b.textContent=String.fromCharCode(65+i)+'.  '+txt;
+    b.onclick=()=>{if(revealed)return;sel[id]=i;[...holder.children].forEach((c,ci)=>c.classList.toggle('sel',ci===i));document.getElementById('hint').style.display='none';};
+    holder.appendChild(b);
+  });
+});
+document.getElementById('check').onclick=async()=>{
+  if(revealed)return;
+  if(sel.q1===null||sel.q2===null||sel.q3===null){document.getElementById('hint').style.display='inline';return;}
+  revealed=true;let score=0;
+  Object.keys(QS).forEach(id=>{
+    const a=QS[id].a,holder=document.querySelector('#'+id+' .opts'),fb=document.querySelector('#'+id+' .fb');
+    [...holder.children].forEach((c,ci)=>{c.style.cursor='default';c.classList.remove('sel');if(ci===a)c.classList.add('correct');else if(ci===sel[id])c.classList.add('wrong');});
+    if(sel[id]===a)score++;fb.textContent=QS[id].fb;fb.classList.add('show');
+  });
+  const btn=document.getElementById('check');btn.style.opacity='0.5';btn.textContent='Checked · '+score+'/3';
+  document.getElementById('done').classList.add('show');
+  try{await window.storage.set('mfs:lesson06',JSON.stringify({done:true,retrieval:score+'/3',ts:Date.now()}),false);}catch(e){}
+};
+function boot(){renderMath();window.__ipRender();window.__egRender();}
+if(window.katex)boot();else window.addEventListener('load',boot);
+(async()=>{try{const r=await window.storage.get('mfs:lesson06',false);if(r&&r.value){const v=JSON.parse(r.value);if(v.done){const c=document.getElementById('chip');c.classList.add('show');c.textContent='completed · '+v.retrieval;}}}catch(e){}})();
+</script>
+</body>
+</html>

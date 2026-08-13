@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lesson 07 — The Cross-Matrix, statistically</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<style>
+  :root{
+    --paper:#FAFAF6; --ink:#1A1C22; --muted:#63676E; --faint:#9A9EA4;
+    --hair:#E4E3DB; --hair2:#D4D3CA; --panel:#FFFFFF;
+    --accent:#24507A; --accent-bg:#EAF0F6; --series:#B07A2E;
+    --pos:#2F6B4F; --posbg:#E9F1EC; --neg:#B23A3A; --negbg:#F7ECEC;
+    --vol:#8A5A2B; --vol-bg:#F6EFE6; --ok:#2F6B4F; --ok-bg:#E9F1EC;
+    --serif:Iowan Old Style,Palatino,Georgia,serif;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#15161A; --ink:#E9E8E2; --muted:#A2A6AC; --faint:#71757B;
+      --hair:#2A2C31; --hair2:#3A3C42; --panel:#1B1D22;
+      --accent:#7FB0E0; --accent-bg:#1E2A38; --series:#D9A85E;
+      --pos:#7FC49F; --posbg:#1C2A22; --neg:#E07A7A; --negbg:#2E1E1E;
+      --vol:#D9A066; --vol-bg:#2A2115; --ok:#7FC49F; --ok-bg:#1C2A22;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.62;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:750px;margin:0 auto;padding:32px 24px 60px}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 6px}
+  h1{font-family:var(--serif);font-weight:600;font-size:27px;line-height:1.22;margin:0 0 6px;letter-spacing:-.01em}
+  .chip{display:none;font-family:var(--mono);font-size:11px;letter-spacing:.05em;color:var(--ok);border:1px solid var(--ok);border-radius:20px;padding:3px 10px;vertical-align:middle;margin-left:10px}
+  .chip.show{display:inline-block}
+  .sub{color:var(--muted);font-size:15px;margin:0 0 18px}
+  .levels{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 26px}
+  .levels .lk{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+  .levels .pill{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-family:var(--mono);color:var(--muted);background:var(--panel);border:1px solid var(--hair2);border-radius:20px;padding:4px 11px}
+  .levels .pill b{color:var(--accent);font-weight:700;letter-spacing:.03em}
+  p.lead{font-size:16px;margin:0 0 22px}
+  p.lead b{font-weight:600}
+  .sec{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:36px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--hair)}
+  .mblock{margin:16px 0;overflow-x:auto}
+  .glo{list-style:none;padding:0;margin:14px 0 0}
+  .glo li{display:flex;gap:14px;padding:9px 0;border-top:1px solid var(--hair);align-items:baseline}
+  .glo li:first-child{border-top:none}
+  .glo .sym{flex:0 0 118px;text-align:right;padding-top:2px}
+  .glo .def{font-size:14.5px}
+  .glo .def .n{color:var(--muted)}
+  .step{font-size:14.5px;color:var(--muted);margin:10px 0}
+  .map{background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:6px 18px;margin:14px 0}
+  .map .r{display:flex;gap:14px;padding:11px 0;border-top:1px solid var(--hair);font-size:14px;align-items:baseline}
+  .map .r:first-child{border-top:none}
+  .map .k{flex:0 0 190px;font-family:var(--mono);font-size:12.5px;color:var(--accent)}
+  .map .v{color:var(--ink)}
+  .map .v .n{color:var(--muted)}
+  .panel{background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:20px;margin:14px 0}
+  .ctrls{display:flex;flex-wrap:wrap;gap:16px 26px;align-items:flex-end;margin:0 0 12px}
+  .field{display:flex;flex-direction:column;gap:6px;min-width:150px;flex:1}
+  .field label{font-size:12px;color:var(--muted);font-family:var(--mono);letter-spacing:.03em;display:flex;justify-content:space-between}
+  .field label b{color:var(--ink);font-weight:600}
+  input[type=range]{width:100%;accent-color:var(--accent);height:20px}
+  .btns{display:flex;flex-wrap:wrap;gap:8px;margin:2px 0 12px}
+  button.act{font-family:var(--sans);font-size:14px;padding:8px 14px;border-radius:8px;border:1px solid var(--hair2);background:var(--panel);color:var(--ink);cursor:pointer}
+  button.act:hover{border-color:var(--accent);color:var(--accent)}
+  svg{max-width:100%;height:auto;display:block}
+  .legend{display:flex;flex-wrap:wrap;gap:16px;margin:10px 0 2px;font-size:12.5px;color:var(--muted);font-family:var(--mono)}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .dot{width:9px;height:9px;border-radius:50%;display:inline-block}
+  .tally{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 2px}
+  .stat{flex:1;min-width:118px;background:var(--paper);border-radius:9px;padding:9px 12px}
+  .stat .k{font-size:11px;font-family:var(--mono);letter-spacing:.04em;color:var(--muted);text-transform:uppercase}
+  .stat .v{font-size:19px;font-weight:600;font-family:var(--mono);margin-top:2px}
+  .stat .v.hi{color:var(--accent)} .stat .v.lo{color:var(--series)} .stat .v.g{color:var(--ok)}
+  .callout{font-size:14px;color:var(--muted);border-left:2px solid var(--accent);padding:2px 0 2px 14px;margin:16px 0 2px;min-height:1.4em}
+  .theorem{background:var(--accent-bg);border-radius:12px;padding:18px 20px;margin:16px 0}
+  .theorem .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
+  .theorem p{font-family:var(--serif);font-size:16px;line-height:1.55;margin:0}
+  .twist{border:1px dashed var(--hair2);border-radius:12px;padding:16px 18px;margin:16px 0;background:var(--panel)}
+  .twist .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+  .twist p{margin:0;font-size:14.6px}
+  .vol{background:var(--vol-bg);border:1px solid var(--vol);border-radius:12px;padding:18px 20px;margin:16px 0}
+  .vol .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:var(--vol);margin:0 0 8px}
+  .vol p{margin:0 0 10px;font-size:14.8px}
+  .vol ul{margin:0;padding-left:20px}
+  .vol li{font-size:14.6px;margin:0 0 7px}
+  .vol li:last-child{margin-bottom:0}
+  .vol code{font-family:var(--mono);font-size:13px;background:rgba(138,90,43,.12);padding:1px 5px;border-radius:4px}
+  .q{border:1px solid var(--hair);border-radius:12px;padding:16px 18px;margin:12px 0;background:var(--panel)}
+  .q .stem{font-size:15px;font-weight:500;margin:0 0 12px}
+  .opt{display:block;width:100%;text-align:left;font-size:14px;padding:10px 12px;margin:0 0 8px;border:1px solid var(--hair2);border-radius:8px;background:transparent;color:var(--ink);cursor:pointer;line-height:1.45}
+  .opt:last-child{margin-bottom:0}
+  .opt:hover{border-color:var(--accent)}
+  .opt.sel{border-color:var(--accent);background:var(--accent-bg)}
+  .opt.correct{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+  .opt.wrong{background:var(--negbg);border-color:var(--neg);color:var(--neg)}
+  .fb{font-size:13.5px;color:var(--muted);margin:10px 0 0;line-height:1.5;display:none}
+  .fb.show{display:block}
+  .checkRow{display:flex;align-items:center;gap:14px;margin:18px 0 0;flex-wrap:wrap}
+  .hint{font-size:13px;color:var(--neg);display:none}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .done{display:none;align-items:center;gap:10px;background:var(--ok-bg);color:var(--ok);border-radius:10px;padding:12px 16px;font-size:14px;margin:14px 0 0}
+  .done.show{display:flex}
+  .scoreOut{font-family:var(--mono);font-size:14px;font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">Lesson 07 · Applied — your Cross-Matrix</p>
+  <h1>The Cross-Matrix, statistically: every cell is a regression you now understand<span class="chip" id="chip"></span></h1>
+  <p class="sub">Six lessons of foundations, assembled into one <span style="font-family:var(--mono)">CellEstimate</span>.</p>
+  <div class="levels">
+    <span class="lk">Level</span>
+    <span class="pill"><b>US</b> Graduate · applied econometrics / quant</span>
+    <span class="pill"><b>FR</b> Master M2 · ENSAE 3A</span>
+  </div>
+
+  <p class="lead">The Cross-Matrix looks like a bespoke research engine, but statistically it's a grid of the exact objects from Lessons 1–6. Every cell fits one <b>regime-conditional regression</b>, stores its <b>coefficient with a confidence interval</b>, and earns trust through <b>subsample robustness</b> and <b>shrinkage</b>. Nothing in it is new machinery — it's your foundations, wired together and named for the desk.</p>
+
+  <div class="sec">1 · The cell is an OLS regression (Lesson 5)</div>
+  <p class="step">The canonical cell is the regime-conditional elasticity, fit only on dates where the regime label is r:</p>
+  <div class="mblock math" data-tex="\ln Y_t=\alpha_r+\beta_r\,\ln X_t+c^{\top}Z_t+\varepsilon_t" data-display="1"></div>
+  <p class="step">Stack the right-hand side into a design matrix X = [ 𝟏 &nbsp; ln X &nbsp; Z ] and this is precisely Lesson 5 — the coefficient vector is the normal-equations solution, and β_r is one of its entries:</p>
+  <div class="mblock math" data-tex="\hat{\boldsymbol\beta}=(\mathbf{X}^{\top}\mathbf{X})^{-1}\mathbf{X}^{\top}\mathbf{y}\qquad\Rightarrow\qquad \beta_r=\big[\hat{\boldsymbol\beta}\big]_{\ln X}" data-display="1"></div>
+  <div class="map">
+    <div class="r"><span class="k">β_r → point</span><span class="v">the cell value the heatmap colours. <span class="n">The OLS slope on ln X — <b>not</b> the level of Y or X.</span></span></div>
+    <div class="r"><span class="k">Z_t → controls</span><span class="v">FX, credit, VIX. <span class="n">Extra design-matrix columns; their coefficients c are absorbed, not stored.</span></span></div>
+    <div class="r"><span class="k">regime r → subset</span><span class="v">the rows the fit runs on. <span class="n">One regression per regime → one β_r per (target, driver, regime).</span></span></div>
+    <div class="r"><span class="k">ε_t → residual</span><span class="v">the unexplained part. <span class="n">Orthogonal to the columns of X — the Lesson-4/5 projection.</span></span></div>
+  </div>
+
+  <div class="sec">2 · Why logs — the coefficient becomes an elasticity</div>
+  <p class="step">Regressing ln Y on ln X makes the slope a unit-free <b>elasticity</b>: a percent move in X maps to a percent move in Y.</p>
+  <div class="mblock math" data-tex="\beta_r=\frac{\partial \ln Y}{\partial \ln X}=\frac{\%\,\Delta Y}{\%\,\Delta X}\qquad\text{(the \texttt{loglog\_elasticity} estimator)}" data-display="1"></div>
+  <p class="step">That's why the DAX-vol → SX5E-skew cell reads β ≈ +0.42: a 10% rise in DAX vol ≈ a 4.2% rise in the skew. But logs need Y &gt; 0. When the target can be negative — a return, a beta, a signed skew — you switch to <b>semi-elasticity</b> (Y on ln X: ΔY per %ΔX) or <b>delta-sensitivity</b> (ΔY on ΔX). That is exactly the estimator choice your doc makes for the cash / delta-one cells versus the vol cells.</p>
+
+  <div class="sec">3 · See it — regime conditioning changes the slope</div>
+  <div class="panel">
+    <p class="step" style="margin-top:0">The same driver→target link, fit separately in two regimes. Watch the two elasticities diverge — that's why a cell is indexed by r, not just (Y, X).</p>
+    <div class="ctrls">
+      <div class="field"><label>β in the <i>high</i> regime <b id="bhOut">0.45</b></label><input type="range" id="bh" min="-0.2" max="0.9" value="0.45" step="0.01" /></div>
+      <div class="field"><label>noise (residual σ) <b id="n1Out">0.30</b></label><input type="range" id="n1" min="0.05" max="0.8" value="0.30" step="0.01" /></div>
+    </div>
+    <div class="btns"><button class="act primary" id="re1">New sample</button></div>
+    <svg id="p1" viewBox="0 0 680 360" role="img" aria-label="ln X versus ln Y scatter coloured by regime with two fitted elasticity lines"></svg>
+    <div class="legend">
+      <span><i class="dot" style="background:var(--accent)"></i>high-VIX regime</span>
+      <span><i class="dot" style="background:var(--series)"></i>low-VIX regime</span>
+    </div>
+    <div class="tally">
+      <div class="stat"><div class="k">β̂ high [95% CI]</div><div class="v hi" id="bhat">—</div></div>
+      <div class="stat"><div class="k">β̂ low [95% CI]</div><div class="v lo" id="blat">—</div></div>
+      <div class="stat"><div class="k">t-stat (high)</div><div class="v" id="t1">—</div></div>
+    </div>
+    <p class="callout" id="c1"></p>
+  </div>
+
+  <div class="sec">4 · What CellEstimate stores is inference (Lesson 1)</div>
+  <p class="step">`point` is the estimate; `ci_low`, `ci_high`, `t_stat` are the frequentist inference around it — the interval and test statistic from Lesson 1. The standard error comes straight from the Lesson-5 variance:</p>
+  <div class="mblock math" data-tex="\widehat{\operatorname{Var}}(\hat{\boldsymbol\beta})=\sigma^2(\mathbf{X}^{\top}\mathbf{X})^{-1},\qquad \text{CI}:\ \hat\beta_r\pm z_{\alpha/2}\,\mathrm{SE}(\hat\beta_r)" data-display="1"></div>
+  <p class="step">One catch specific to your setup: the matrix aligns <b>weekly / overlapping</b> windows, so successive residuals are autocorrelated and that plain σ²(XᵀX)⁻¹ <i>understates</i> the true variance — the CIs would look falsely tight. That's the entire reason the doc wraps fits in <b>Newey-West</b> (HAC) standard errors: same β̂, honestly widened SEs. And the 95% CI keeps its Lesson-1 meaning — a statement about the procedure across resamples, not a 95% probability about this one interval.</p>
+
+  <div class="sec">5 · sign_stability &amp; pooling — bias–variance in your pipeline (Lessons 2 &amp; 5)</div>
+  <p class="step">A stock-level cell has few observations in a given regime, so its β̂ is noisy — significant in-sample yet flipping sign across subperiods. Your doc's gatekeeper isn't the t-stat, it's <b>sign_stability</b>: the share of subperiods whose β̂ keeps the same sign. And <code>bayesian_pooled_elasticity</code> stabilises the estimate by shrinking it toward a sector/index prior — which is Lesson 2's estimator trade and Lesson 5's ridge, in one move:</p>
+  <div class="mblock math" data-tex="\hat\beta^{\text{pooled}}=(1-w)\,\hat\beta+w\,\beta_{\text{prior}}\qquad 0\le w\le 1" data-display="1"></div>
+  <div class="panel">
+    <p class="step" style="margin-top:0">A noisy single-name cell, split into 5 subperiods. Bars are the per-subperiod β̂ (green = positive, red = negative). Pool toward the sector prior and watch the red bars flip up and sign_stability climb — the bias-for-stability trade.</p>
+    <div class="ctrls">
+      <div class="field"><label>observations / subperiod <b id="npOut">10</b></label><input type="range" id="np" min="6" max="60" value="10" step="1" /></div>
+      <div class="field"><label>cell noisiness <b id="n2Out">1.2</b></label><input type="range" id="n2" min="0.4" max="2.2" value="1.2" step="0.05" /></div>
+      <div class="field"><label>pooling strength w <b id="wOut">0.00</b></label><input type="range" id="w" min="0" max="0.9" value="0" step="0.02" /></div>
+    </div>
+    <div class="btns"><button class="act primary" id="re2">New sample</button></div>
+    <svg id="p2" viewBox="0 0 680 340" role="img" aria-label="Per-subperiod beta estimates as bars with true and prior reference lines"></svg>
+    <div class="legend">
+      <span><i class="dot" style="background:var(--ink)"></i>true β = 0.35</span>
+      <span><i class="dot" style="background:var(--accent)"></i>sector prior = 0.30</span>
+    </div>
+    <div class="tally">
+      <div class="stat"><div class="k">sign_stability</div><div class="v g" id="ss">—</div></div>
+      <div class="stat"><div class="k">β̂ (pooled full)</div><div class="v" id="bfull">—</div></div>
+      <div class="stat"><div class="k">bias vs truth</div><div class="v" id="bias">—</div></div>
+      <div class="stat"><div class="k">t-stat (naïve full)</div><div class="v" id="t2">—</div></div>
+    </div>
+    <p class="callout" id="c2"></p>
+  </div>
+
+  <div class="sec">6 · Regime conditioning = conditional expectation (Lesson 4)</div>
+  <p class="step">β_r is the slope of the <i>conditional</i> relationship E[ ln Y | ln X, regime r ]. Fitting within a regime is conditioning the expectation on r — Lesson 4's object, sliced by state. A cell whose β changes across regimes is a conditional mean whose shape depends on the conditioning variable, which is the whole thesis of a regime matrix: the transmission is not a single number, it's a function of state.</p>
+
+  <div class="sec">7 · Your drivers are collinear (Lessons 5 &amp; 6)</div>
+  <p class="step">The driver panel includes dispersion at five horizons plus their z-scores, and several correlated country vols — highly collinear columns. So the design matrix's XᵀX is ill-conditioned, individual β's get inflated variance, and coefficients can swing sign sample to sample (Lesson 5's coefficient cloud). Two consequences your doc already encodes: don't over-trust any single driver's β when its neighbours are correlated — trust <b>sign_stability</b>; and pooling / regularisation is the stabiliser, exactly as ridge was for collinear features.</p>
+
+  <div class="theorem">
+    <p class="lbl">The precise statement</p>
+    <p>Each Cross-Matrix cell is an OLS estimate of a regime-conditional (semi-)elasticity: β̂_r = [(XᵀX)⁻¹Xᵀy] on the rows where the causal regime label is r, with HAC (Newey-West) standard errors because overlapping windows autocorrelate the residuals. Its stored CI and t-stat are Lesson-1 inference; Bayesian pooling is shrinkage toward a hierarchical prior (bias traded for variance); and sign_stability is a subsample-robustness diagnostic that the design uses in place of significance to separate structural cells from episodic noise.</p>
+  </div>
+
+  <div class="twist">
+    <p class="lbl">The twist — clean statistics, fake alpha</p>
+    <p>Every estimator here can be textbook-correct and the cell still worthless, for a reason that isn't statistical at all: <b>look-ahead leakage</b>. If a regime label, a vol window, or a z-score peeks even one step into the future, β̂ fits beautifully in-sample and evaporates live — which is why your doc calls as-of discipline the "single biggest source of fake alpha" and enforces it at the primitive boundary (filtered, not smoothed, HMM state; trailing windows only). Two honest-signal habits fall out of the foundations: in-sample t-stats and R² overstate, so the real test is out-of-sample and cross-<i>subperiod</i> (that's what sign_stability measures); and the correct standard errors are the HAC ones, not the tight naïve ones. Rigour on the fit is necessary but never sufficient — the validity lives in the data discipline around it.</p>
+  </div>
+
+  <div class="vol">
+    <p class="lbl">Reading your own heatmaps</p>
+    <ul>
+      <li>A cell's number is <b>β_r</b>, the coefficient — not today's skew or vol level. "+0.42" means <code>%ΔY per %ΔX</code> in that regime, nothing about where Y sits now.</li>
+      <li>Check <b>sign_stability</b> before you believe a cell. A big β with low stability is noise dressed as signal — the design surfaces it but flags it; treat the diagnostic as the gate even though it no longer filters.</li>
+      <li>For the <b>buildable-now cash / delta-one cells</b>, the target can be negative, so they read as semi-elasticities (ΔY per %ΔX, signed) — don't interpret them as log-log elasticities.</li>
+      <li>When neighbouring drivers are correlated (the dispersion horizons, country vols), distrust any single β and lean on stability; that's collinearity, not signal.</li>
+      <li><b>Stock-level cells</b> should be read <i>pooled</i> — the naïve single-name β is the noisy one; the shrunk estimate is the trustworthy cell.</li>
+    </ul>
+  </div>
+
+  <div class="sec">Check yourself — 6 questions</div>
+  <div class="q" id="q1"><p class="stem">In the cell regression ln Y = α_r + β_r ln X + c′Z + ε, the stored cell value β_r is:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q2"><p class="stem">Why does the default estimator regress ln Y on ln X rather than Y on X?</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q3"><p class="stem">A cell stores a 95% CI on β_r. The correct reading is:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q4"><p class="stem">The matrix uses Newey-West (HAC) standard errors because:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q5"><p class="stem">sign_stability is preferred over the t-stat as the trust gate because:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q6"><p class="stem">bayesian_pooled_elasticity shrinks a noisy stock-level β̂ toward its sector prior. Statistically this:</p><div class="opts"></div><p class="fb"></p></div>
+
+  <div class="checkRow">
+    <button class="act primary" id="check">Check answers</button>
+    <span class="scoreOut" id="scoreOut"></span>
+    <span class="hint" id="hint">Answer all six first.</span>
+  </div>
+  <div class="done" id="done">That's the whole foundations track, standing inside one CellEstimate. Next stop: the SVD, the engine under your PCA drivers.</div>
+</div>
+
+<script>
+/* storage shim: window.storage (Claude artifacts) or localStorage (web) */
+if(!window.storage){window.storage={async get(k){const v=localStorage.getItem(k);if(v==null)throw new Error('missing');return{key:k,value:v}},async set(k,v){localStorage.setItem(k,v);return{key:k,value:v}},async delete(k){localStorage.removeItem(k);return{key:k,deleted:true}},async list(p){const ks=[];for(let i=0;i<localStorage.length;i++){const kk=localStorage.key(i);if(!p||kk.startsWith(p))ks.push(kk)}return{keys:ks}}};}
+function renderMath(){
+  document.querySelectorAll('.math').forEach(el=>{
+    const tex=el.getAttribute('data-tex'); if(!tex||el.dataset.done)return;
+    try{ if(window.katex){katex.render(tex,el,{displayMode:el.dataset.display==='1',throwOnError:false});el.dataset.done='1';} else {el.textContent=tex;} }
+    catch(e){ el.textContent=tex; }
+  });
+}
+function randn(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+function fit(xs,ys){ // simple OLS slope/intercept + SE/CI/t
+  const n=xs.length,mx=xs.reduce((a,b)=>a+b,0)/n,my=ys.reduce((a,b)=>a+b,0)/n;
+  let sxx=0,sxy=0;for(let i=0;i<n;i++){sxx+=(xs[i]-mx)**2;sxy+=(xs[i]-mx)*(ys[i]-my);}
+  const b=sxy/(sxx||1e-9),a=my-b*mx;
+  let ssr=0;for(let i=0;i<n;i++){const e=ys[i]-(a+b*xs[i]);ssr+=e*e;}
+  const s2=ssr/Math.max(n-2,1),se=Math.sqrt(s2/(sxx||1e-9)),t=b/(se||1e-9);
+  return {b,a,se,t,lo:b-1.96*se,hi:b+1.96*se};
+}
+
+/* ---------- Panel 1 : regime-conditional elasticity ---------- */
+(function(){
+  const svg=document.getElementById('p1'),W=680,H=360,padL=44,padR=16,padT=16,padB=34,iw=W-padL-padR,ih=H-padT-padB;
+  const XR=[-2.9,-0.7]; let YR=[-4.2,-2.2]; // ln vol, ln skew-ish
+  const bh=()=>+document.getElementById('bh').value, n1=()=>+document.getElementById('n1').value;
+  let hi=[],lo=[];
+  function gen(){
+    hi=[];lo=[];const s=n1(),bH=bh(),bL=0.05,aH=-2.4,aL=-3.1;
+    for(let i=0;i<70;i++){const x=XR[0]+Math.random()*(XR[1]-XR[0]);hi.push([x,aH+bH*x+s*randn()]);}
+    for(let i=0;i<70;i++){const x=XR[0]+Math.random()*(XR[1]-XR[0]);lo.push([x,aL+bL*x+s*randn()]);}
+    let mn=1e9,mx=-1e9;[...hi,...lo].forEach(p=>{mn=Math.min(mn,p[1]);mx=Math.max(mx,p[1]);});
+    const pad=(mx-mn)*0.1;YR=[mn-pad,mx+pad];
+  }
+  function render(){
+    const sx=x=>padL+((x-XR[0])/(XR[1]-XR[0]))*iw, sy=y=>padT+(1-(y-YR[0])/(YR[1]-YR[0]))*ih, y0=padT+ih;
+    let s='';
+    s+=`<line x1="${padL}" y1="${y0}" x2="${W-padR}" y2="${y0}" stroke="var(--hair2)"/>`;
+    s+=`<text x="${W-padR}" y="${y0+18}" text-anchor="end" font-family="var(--mono)" font-size="11" fill="var(--faint)">ln X  (driver)</text>`;
+    s+=`<text x="${padL-6}" y="${padT+8}" text-anchor="end" font-family="var(--mono)" font-size="11" fill="var(--faint)">ln Y</text>`;
+    lo.forEach(p=>s+=`<circle cx="${sx(p[0]).toFixed(1)}" cy="${sy(p[1]).toFixed(1)}" r="2.6" fill="var(--series)" opacity="0.5"/>`);
+    hi.forEach(p=>s+=`<circle cx="${sx(p[0]).toFixed(1)}" cy="${sy(p[1]).toFixed(1)}" r="2.6" fill="var(--accent)" opacity="0.55"/>`);
+    const fH=fit(hi.map(p=>p[0]),hi.map(p=>p[1])), fL=fit(lo.map(p=>p[0]),lo.map(p=>p[1]));
+    const line=(f,col)=>`<line x1="${sx(XR[0])}" y1="${sy(f.a+f.b*XR[0])}" x2="${sx(XR[1])}" y2="${sy(f.a+f.b*XR[1])}" stroke="${col}" stroke-width="2.6"/>`;
+    s+=line(fL,'var(--series)')+line(fH,'var(--accent)');
+    svg.innerHTML=s;
+    document.getElementById('bhat').textContent=`${fH.b.toFixed(2)} [${fH.lo.toFixed(2)}, ${fH.hi.toFixed(2)}]`;
+    document.getElementById('blat').textContent=`${fL.b.toFixed(2)} [${fL.lo.toFixed(2)}, ${fL.hi.toFixed(2)}]`;
+    document.getElementById('t1').textContent=fH.t.toFixed(1);
+    const gap=Math.abs(fH.b-fL.b);
+    document.getElementById('c1').textContent=gap>0.15
+      ? `The two fitted slopes differ by ${gap.toFixed(2)} — the driver→target elasticity is materially stronger in the high regime. One β would average them and describe neither; that's why the cell is keyed by regime.`
+      : `With these settings the two regimes give similar slopes — the relationship is roughly regime-independent here. Push β(high) away from ~0.05 and the conditioning starts to matter.`;
+  }
+  document.getElementById('bh').addEventListener('input',e=>{document.getElementById('bhOut').textContent=(+e.target.value).toFixed(2);gen();render();});
+  document.getElementById('n1').addEventListener('input',e=>{document.getElementById('n1Out').textContent=(+e.target.value).toFixed(2);gen();render();});
+  document.getElementById('re1').onclick=()=>{gen();render();};
+  window.__p1={gen,render};
+})();
+
+/* ---------- Panel 2 : sign_stability + pooling ---------- */
+(function(){
+  const svg=document.getElementById('p2'),W=680,H=340,padL=44,padR=16,padT=18,padB=30,iw=W-padL-padR,ih=H-padT-padB;
+  const BTRUE=0.35,BPRIOR=0.30,K=5;
+  const np=()=>+document.getElementById('np').value, n2=()=>+document.getElementById('n2').value, w=()=>+document.getElementById('w').value;
+  let subs=[],full=0,fullT=0;
+  function gen(){
+    subs=[];const noise=n2(),n=np();let allx=[],ally=[];
+    for(let k=0;k<K;k++){const xs=[],ys=[];for(let i=0;i<n;i++){const x=randn();const y=BTRUE*x+noise*randn();xs.push(x);ys.push(y);allx.push(x);ally.push(y);}
+      subs.push(fit(xs,ys).b);}
+    const f=fit(allx,ally);full=f.b;fullT=f.t;
+  }
+  function render(){
+    const ww=w();
+    const pooled=subs.map(b=>(1-ww)*b+ww*BPRIOR), pfull=(1-ww)*full+ww*BPRIOR;
+    const vals=pooled.concat([pfull,BTRUE,BPRIOR]);
+    let ymn=Math.min(-0.15,...vals)-0.1, ymx=Math.max(...vals)+0.1;
+    const sx=i=>padL+(i+0.5)/(K+1)*iw, sw=iw/(K+1)*0.6, sy=v=>padT+(1-(v-ymn)/(ymx-ymn))*ih, zy=sy(0);
+    let s='';
+    // ref lines
+    s+=`<line x1="${padL}" y1="${sy(BTRUE)}" x2="${W-padR}" y2="${sy(BTRUE)}" stroke="var(--ink)" stroke-width="1.3" stroke-dasharray="5 4"/>`;
+    s+=`<line x1="${padL}" y1="${sy(BPRIOR)}" x2="${W-padR}" y2="${sy(BPRIOR)}" stroke="var(--accent)" stroke-width="1.3" stroke-dasharray="3 3"/>`;
+    s+=`<line x1="${padL}" y1="${zy}" x2="${W-padR}" y2="${zy}" stroke="var(--hair2)" stroke-width="1"/>`;
+    // subperiod bars
+    pooled.forEach((b,i)=>{const x=sx(i)-sw/2,top=Math.min(zy,sy(b)),h=Math.abs(sy(b)-zy),col=b>=0?'var(--pos)':'var(--neg)',bg=b>=0?'var(--posbg)':'var(--negbg)';
+      s+=`<rect x="${x.toFixed(1)}" y="${top.toFixed(1)}" width="${sw.toFixed(1)}" height="${h.toFixed(1)}" fill="${bg}" stroke="${col}" stroke-width="1.4"/>`;
+      s+=`<text x="${sx(i).toFixed(1)}" y="${(H-padB+16)}" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--faint)">S${i+1}</text>`;});
+    // full bar (wider, accent)
+    const xf=sx(K)-sw*0.7,topf=Math.min(zy,sy(pfull)),hf=Math.abs(sy(pfull)-zy);
+    s+=`<rect x="${xf.toFixed(1)}" y="${topf.toFixed(1)}" width="${(sw*1.4).toFixed(1)}" height="${hf.toFixed(1)}" fill="var(--accent-bg)" stroke="var(--accent)" stroke-width="1.8"/>`;
+    s+=`<text x="${sx(K).toFixed(1)}" y="${(H-padB+16)}" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--accent)">full</text>`;
+    s+=`<text x="${W-padR}" y="${sy(BTRUE)-4}" text-anchor="end" font-family="var(--mono)" font-size="10" fill="var(--ink)">β true</text>`;
+    svg.innerHTML=s;
+    const refSign=Math.sign(pfull)||1, ss=pooled.filter(b=>Math.sign(b)===refSign).length/K;
+    document.getElementById('ss').textContent=(ss*100).toFixed(0)+'%';
+    document.getElementById('bfull').textContent=pfull.toFixed(2);
+    document.getElementById('bias').textContent=(pfull-BTRUE>=0?'+':'')+(pfull-BTRUE).toFixed(2);
+    document.getElementById('t2').textContent=fullT.toFixed(1);
+    document.getElementById('c2').textContent= ww<0.02
+      ? `Naïve (no pooling): with ${np()} obs/subperiod, the single-name β̂ scatters and ${pooled.filter(b=>b<0).length} of 5 subperiods can go the wrong sign — low sign_stability. This is the cell the doc calls "noise dressed as signal."`
+      : `Pooling w=${ww.toFixed(2)}: every estimate is pulled toward the sector prior (0.30). Wrong-sign subperiods flip up, sign_stability rises, and β̂ is now biased toward the prior by ${(pfull-full>=0?'+':'')+(pfull-full).toFixed(2)} — variance traded for bias, the ridge move.`;
+  }
+  ['np','n2','w'].forEach(id=>document.getElementById(id).addEventListener('input',e=>{
+    document.getElementById(id+'Out').textContent=(id==='np'?e.target.value:(+e.target.value).toFixed(2));
+    if(id==='w')render();else{gen();render();}
+  }));
+  document.getElementById('re2').onclick=()=>{gen();render();};
+  window.__p2={gen,render};
+})();
+
+/* ---------- retrieval (6 MCQ, deferred validation) ---------- */
+const QS={
+  q1:{opts:["today's level of the target Y in regime r","the OLS slope on ln X — the regime-conditional elasticity, one entry of (XᵀX)⁻¹Xᵀy","the correlation between Y and X","the residual variance of the fit"],a:1,
+    fb:"The cell stores the fitted coefficient β_r (a %ΔY-per-%ΔX elasticity), not the level of Y or X. It's exactly the Lesson-5 normal-equations solution, read off at the ln X column."},
+  q2:{opts:["logs make the data normal","so the slope is a unit-free elasticity — %ΔY per %ΔX — comparable across cells","it removes the need for controls Z","logs eliminate autocorrelation in the residuals"],a:1,
+    fb:"d(lnY)/d(lnX) is an elasticity, so β is directly interpretable and comparable across driver/target pairs. When Y can be negative (returns, signed skew) you drop to semi-elasticity or delta-sensitivity instead."},
+  q3:{opts:["there's a 95% probability the true β_r lies in this interval","over repeated sampling, ~95% of such intervals would contain the true β_r — a property of the procedure","95% of the fitted residuals fall inside it","the estimate is significant at the 5% level by construction"],a:1,
+    fb:"Frequentist coverage is about the method across resamples, not a probability statement about this one realized interval — the Lesson-1 distinction, unchanged in the matrix."},
+  q4:{opts:["they make β̂ unbiased","overlapping/weekly windows autocorrelate the residuals, so naïve σ²(XᵀX)⁻¹ SEs are too small; HAC widens them honestly","they shrink the coefficient toward zero","they are required whenever p > n"],a:1,
+    fb:"Overlapping horizons violate the iid-error assumption behind σ²(XᵀX)⁻¹, understating variance. Newey-West corrects the SEs for autocorrelation — same β̂, wider, honest CIs."},
+  q5:{opts:["the t-stat can't be computed for elasticities","a cell can be significant in-sample yet flip sign across subperiods — episodic noise, not a structural link","sign_stability is always higher than the t-stat","it removes the need for a confidence interval"],a:1,
+    fb:"Significance on one sample says nothing about persistence. sign_stability — the share of subperiods keeping the same sign — is a subsample-robustness check that separates structural cells from lucky ones."},
+  q6:{opts:["removes all bias from the estimate","trades a little bias for much less variance — the same shrinkage logic as ridge — stabilising small-sample cells","only works when the prior equals the true value","increases the coefficient's variance to widen the CI"],a:1,
+    fb:"Partial pooling pulls the noisy single-name estimate toward a sector/index prior: biased toward the prior, but far lower variance and more stable sign. It's Lesson 2's estimator trade and Lesson 5's ridge."}
+};
+const sel={q1:null,q2:null,q3:null,q4:null,q5:null,q6:null};let revealed=false;
+Object.keys(QS).forEach(id=>{
+  const holder=document.querySelector('#'+id+' .opts');
+  QS[id].opts.forEach((txt,i)=>{
+    const b=document.createElement('button');b.className='opt';b.textContent=String.fromCharCode(65+i)+'.  '+txt;
+    b.onclick=()=>{if(revealed)return;sel[id]=i;[...holder.children].forEach((c,ci)=>c.classList.toggle('sel',ci===i));document.getElementById('hint').style.display='none';};
+    holder.appendChild(b);
+  });
+});
+document.getElementById('check').onclick=async()=>{
+  if(revealed)return;
+  if(Object.values(sel).some(v=>v===null)){document.getElementById('hint').style.display='inline';return;}
+  revealed=true;let score=0;
+  Object.keys(QS).forEach(id=>{
+    const a=QS[id].a,holder=document.querySelector('#'+id+' .opts'),fb=document.querySelector('#'+id+' .fb');
+    [...holder.children].forEach((c,ci)=>{c.style.cursor='default';c.classList.remove('sel');if(ci===a)c.classList.add('correct');else if(ci===sel[id])c.classList.add('wrong');});
+    if(sel[id]===a)score++;fb.textContent=QS[id].fb;fb.classList.add('show');
+  });
+  document.getElementById('check').style.opacity='0.5';document.getElementById('check').textContent='Checked';
+  document.getElementById('scoreOut').textContent=score+' / 6';
+  document.getElementById('done').classList.add('show');
+  try{await window.storage.set('mfs:lesson07',JSON.stringify({done:true,retrieval:score+'/6',ts:Date.now()}),false);}catch(e){}
+};
+
+function boot(){renderMath();window.__p1.gen();window.__p1.render();window.__p2.gen();window.__p2.render();}
+if(window.katex)boot();else window.addEventListener('load',boot);
+(async()=>{try{const r=await window.storage.get('mfs:lesson07',false);if(r&&r.value){const v=JSON.parse(r.value);if(v.done){const c=document.getElementById('chip');c.classList.add('show');c.textContent='completed · '+v.retrieval;}}}catch(e){}})();
+</script>
+</body>
+</html>
