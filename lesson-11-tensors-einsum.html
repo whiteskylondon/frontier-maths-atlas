@@ -3,32 +3,40 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Lesson 11 — Tensors & the einsum world</title>
+<title>Lesson 11 — Tensors &amp; the einsum world</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
 <style>
-  :root{--paper:#FAFAF6;--ink:#1A1C22;--muted:#63676E;--faint:#9A9EA4;--hair:#E4E3DB;--hair2:#D4D3CA;--panel:#FFFFFF;--accent:#24507A;--accent-bg:#EAF0F6;--series:#B07A2E;--miss:#B23A3A;--ok:#2F6B4F;--ok-bg:#E9F1EC;--sum:#B0442E;--sum-bg:#F6E7E2;--free:#24507A;--vol:#8A5A2B;--vol-bg:#F6EFE6;--serif:Iowan Old Style,Palatino,Georgia,serif;--sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;}
+  :root{
+    --paper:#FAFAF6;--ink:#1A1C22;--muted:#63676E;--faint:#9A9EA4;--hair:#E4E3DB;--hair2:#D4D3CA;--panel:#FFFFFF;
+    --accent:#24507A;--accent-bg:#EAF0F6;--series:#B07A2E;--miss:#B23A3A;--ok:#2F6B4F;--ok-bg:#E9F1EC;
+    --sum:#B0442E;--sum-bg:#F6E7E2;--free:#24507A;
+    --vol:#8A5A2B;--vol-bg:#F6EFE6;--serif:Iowan Old Style,Palatino,Georgia,serif;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
   @media (prefers-color-scheme:dark){:root{--paper:#15161A;--ink:#E9E8E2;--muted:#A2A6AC;--faint:#71757B;--hair:#2A2C31;--hair2:#3A3C42;--panel:#1B1D22;--accent:#7FB0E0;--accent-bg:#1E2A38;--series:#D9A85E;--miss:#E07A7A;--ok:#7FC49F;--ok-bg:#1C2A22;--sum:#E08A6E;--sum-bg:#2E1E17;--free:#7FB0E0;--vol:#D9A066;--vol-bg:#2A2115;}}
   *{box-sizing:border-box}
   body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.62;-webkit-font-smoothing:antialiased}
   .wrap{max-width:750px;margin:0 auto;padding:32px 24px 60px}
   .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 6px}
   h1{font-family:var(--serif);font-weight:600;font-size:27px;line-height:1.22;margin:0 0 6px;letter-spacing:-.01em}
-  .chip{display:none;font-family:var(--mono);font-size:11px;color:var(--ok);border:1px solid var(--ok);border-radius:20px;padding:3px 10px;vertical-align:middle;margin-left:10px}
+  .chip{display:none;font-family:var(--mono);font-size:11px;letter-spacing:.05em;color:var(--ok);border:1px solid var(--ok);border-radius:20px;padding:3px 10px;vertical-align:middle;margin-left:10px}
   .chip.show{display:inline-block}
   .sub{color:var(--muted);font-size:15px;margin:0 0 18px}
   .levels{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 26px}
   .levels .lk{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
   .levels .pill{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-family:var(--mono);color:var(--muted);background:var(--panel);border:1px solid var(--hair2);border-radius:20px;padding:4px 11px}
-  .levels .pill b{color:var(--accent);font-weight:700}
-  p.lead{font-size:16px;margin:0 0 22px}p.lead b{font-weight:600}
+  .levels .pill b{color:var(--accent);font-weight:700;letter-spacing:.03em}
+  p.lead{font-size:16px;margin:0 0 22px}
+  p.lead b{font-weight:600}
   .sec{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:36px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--hair)}
   .mblock{margin:16px 0;overflow-x:auto}
   .glo{list-style:none;padding:0;margin:14px 0 0}
   .glo li{display:flex;gap:14px;padding:9px 0;border-top:1px solid var(--hair);align-items:baseline}
   .glo li:first-child{border-top:none}
   .glo .sym{flex:0 0 116px;text-align:right;padding-top:2px;font-family:var(--mono);font-size:13px;color:var(--accent)}
-  .glo .def{font-size:14.5px}.glo .def .n{color:var(--muted)}
+  .glo .def{font-size:14.5px}
+  .glo .def .n{color:var(--muted)}
   .step{font-size:14.5px;color:var(--muted);margin:10px 0}
   .panel{background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:20px;margin:14px 0}
   .seg{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 16px}
@@ -40,14 +48,25 @@
   .mat{display:flex;flex-direction:column;align-items:center;gap:5px}
   .mat .nm{font-family:var(--mono);font-size:12px;color:var(--muted)}
   table.t{border-collapse:separate;border-spacing:3px}
-  table.t td{width:34px;height:30px;text-align:center;font-family:var(--mono);font-size:13px;border:1px solid var(--hair2);border-radius:5px;background:var(--paper)}
+  table.t td{min-width:34px;height:30px;text-align:center;font-family:var(--mono);font-size:13px;border:1px solid var(--hair2);border-radius:5px;background:var(--paper);padding:0 4px}
   table.t td.out{background:var(--accent-bg);border-color:var(--accent);color:var(--accent);font-weight:600}
-  table.t td.hl{background:var(--sum-bg);border-color:var(--sum);color:var(--sum);font-weight:700}
   .arrow{font-size:22px;color:var(--faint)}
   .idx{display:flex;gap:16px;flex-wrap:wrap;margin:14px 0 2px;font-family:var(--mono);font-size:13px;justify-content:center}
   .idx b.f{color:var(--free)}.idx b.s{color:var(--sum)}
-  .work{background:var(--paper);border-radius:9px;padding:11px 14px;margin:12px 0 0;font-family:var(--mono);font-size:13px;color:var(--ink);overflow-x:auto}
-  .callout{font-size:14px;color:var(--muted);border-left:2px solid var(--accent);padding:2px 0 2px 14px;margin:14px 0 2px}
+  .work{background:var(--paper);border-radius:9px;padding:11px 14px;margin:12px 0 0;font-family:var(--mono);font-size:13px;color:var(--ink);overflow-x:auto;white-space:pre;line-height:1.55}
+  .work .cf{color:var(--free)}.work .cs{color:var(--sum)}
+  .ctrls{display:flex;flex-wrap:wrap;gap:16px 26px;align-items:flex-end;margin:4px 0 6px}
+  .field{display:flex;flex-direction:column;gap:6px;min-width:160px;flex:1}
+  .field label{font-size:12px;color:var(--muted);font-family:var(--mono);letter-spacing:.03em;display:flex;justify-content:space-between}
+  .field label b{color:var(--ink);font-weight:600}
+  input[type=range]{width:100%;accent-color:var(--accent);height:20px}
+  svg{max-width:100%;height:auto;display:block}
+  .tally{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 2px}
+  .stat{flex:1;min-width:120px;background:var(--paper);border-radius:9px;padding:9px 12px}
+  .stat .k{font-size:11px;font-family:var(--mono);letter-spacing:.04em;color:var(--muted);text-transform:uppercase}
+  .stat .v{font-size:19px;font-weight:600;font-family:var(--mono);margin-top:2px}
+  .stat .v.a{color:var(--accent)}.stat .v.g{color:var(--ok)}
+  .callout{font-size:14px;color:var(--muted);border-left:2px solid var(--accent);padding:2px 0 2px 14px;margin:16px 0 2px;min-height:1.4em}
   .theorem{background:var(--accent-bg);border-radius:12px;padding:18px 20px;margin:16px 0}
   .theorem .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
   .theorem p{font-family:var(--serif);font-size:16px;line-height:1.55;margin:0}
@@ -61,12 +80,14 @@
   .q{border:1px solid var(--hair);border-radius:12px;padding:16px 18px;margin:12px 0;background:var(--panel)}
   .q .stem{font-size:15px;font-weight:500;margin:0 0 12px}
   .opt{display:block;width:100%;text-align:left;font-size:14px;padding:10px 12px;margin:0 0 8px;border:1px solid var(--hair2);border-radius:8px;background:transparent;color:var(--ink);cursor:pointer;line-height:1.45}
-  .opt:last-child{margin-bottom:0}.opt:hover{border-color:var(--accent)}
+  .opt:last-child{margin-bottom:0}
+  .opt:hover{border-color:var(--accent)}
   .opt.sel{border-color:var(--accent);background:var(--accent-bg)}
   .opt.correct{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
   .opt.wrong{background:#F7ECEC;border-color:var(--miss);color:var(--miss)}
   @media (prefers-color-scheme:dark){.opt.wrong{background:#2E1E1E}}
-  .fb{font-size:13.5px;color:var(--muted);margin:10px 0 0;line-height:1.5;display:none}.fb.show{display:block}
+  .fb{font-size:13.5px;color:var(--muted);margin:10px 0 0;line-height:1.5;display:none}
+  .fb.show{display:block}
   .checkRow{display:flex;align-items:center;gap:14px;margin:18px 0 0;flex-wrap:wrap}
   .hint{font-size:13px;color:var(--miss);display:none}
   button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-family:var(--sans);font-size:14px;padding:8px 14px;border-radius:8px;border:1px solid var(--accent);cursor:pointer}
@@ -79,171 +100,298 @@
 <div class="wrap">
   <p class="eyebrow">Lesson 11 · Wing I — the linear-algebra substrate</p>
   <h1>Tensors &amp; the einsum world<span class="chip" id="chip"></span></h1>
-  <p class="sub">Almost every operation in a neural network is one line of Einstein summation.</p>
-  <div class="levels"><span class="lk">Level</span><span class="pill"><b>US</b> Advanced undergrad → graduate</span><span class="pill"><b>FR</b> Master M1 · ENSAE 2A</span></div>
+  <p class="sub">Every layer of a network — and every PnL report — is one line of Einstein summation.</p>
+  <div class="levels">
+    <span class="lk">Level</span>
+    <span class="pill"><b>US</b> Senior undergrad → graduate</span>
+    <span class="pill"><b>FR</b> Master 1 · ENSAE 2A</span>
+  </div>
 
-  <p class="lead">A <b>tensor</b> is just a multi-dimensional array — a scalar has no indices, a vector one, a matrix two, an attention score-block three or four. The single notation that unifies every operation on them is <b>Einstein summation</b>: write which indices each input carries, which the output keeps, and any index that appears on the left but not the right is <i>summed over</i>. Matmul, dot products, transposes, batched attention — all one einsum string. Learn to read the string and you can read any layer.</p>
+  <p class="lead">Strip the mystique first. A <b>tensor</b>, in this lesson, is a <b>multi-index array</b> of numbers; its <b>order</b> is how many indices it takes to address one entry — a scalar takes zero, a vector one, a matrix two, a stack of attention scores three or four. An <b>index</b> is just a labelled axis. <b>Einstein summation</b> — <b>einsum</b> — is the one-sentence grammar for computing with these arrays: write which index letters each input carries and which the output keeps; any letter that appears in the inputs but not the output is <b>summed away</b> (a <i>summed</i> index), and every survivor is a <i>free</i> index that becomes an axis of the answer. That is the whole language. We will speak it with a trading book — weights times exposures times factor returns is three einsum strings — and the same strings run every layer of a transformer.</p>
 
-  <div class="sec">The one rule</div>
-  <div class="mblock math" data-tex="\text{out}[\underbrace{\text{free indices}}_{\text{kept}}]=\sum_{\underbrace{\text{repeated indices}}_{\text{summed}}}\ \prod(\text{inputs})" data-display="1"></div>
-  <p class="step">Matrix multiplication is the canonical case — the shared index j is repeated in the inputs and absent from the output, so it's contracted away:</p>
-  <div class="mblock math" data-tex="C_{ik}=\sum_j A_{ij}B_{jk}\qquad\longleftrightarrow\qquad \texttt{einsum(\"ij,jk->ik\")}" data-display="1"></div>
+  <div class="sec">The objects — a trading book as three arrays</div>
+  <p class="step">Three arrays run the attribution report every risk system prints: what the book holds, how each asset loads on the risk factors, and what those factors did each day. Here: <b>w[a]</b>, the weight of each of 3 assets (order 1); <b>B[a,f]</b>, each asset's exposure — its regression beta from Lesson 5 — to each of 2 factors (order 2, 3×2); <b>F[f,t]</b>, each factor's return on each of 4 days (order 2, 2×4). Contract them in the right pattern and you get who made what, when:</p>
+  <div class="mblock math" data-tex='P_{at}\;=\;\sum_{f} B_{af}\,F_{ft}\qquad\longleftrightarrow\qquad\texttt{einsum("af,ft->at")}' data-display="1"></div>
+  <p class="step">Read the string, not the formula: <b>f</b> is repeated across the inputs and missing on the right — summed away. <b>a</b> and <b>t</b> survive, so the output is a panel: per asset, per day. Contract once more, against the weights, and the asset index dies too:</p>
+  <div class="mblock math" data-tex='p_{t}\;=\;\sum_{a}\sum_{f} w_{a}\,B_{af}\,F_{ft}\qquad\longleftrightarrow\qquad\texttt{einsum("a,af,ft->t")}' data-display="1"></div>
   <ul class="glo">
-    <li><span class="sym">order / rank</span><span class="def">the <b>number of indices</b> (dimensions). <span class="n">Scalar 0, vector 1, matrix 2, … — this is NOT the matrix/SVD rank from Lesson 8.</span></span></li>
-    <li><span class="sym">free index</span><span class="def">appears in output — <b>kept</b>. <span class="n">Each free index becomes an axis of the result.</span></span></li>
-    <li><span class="sym">summed index</span><span class="def">repeated, absent from output — <b>contracted</b>. <span class="n">The dimension that disappears; it must match across inputs.</span></span></li>
+    <li><span class="sym">w[a]</span><span class="def"><b>book weights</b> — how much of asset a you hold. <span class="n">One index ⇒ order-1 tensor. In the playground, a runs over 3 assets.</span></span></li>
+    <li><span class="sym">B[a,f]</span><span class="def"><b>factor exposures</b> — asset a's beta to factor f. <span class="n">The regression slopes of Lesson 5, stacked: 3 assets × 2 factors.</span></span></li>
+    <li><span class="sym">F[f,t]</span><span class="def"><b>factor returns</b> — factor f's move on day t. <span class="n">2 factors × 4 days here; 20 × 250 at desk scale.</span></span></li>
+    <li><span class="sym">P[a,t]</span><span class="def">the <b>attribution panel</b>: asset a's factor PnL on day t. <span class="n">f contracted, a and t kept — this is the returns panel Lessons 6–7 called R.</span></span></li>
+    <li><span class="sym">p[t]</span><span class="def">the <b>book PnL series</b> — one number per day. <span class="n">Both a and f contracted. As matrices: p = wᵀBF — and the parentheses in that product are Interactive 2's whole story.</span></span></li>
+  </ul>
+  <p class="step">One honest footnote before the formalism. A mathematician's tensor is a <i>multilinear object</i> — it eats vectors and covectors and transforms predictably under change of basis (that is also what physicists mean by the word). Fix a basis in every space and its components form exactly a multi-index array. Deep-learning and NumPy "tensors" are those component arrays with the basis left implicit and never changed — so "tensor = multi-index array" is legitimate here, as long as we never pretend the array itself is basis-free.</p>
+
+  <div class="sec">The one rule — repeated means summed</div>
+  <p class="step">Now the general rule, exactly. A spec <span style="font-family:var(--mono)">einsum("s₁,s₂,…-&gt;s_out")</span> gives each operand a string of index letters, one letter per axis; the output string lists the free indices. The semantics are nothing more than nested loops: loop over every free index to address an output cell, and inside, loop over every summed index, accumulating the product of the operands —</p>
+  <div class="mblock math" data-tex="\mathrm{out}[i_1,\dots,i_p]\;=\;\sum_{j_1=1}^{d_{j_1}}\cdots\sum_{j_q=1}^{d_{j_q}}\;\prod_{m=1}^{M}\,T^{(m)}\big[\,s_m\,\big]" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="i_1,\dots,i_p"></span><span class="def">the <b>free indices</b> — the letters of the output string. <span class="n">They become the p axes of the result; p = 0 gives a scalar.</span></span></li>
+    <li><span class="sym math" data-tex="j_1,\dots,j_q"></span><span class="def">the <b>summed indices</b> — repeated in inputs, absent from the output. <span class="n">Each letter must have the same extent d in every operand that carries it.</span></span></li>
+    <li><span class="sym math" data-tex="T^{(m)}"></span><span class="def">the m-th input tensor, M of them. <span class="n">M = 1 already covers transpose, trace, and reductions.</span></span></li>
+    <li><span class="sym math" data-tex="s_m"></span><span class="def">operand m's index string with the loop values plugged in. <span class="n">For "af,ft-&gt;at", s₂ = (f,t) — so the factor reads F[f,t].</span></span></li>
+  </ul>
+  <p class="step">Five classics, one grammar — each just a different pattern of kept vs killed letters:</p>
+  <ul class="glo">
+    <li><span class="sym">"ij,jk-&gt;ik"</span><span class="def"><b>matrix product</b>. <span class="n">j summed: C<sub>ik</sub> = Σ<sub>j</sub> A<sub>ij</sub>B<sub>jk</sub> — the canonical contraction.</span></span></li>
+    <li><span class="sym">"ij-&gt;ji"</span><span class="def"><b>transpose</b>. <span class="n">Nothing summed — a pure relabelling of axes.</span></span></li>
+    <li><span class="sym">"ii-&gt;"</span><span class="def"><b>trace</b>. <span class="n">One operand, its two axes forced equal and summed: Σ<sub>i</sub> A<sub>ii</sub>.</span></span></li>
+    <li><span class="sym">"i,j-&gt;ij"</span><span class="def"><b>outer product</b>. <span class="n">No shared letter, so no sum — every pair survives. This is the rank-1 layer σuvᵀ of Lesson 8.</span></span></li>
+    <li><span class="sym">"bij,bjk-&gt;bik"</span><span class="def"><b>batched matmul</b>. <span class="n">b free in everything: one independent matmul per slice — the per-head shape of attention (Wing IV).</span></span></li>
   </ul>
 
-  <div class="sec">Play — one contraction, many operations</div>
+  <div class="sec">Play — seven strings on one seeded book</div>
+  <p class="step">All tensors below have integer entries 1–9, drawn once from a seeded generator, so every reload matches and every cell is hand-checkable. The loop nest is the <i>literal meaning</i> of the string; the worked line expands one output cell. Note that the attribution preset's output panel P is exactly the input of the Cross-Matrix preset — pipelines compose because one stage's output string is the next stage's input string.</p>
   <div class="panel">
     <div class="seg" id="ops"></div>
     <div class="expr" id="expr"></div>
     <div class="exprdesc" id="edesc"></div>
     <div class="flow" id="flow"></div>
     <div class="idx" id="idx"></div>
-    <div class="work" id="work"></div>
+    <div class="work" id="nest"></div>
+    <div class="work" id="worked"></div>
+    <div class="tally">
+      <div class="stat"><div class="k">output shape</div><div class="v a" id="oshape">—</div></div>
+      <div class="stat"><div class="k">multiplies (naive nest)</div><div class="v" id="omult">—</div></div>
+      <div class="stat"><div class="k">terms per output cell</div><div class="v g" id="oterms">—</div></div>
+    </div>
     <p class="callout" id="cnote"></p>
   </div>
 
+  <p class="step">Everything the playground shows, in one careful paragraph you can lean on:</p>
   <div class="theorem">
     <p class="lbl">The precise statement</p>
-    <p>A tensor of order k is an element of a tensor product of k vector spaces, addressed by k indices. Einstein summation contracts an expression by summing over every index that is repeated across the operands and omitted from the result; the free (output) indices index the result's axes. Contraction generalizes the dot product (⟨u,v⟩ = Σᵢ uᵢvᵢ, "i,i->"), matrix product ("ij,jk->ik"), trace ("ii->"), and outer product ("i,j->ij"). It is associative and commutative in value but not in cost.</p>
+    <p>A tensor of order k is an element of a tensor product of k vector spaces; fixing a basis in each identifies it with its component array T[i₁,…,i_k]. For an Einstein expression einsum(s₁,…,s_M → s_out): each letter names an axis, letters shared across strings must have equal extents, the letters of s_out are free, and every letter appearing in some s_m but not in s_out is summed — the value is out[free] = Σ_summed Π_m T⁽ᵐ⁾[s_m]. The value is independent of the order in which pairwise contractions are performed (sums and products commute), but the arithmetic cost is not: for a matrix chain A₁A₂⋯A_n the cheapest parenthesization is found by dynamic programming in O(n³) time (the matrix-chain problem), while for general tensor networks choosing the optimal contraction order is NP-hard.</p>
+  </div>
+
+  <div class="sec">The cost of association — same value, different bill</div>
+  <p class="step">Take the book-PnL string <span style="font-family:var(--mono)">einsum("a,af,ft-&gt;t")</span> and evaluate it as matrices: p = wᵀBF. Associativity offers two honest plans. <b>Left-first</b> collapses the book immediately — wᵀB is a single row of factor exposures (a·f multiplies), then that row sweeps the factor panel (f·t more). <b>Right-first</b> materializes the full asset-by-day attribution panel first (a·f·t multiplies — the entire three-deep loop nest) and only then contracts the weights (a·t more):</p>
+  <div class="mblock math" data-tex="C_{\mathrm{left}}=\underbrace{af}_{w^{\top}B}+\underbrace{ft}_{(w^{\top}B)\,F}\qquad\qquad C_{\mathrm{right}}=\underbrace{aft}_{B\,F}+\underbrace{at}_{w^{\top}(BF)}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="a,\;f,\;t"></span><span class="def">extents: assets, factors, trading days. <span class="n">The sliders reach desk scale — 500 assets × 20 factors × 250 days, one book over one trading year.</span></span></li>
+    <li><span class="sym math" data-tex="C_{\mathrm{left}}"></span><span class="def">multiplies for (wᵀB)F. <span class="n">Equals f(a+t) — no term ever multiplies all three extents together.</span></span></li>
+    <li><span class="sym math" data-tex="C_{\mathrm{right}}"></span><span class="def">multiplies for wᵀ(BF). <span class="n">Dominated by aft — the price of building the full a×t attribution panel you then immediately collapse.</span></span></li>
+  </ul>
+  <p class="step">At a = 500, f = 20, t = 250 the bills are <b>15,000 vs 2,625,000 multiplies — a 175× gap</b> for exactly the same 250 output numbers, opened by nothing but parenthesis placement. If you genuinely need the per-asset panel (attribution reports do), the aft term is the price of the panel itself; paying it when you only wanted the book series is a silent bug no unit test catches, because the values agree perfectly.</p>
+  <div class="panel">
+    <div class="ctrls">
+      <div class="field"><label>assets a <b id="aOut">500</b></label><input type="range" id="aS" min="2" max="500" step="1" value="500" /></div>
+      <div class="field"><label>factors f <b id="fOut">20</b></label><input type="range" id="fS" min="1" max="20" step="1" value="20" /></div>
+      <div class="field"><label>days t <b id="tOut">250</b></label><input type="range" id="tS" min="2" max="250" step="1" value="250" /></div>
+    </div>
+    <svg id="bars" viewBox="0 0 640 96" role="img" aria-label="Multiply counts of the two contraction orders"></svg>
+    <div class="tally">
+      <div class="stat"><div class="k">left-first (wᵀB)·F</div><div class="v g" id="lF">—</div></div>
+      <div class="stat"><div class="k">right-first wᵀ·(B·F)</div><div class="v" id="rF">—</div></div>
+      <div class="stat"><div class="k">right ÷ left</div><div class="v a" id="ratioC">—</div></div>
+    </div>
+    <p class="callout" id="cnote2"></p>
   </div>
 
   <div class="twist">
-    <p class="lbl">The twist — same value, wildly different cost</p>
-    <p>An einsum's <i>result</i> doesn't depend on the order you contract, but its <b>FLOP count</b> does — dramatically. Multiplying a chain A(1×1000)·B(1000×1000)·C(1000×1) left-to-right costs ~10⁹ operations; right-to-left costs ~2×10⁶. Choosing that order optimally is the classic <b>matrix-chain</b> problem, and it's why libraries have an <code>optimize</code> path and why <b>FlashAttention</b> is "just" a re-ordered, re-tiled version of the same attention einsum that never materializes the big score matrix. Two more traps worth naming: a tensor's <b>order</b> (how many indices) is unrelated to its <b>rank</b> in the SVD/decomposition sense (Lessons 8 and 12) — a 3-index tensor can be rank-1; and broadcasting is einsum with a silently repeated singleton axis. The notation is universal, but performance lives entirely in how you contract it.</p>
+    <p class="lbl">The twist — one reassociation is a research field</p>
+    <p>Attention (Lesson 17) computes softmax(QKᵀ/√d)·V. The inner einsum <span style="font-family:var(--mono)">"nd,md-&gt;nm"</span> builds an n×n score matrix — for a 4,096-token context that intermediate alone has 4,096² = 16,777,216 entries per head — and the softmax is an <i>entrywise nonlinearity on that full matrix</i> (each row normalizes by its own sum), so it must exist before V can touch it: the nonlinearity blocks reassociation. Delete or kernelize the softmax — approximate it by a feature map, softmax(QKᵀ) ≈ φ(Q)φ(K)ᵀ — and the product reassociates exactly like wᵀBF did: φ(Q)·(φ(K)ᵀV) never forms the n×n matrix, and the cost falls from O(n²d) to O(nd²), a factor of n/d (= 64 here). That single associativity swap <i>is</i> the "linear attention" literature, and it is the reason Lesson 37's state-space models can stream a million tokens. Interactive 2's moral, sharpened: what walls you in is not the operation count — it's the intermediate you are forced to materialize.</p>
   </div>
 
   <div class="vol">
     <p class="lbl">Why this matters · volarixs</p>
-    <p>Your Cross-Matrix output <i>is</i> a tensor: the design doc names it <code>(target, driver, regime, estimator) → CellEstimate</code> — a 4-index object. Every heatmap slice, every "rank the drivers for this target in regime r," every aggregation across estimators is an index contraction or selection on that tensor. Thinking in einsum makes those slices one clean expression instead of nested loops.</p>
-    <p>And when you vectorize the regressions themselves — fitting many (target, driver) cells at once, or scoring a whole panel — the batched operation is a contraction like <code>"btf,bfk->btk"</code>. The attention score you'll meet in Wing IV, <code>"qd,kd->qk"</code>, is the same move: contract away the feature dimension, keep the pair. One language, from your matrix to the transformer.</p>
+    <p>Your Cross-Matrix build is a contraction you now own: on the centred returns panel R[a,t], the cell grid is <code>einsum("at,bt-&gt;ab")</code> — Lesson 7's Gram matrix in one string — and <code>pca_factors</code> consumes exactly that "ab" output (Lesson 8 takes its SVD). Writing it this way is not cosmetic: the string names which index dies (time) and which pair survives (assets), which is precisely what a vectorized implementation needs to know.</p>
+    <p>The same grammar rolls up your book's Greeks: per-asset vega surfaces live on an (asset × scenario × tenor) grid V[a,s,k], and the desk surface is <code>einsum("a,ask-&gt;sk")</code> — weights in, asset index out. Whether that roll-up runs as one contraction or as a loop over assets is exactly Interactive 2's question at production scale, and the panel-you-materialize question is exactly why the per-asset attribution tensor is worth keeping only when someone reads it.</p>
   </div>
 
   <div class="sec">Check yourself</div>
-  <div class="q" id="q1"><p class="stem">In an einsum, an index that appears in the inputs but not the output is:</p><div class="opts"></div><p class="fb"></p></div>
-  <div class="q" id="q2"><p class="stem">The einsum "ij,jk->ik" computes:</p><div class="opts"></div><p class="fb"></p></div>
-  <div class="q" id="q3"><p class="stem">The "order" (rank) of a tensor refers to:</p><div class="opts"></div><p class="fb"></p></div>
-  <div class="q" id="q4"><p class="stem">Attention scores S = QKᵀ, contracting over the feature dimension d, are written:</p><div class="opts"></div><p class="fb"></p></div>
-  <div class="q" id="q5"><p class="stem">The order in which you contract a chain of tensors matters because:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q1"><p class="stem">In the book-PnL string einsum("a,af,ft-&gt;t"), which indices are summed and which are free?</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q2"><p class="stem">Which einsum computes the trace of a square matrix S?</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q3"><p class="stem">For p = einsum("a,af,ft-&gt;t") with a = 10 assets, f = 5 factors, t = 20 days, count the multiplies: left-first (wᵀB, then ·F) versus right-first (B·F, then wᵀ·).</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q4"><p class="stem">What does einsum("bij,bjk-&gt;bik") compute?</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q5"><p class="stem">Attention computes softmax(QKᵀ)V. Why can't it be cheaply reassociated as Q·(KᵀV), the way wᵀBF could?</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q6"><p class="stem">Your desk stores a returns panel R[a,t] (assets × days). The Cross-Matrix of Lesson 7 — co-movement of every asset pair — is:</p><div class="opts"></div><p class="fb"></p></div>
 
-  <div class="checkRow"><button class="primary" id="check">Check answers</button><span class="scoreOut" id="scoreOut"></span><span class="hint" id="hint">Answer all five first.</span></div>
-  <div class="done" id="done">Notation unlocked. Next in Wing I: fast matrix multiplication — Strassen to AlphaTensor.</div>
+  <div class="checkRow">
+    <button class="primary" id="check">Check answers</button>
+    <span class="scoreOut" id="scoreOut"></span>
+    <span class="hint" id="hint">Answer all six first.</span>
+  </div>
+  <div class="done" id="done">Notation unlocked. Next in Wing I: fast matrix multiplication — Strassen → AlphaTensor.</div>
 </div>
 
 <script>
 /* storage shim: window.storage (Claude artifacts) or localStorage (web) */
 if(!window.storage){window.storage={async get(k){const v=localStorage.getItem(k);if(v==null)throw new Error('missing');return{key:k,value:v}},async set(k,v){localStorage.setItem(k,v);return{key:k,value:v}},async delete(k){localStorage.removeItem(k);return{key:k,deleted:true}},async list(p){const ks=[];for(let i=0;i<localStorage.length;i++){const kk=localStorage.key(i);if(!p||kk.startsWith(p))ks.push(kk)}return{keys:ks}}};}
 function renderMath(){document.querySelectorAll('.math').forEach(el=>{const tex=el.getAttribute('data-tex');if(!tex||el.dataset.done)return;try{if(window.katex){katex.render(tex,el,{displayMode:el.dataset.display==='1',throwOnError:false});el.dataset.done='1';}else el.textContent=tex;}catch(e){el.textContent=tex;}});}
+const el=id=>document.getElementById(id);
 
-const A=[[1,2,3],[4,5,6]];          // 2x3
-const B=[[1,0],[0,1],[1,1]];        // 3x2
-const S=[[2,1],[3,4]];              // 2x2 square (for trace)
-const u=[1,2,3], w=[4,5];
-const Q=[[1,0,1],[0,2,1]], Kk=[[1,1,0],[2,0,1]]; // 2x3 each
+/* ---------- seeded tensors (mulberry32, seed 111) ---------- */
+function mulberry32(seed){let a=seed>>>0;return function(){a|=0;a=(a+0x6D2B79F5)|0;let t=Math.imul(a^(a>>>15),1|a);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296;}}
+function randn(rng){let u=0,v=0;while(!u)u=rng();while(!v)v=rng();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+const rng=mulberry32(111);
+const ri=()=>1+Math.floor(rng()*9);
+function make(shape){const bu=s=>s.length?Array.from({length:s[0]},()=>bu(s.slice(1))):ri();return bu(shape);}
+const W=make([3]);      /* w[a]  book weights            */
+const B=make([3,2]);    /* B[a,f] exposures              */
+const F=make([2,4]);    /* F[f,t] factor returns         */
+const M=make([2,3]);    /* matmul demo lhs               */
+const N=make([3,2]);    /* matmul demo rhs               */
+const SQ=make([3,3]);   /* trace demo                    */
+const G=make([2,2,2]);  /* batched lhs                   */
+const H=make([2,2,2]);  /* batched rhs                   */
 
-function gridHTML(name,data,hl){ // data: 2D array | 1D array | number ; hl:{r,c} highlight or {col:c}/{row:r}
-  let body='';
-  const is2D=Array.isArray(data)&&Array.isArray(data[0]);
-  if(typeof data==='number'){body=`<td class="out">${data}</td>`;return `<div class="mat"><span class="nm">${name}</span><table class="t"><tr>${body}</tr></table></div>`;}
-  if(!is2D){ // vector as a row
-    body='<tr>'+data.map((v,j)=>`<td class="${hl&&hl.i===j?'hl':''}">${v}</td>`).join('')+'</tr>';
-    return `<div class="mat"><span class="nm">${name}</span><table class="t">${body}</table></div>`;
+/* ---------- a tiny general einsum engine ---------- */
+function shapeOf(T){const s=[];let x=T;while(Array.isArray(x)){s.push(x.length);x=x[0];}return s;}
+function pick(T,ix){let x=T;for(const i of ix)x=x[i];return x;}
+function parseSpec(spec){const parts=spec.split('->');return{ins:parts[0].split(','),out:parts[1]};}
+function dimsOf(spec,tensors){const p=parseSpec(spec);const d={};p.ins.forEach((s,k)=>{const sh=shapeOf(tensors[k]);[...s].forEach((c,ax)=>{d[c]=sh[ax];});});return d;}
+function summedOf(spec){const p=parseSpec(spec);return[...new Set([...p.ins.join('')])].filter(c=>!p.out.includes(c));}
+function einsum(spec,tensors){
+  const p=parseSpec(spec),d=dimsOf(spec,tensors),free=[...p.out],summed=summedOf(spec),idx={};
+  const term=()=>p.ins.reduce((acc,s,k)=>acc*pick(tensors[k],[...s].map(c=>idx[c])),1);
+  const sum=n=>{if(n===summed.length)return term();let s=0;for(let v=0;v<d[summed[n]];v++){idx[summed[n]]=v;s+=sum(n+1);}return s;};
+  const build=n=>{if(n===free.length)return sum(0);return Array.from({length:d[free[n]]},(_,v)=>{idx[free[n]]=v;return build(n+1);});};
+  return build(0);
+}
+function naiveMult(spec,tensors){const p=parseSpec(spec),d=dimsOf(spec,tensors);const all=[...new Set([...p.ins.join('')])];return all.reduce((acc,c)=>acc*d[c],1)*(p.ins.length-1);}
+const R=einsum('af,ft->at',[B,F]); /* attribution panel, feeds Cross-Matrix */
+
+/* ---------- playground rendering ---------- */
+function gridT(sym,T,isOut){
+  const sh=Array.isArray(T)?shapeOf(T):[];
+  if(sh.length===3)return T.map((sl,b)=>gridT(sym+'['+(b+1)+']',sl,isOut)).join('');
+  const lab=sym+' ('+(sh.length?sh.join('×'):'scalar')+')';
+  const cell=v=>'<td'+(isOut?' class="out"':'')+'>'+v+'</td>';
+  let body;
+  if(sh.length===0)body='<tr>'+cell(T)+'</tr>';
+  else if(sh.length===1)body='<tr>'+T.map(cell).join('')+'</tr>';
+  else body=T.map(r=>'<tr>'+r.map(cell).join('')+'</tr>').join('');
+  return '<div class="mat"><span class="nm">'+lab+'</span><table class="t">'+body+'</table></div>';
+}
+function loopNest(spec,names,outName,tensors){
+  const p=parseSpec(spec),d=dimsOf(spec,tensors),free=[...p.out],summed=summedOf(spec);
+  const prod=p.ins.map((s,k)=>names[k]+'['+[...s].join(',')+']').join(' * ');
+  const pad=n=>'  '.repeat(n),L=[];
+  free.forEach((c,i)=>L.push(pad(i)+'for '+c+' in 1..'+d[c]+':  <span class="cf"># free — kept</span>'));
+  if(summed.length){
+    L.push(pad(free.length)+'s = 0');
+    summed.forEach((c,i)=>L.push(pad(free.length+i)+'for '+c+' in 1..'+d[c]+':  <span class="cs"># summed — dies</span>'));
+    L.push(pad(free.length+summed.length)+'s += '+prod);
+    L.push(pad(free.length)+(free.length?outName+'['+free.join(',')+'] = s':outName+' = s'));
+  }else{
+    L.push(pad(free.length)+outName+'['+free.join(',')+'] = '+prod);
   }
-  body=data.map((row,i)=>'<tr>'+row.map((v,j)=>{
-    let cls='';
-    if(hl){ if(hl.out&&hl.out.r===i&&hl.out.c===j)cls='out';
-      else if(hl.rowIdx!==undefined&&hl.rowIdx===i)cls='hl';
-      else if(hl.colIdx!==undefined&&hl.colIdx===j)cls='hl'; }
-    return `<td class="${cls}">${v}</td>`;
-  }).join('')+'</tr>').join('');
-  return `<div class="mat"><span class="nm">${name}</span><table class="t">${body}</table></div>`;
+  return L.join('\n');
+}
+function workedLine(spec,names,tensors,outName,OUT){
+  const p=parseSpec(spec),d=dimsOf(spec,tensors),free=[...p.out],summed=summedOf(spec),idx={};
+  free.forEach(c=>idx[c]=d[c]-1);
+  const lhs=free.length?outName+'['+free.map(c=>d[c]).join(',')+']':outName;
+  const val=free.length?pick(OUT,free.map(c=>d[c]-1)):OUT;
+  const symRef=(s,m)=>names[m]+'['+[...s].map(c=>free.includes(c)?d[c]:c).join(',')+']';
+  if(!summed.length)return lhs+' = '+p.ins.map(symRef).join('·')+' = '+val;
+  const terms=[];
+  const rec=k=>{if(k===summed.length){terms.push(p.ins.map((s,m)=>pick(tensors[m],[...s].map(c=>idx[c]))).join('·'));return;}for(let v=0;v<d[summed[k]];v++){idx[summed[k]]=v;rec(k+1);}};
+  rec(0);
+  const sig=summed.map(c=>'Σ_'+c).join(' ')+' '+p.ins.map(symRef).join('·');
+  return lhs+' = '+sig+' = '+terms.join(' + ')+' = '+val;
+}
+const PRESETS=[
+  {k:'matmul',lab:'matmul',spec:'ij,jk->ik',nm:['A','B'],on:'C',ts:[M,N],
+    desc:'matrix product — contract the shared inner index j',
+    note:c=>'j (size '+c.d.j+') is repeated across the inputs and absent from the output: summed away. i and k survive as a '+c.d.i+'×'+c.d.k+' grid — each cell a '+c.d.j+'-term dot product, '+c.mult+' multiplies in all. Every other preset is a riff on this move.'},
+  {k:'transpose',lab:'transpose',spec:'ij->ji',nm:['A'],on:'Aᵀ',ts:[M],
+    desc:'transpose — one operand, letters swapped, nothing summed',
+    note:c=>'no letter repeats, so nothing is summed and '+c.mult+' multiplies happen — einsum also covers pure index bookkeeping. The same '+(c.d.i*c.d.j)+' numbers change address from (i,j) to (j,i); the output is still order 2.'},
+  {k:'trace',lab:'trace',spec:'ii->',nm:['S'],on:'tr',ts:[SQ],
+    desc:'trace — both axes share the letter i, and i is summed with nothing left free',
+    note:c=>'both axes of S carry the same letter, so the nest only visits the diagonal, and the empty output string leaves nothing free: the result is order 0 — a scalar. tr S = '+c.out+', from '+c.d.i+' diagonal entries and '+c.mult+' multiplies: the trace is pure addition.'},
+  {k:'attrib',lab:'attribution',spec:'af,ft->at',nm:['B','F'],on:'P',ts:[B,F],
+    desc:'PnL attribution — exposures × factor returns, factor index contracted',
+    note:c=>'f is contracted; a and t survive. Cell (a,t) is asset a’s PnL on day t — its exposure row dotted with the day’s factor column. This '+c.d.a+'×'+c.d.t+' panel is the returns panel R of Lessons 6–7, and it feeds the Cross-Matrix preset two buttons over.'},
+  {k:'book',lab:'book PnL',spec:'a,af,ft->t',nm:['w','B','F'],on:'p',ts:[W,B,F],
+    desc:'book PnL — weights, exposures and factor returns; only the day survives',
+    note:c=>'two letters die at once — a and f — and only t reaches the output: the book’s daily PnL series. This naive nest pays '+c.mult+' multiplies for '+c.d.t+' numbers; Interactive 2 below gets the identical numbers far cheaper by reassociating.'},
+  {k:'cross',lab:'Cross-Matrix',spec:'at,bt->ab',nm:['R','R'],on:'C',ts:[R,R],
+    desc:'the Gram matrix of the returns panel — contract time, keep the asset pair',
+    note:c=>'the panel R enters twice under different letters (a and b) and time is summed: C[a,b] = Σ_t R[a,t]·R[b,t] — Lesson 7’s Gram matrix, your Cross-Matrix, as one string. Diagonal cells are each asset’s own energy; off-diagonals are co-movement; Lesson 8’s SVD of this object is pca_factors.'},
+  {k:'batched',lab:'batched',spec:'bij,bjk->bik',nm:['G','H'],on:'O',ts:[G,H],
+    desc:'batched matmul — b is free everywhere: one matmul per slice',
+    note:c=>'b appears in the inputs AND the output, so it is free — nothing mixes across slices; only j is summed. Each of the '+c.d.b+' slices runs its own independent matmul. Rename b to “attention head” and this is the exact shape of Wing IV.'}
+];
+let cur='attrib';
+const segEl=el('ops');
+PRESETS.forEach(P=>{const b=document.createElement('button');b.textContent=P.lab;if(P.k===cur)b.className='on';b.onclick=()=>{cur=P.k;[...segEl.children].forEach(c=>c.classList.toggle('on',c===b));drawPG();};segEl.appendChild(b);});
+function drawPG(){
+  const P=PRESETS.find(x=>x.k===cur);
+  const OUT=einsum(P.spec,P.ts);
+  const d=dimsOf(P.spec,P.ts),free=[...parseSpec(P.spec).out],summed=summedOf(P.spec);
+  const mult=naiveMult(P.spec,P.ts);
+  const terms=summed.reduce((acc,c)=>acc*d[c],1);
+  el('expr').textContent='einsum("'+P.spec+'")';
+  el('edesc').textContent=P.desc;
+  el('flow').innerHTML=P.ts.map((T,k)=>gridT(P.nm[k],T,false)).join('<span class="arrow">·</span>')+'<span class="arrow">→</span>'+gridT(P.on,OUT,true);
+  el('idx').innerHTML='<span>free: <b class="f">'+(free.length?free.map(c=>c+' ('+d[c]+')').join(', '):'none — scalar out')+'</b></span><span>summed: <b class="s">'+(summed.length?summed.map(c=>c+' ('+d[c]+')').join(', '):'none')+'</b></span>';
+  el('nest').innerHTML=loopNest(P.spec,P.nm,P.on,P.ts);
+  el('worked').textContent=workedLine(P.spec,P.nm,P.ts,P.on,OUT);
+  const sh=Array.isArray(OUT)?shapeOf(OUT):[];
+  el('oshape').textContent=sh.length?sh.join('×'):'scalar';
+  el('omult').textContent=mult;
+  el('oterms').textContent=terms;
+  el('cnote').textContent=P.note({d,mult,out:OUT});
 }
 
-const OPS={
-  matmul:{expr:'"ij,jk->ik"',desc:'matrix multiplication — contract the shared inner dimension j',
-    free:'i, k',sum:'j',
-    render:()=>{
-      const C=[[0,0],[0,0]];for(let i=0;i<2;i++)for(let k=0;k<2;k++){let s=0;for(let j=0;j<3;j++)s+=A[i][j]*B[j][k];C[i][k]=s;}
-      const flow=gridHTML('A (2×3)',A,{rowIdx:1})+'<span class="arrow">·</span>'+gridHTML('B (3×2)',B,{colIdx:1})+'<span class="arrow">=</span>'+gridHTML('C (2×2)',C,{out:{r:1,c:1}});
-      const work=`C[2][2] = Σ_j A[2][j]·B[j][2] = ${A[1][0]}·${B[0][1]} + ${A[1][1]}·${B[1][1]} + ${A[1][2]}·${B[2][1]} = ${A[1][0]*B[0][1]+A[1][1]*B[1][1]+A[1][2]*B[2][1]}`;
-      return {flow,work,note:'The 3-long index j is summed away; the 2×2 grid of (i,k) pairs survives. Highlighted: row 2 of A · column 2 of B → C[2][2].'};}},
-  attn:{expr:'"qd,kd->qk"',desc:'attention scores S = Q Kᵀ — contract the feature dimension d',
-    free:'q, k',sum:'d',
-    render:()=>{
-      const Sm=[[0,0],[0,0]];for(let q=0;q<2;q++)for(let k=0;k<2;k++){let s=0;for(let d=0;d<3;d++)s+=Q[q][d]*Kk[k][d];Sm[q][k]=s;}
-      const flow=gridHTML('Q (2×3)',Q,{rowIdx:0})+'<span class="arrow">·</span>'+gridHTML('K (2×3)',Kk,{rowIdx:1})+'<span class="arrow">=</span>'+gridHTML('S (2×2)',Sm,{out:{r:0,c:1}});
-      const work=`S[1][2] = Σ_d Q[1][d]·K[2][d] = ${Q[0][0]}·${Kk[1][0]} + ${Q[0][1]}·${Kk[1][1]} + ${Q[0][2]}·${Kk[1][2]} = ${Q[0][0]*Kk[1][0]+Q[0][1]*Kk[1][1]+Q[0][2]*Kk[1][2]}`;
-      return {flow,work,note:'Every query row q dotted with every key row k, contracting the model dimension d. This one line is the heart of attention (Wing IV) — same contraction as matmul, different names.'};}},
-  outer:{expr:'"i,j->ij"',desc:'outer product — no index is shared, so nothing is summed',
-    free:'i, j',sum:'(none)',
-    render:()=>{
-      const O=u.map(a=>w.map(b=>a*b));
-      const flow=gridHTML('u (3)',u,{i:2})+'<span class="arrow">⊗</span>'+gridHTML('w (2)',w,{i:1})+'<span class="arrow">=</span>'+gridHTML('O (3×2)',O,{out:{r:2,c:1}});
-      const work=`O[3][2] = u[3]·w[2] = ${u[2]}·${w[1]} = ${u[2]*w[1]}`;
-      return {flow,work,note:'With no repeated index there is no sum — every (i,j) pair is just a product. This rank-1 layer is exactly the σ·uvᵀ building block of the SVD (Lesson 8).'};}},
-  transpose:{expr:'"ij->ji"',desc:'transpose — one input, indices swapped, nothing summed',
-    free:'j, i',sum:'(none)',
-    render:()=>{
-      const T=[[A[0][0],A[1][0]],[A[0][1],A[1][1]],[A[0][2],A[1][2]]];
-      const flow=gridHTML('A (2×3)',A)+'<span class="arrow">→</span>'+gridHTML('Aᵀ (3×2)',T,{out:{r:2,c:1}});
-      const work=`Aᵀ[i][j] = A[j][i]  →  Aᵀ[3][2] = A[2][3] = ${A[1][2]}`;
-      return {flow,work,note:'A pure relabelling: the same numbers, indices reordered. No summation at all — output order equals input order (2).'};}},
-  trace:{expr:'"ii->"',desc:'trace — the repeated index i is summed with no free index left',
-    free:'(none — scalar)',sum:'i',
-    render:()=>{
-      const tr=S[0][0]+S[1][1];
-      const flow=gridHTML('S (2×2)',S,{})+'<span class="arrow">→</span>'+gridHTML('tr',tr);
-      const work=`tr(S) = Σ_i S[i][i] = S[1][1] + S[2][2] = ${S[0][0]} + ${S[1][1]} = ${tr}`;
-      return {flow,work,note:'Both indices coincide and are summed, leaving no free index — the result is a scalar (order 0). Diagonal in, single number out.'};}},
-  rowsum:{expr:'"ij->i"',desc:'row sums — keep i, sum over j (a reduction)',
-    free:'i',sum:'j',
-    render:()=>{
-      const r=A.map(row=>row.reduce((a,b)=>a+b,0));
-      const flow=gridHTML('A (2×3)',A,{rowIdx:0})+'<span class="arrow">→</span>'+gridHTML('r (2)',r,{i:0});
-      const work=`r[1] = Σ_j A[1][j] = ${A[0][0]} + ${A[0][1]} + ${A[0][2]} = ${A[0][0]+A[0][1]+A[0][2]}`;
-      return {flow,work,note:'Dropping an index without a second operand is a reduction — here, summing each row. Keep i, contract j.'};}},
-};
-const ORDER=[['matmul','matmul'],['attn','attention QKᵀ'],['outer','outer product'],['transpose','transpose'],['trace','trace'],['rowsum','row sum']];
-let curOp='matmul';
-const segEl=document.getElementById('ops');
-ORDER.forEach(([k,label])=>{const b=document.createElement('button');b.textContent=label;b.className=k===curOp?'on':'';b.onclick=()=>{curOp=k;[...segEl.children].forEach(c=>c.classList.toggle('on',c===b));draw();};segEl.appendChild(b);});
-function draw(){
-  const o=OPS[curOp],r=o.render();
-  document.getElementById('expr').innerHTML='einsum( '+o.expr+' )';
-  document.getElementById('edesc').textContent=o.desc;
-  document.getElementById('flow').innerHTML=r.flow;
-  document.getElementById('idx').innerHTML=`<span>free: <b class="f">${o.free}</b></span><span>summed: <b class="s">${o.sum}</b></span>`;
-  document.getElementById('work').textContent=r.work;
-  document.getElementById('cnote').textContent=r.note;
+/* ---------- interactive 2: the cost of association ---------- */
+const fmtN=x=>x.toLocaleString('en-US');
+function drawCost(){
+  const a=+el('aS').value,f=+el('fS').value,t=+el('tS').value;
+  el('aOut').textContent=a;el('fOut').textContent=f;el('tOut').textContent=t;
+  const L=a*f+f*t,Rt=a*f*t+a*t,r=Rt/L;
+  el('lF').textContent=fmtN(L);el('rF').textContent=fmtN(Rt);
+  el('ratioC').textContent=(r>=10?r.toFixed(0):r.toFixed(1))+'×';
+  const W2=640,iw=490,BH=22,mx=Math.max(L,Rt);
+  const wL=Math.max(2,iw*L/mx),wR=Math.max(2,iw*Rt/mx);
+  let s='';
+  s+='<text x="0" y="12" font-family="var(--mono)" font-size="11" fill="var(--muted)">left-first  (wᵀB)·F</text>';
+  s+='<rect x="0" y="17" width="'+wL.toFixed(1)+'" height="'+BH+'" rx="4" fill="var(--ok)"/>';
+  s+='<text x="'+(wL+8).toFixed(1)+'" y="33" font-family="var(--mono)" font-size="12" fill="var(--ink)">'+fmtN(L)+'</text>';
+  s+='<text x="0" y="59" font-family="var(--mono)" font-size="11" fill="var(--muted)">right-first  wᵀ·(B·F)</text>';
+  s+='<rect x="0" y="64" width="'+wR.toFixed(1)+'" height="'+BH+'" rx="4" fill="var(--series)"/>';
+  s+='<text x="'+(wR+8).toFixed(1)+'" y="80" font-family="var(--mono)" font-size="12" fill="var(--ink)">'+fmtN(Rt)+'</text>';
+  el('bars').innerHTML=s;
+  let msg;
+  if(r>=100)msg='Same vector p[t]: '+fmtN(Rt)+' vs '+fmtN(L)+' multiplies — '+r.toFixed(0)+'× apart, from parentheses alone. Right-first materializes the full '+a+'×'+t+' attribution panel (the aft term) that left-first never builds. Choosing the order over a chain is the matrix-chain DP; over a general network it is NP-hard — which is why einsum libraries ship an optimizer.';
+  else if(r>=8)msg='Left-first wins '+r.toFixed(1)+'× here: contracting the length-'+a+' asset index first collapses the book to a single factor row before it ever touches the '+f+'×'+t+' factor panel. The gap scales with the aft term — push assets and days up together.';
+  else msg='At this size the two orders are only '+r.toFixed(1)+'× apart — the aft term has not taken over yet. Push a and t up and watch right-first’s bill explode while left-first’s barely moves: same maths, different engineering.';
+  el('cnote2').textContent=msg;
 }
+['aS','fS','tS'].forEach(id=>el(id).addEventListener('input',drawCost));
 
+/* ---------- retrieval ---------- */
 const QS={
-  q1:{opts:["kept as an output axis","summed (contracted) over","ignored entirely","transposed"],a:1,
-    fb:"That's the Einstein rule: any index repeated in the inputs and missing from the output is summed away. It's the dimension that disappears in the contraction."},
-  q2:{opts:["element-wise (Hadamard) product","matrix multiplication — contract the shared inner index j","the outer product","the transpose"],a:1,
-    fb:"C_ik = Σ_j A_ij B_jk is exactly matrix multiplication: i and k are kept, j is contracted. The inner dimensions (the j's) must match."},
-  q3:{opts:["its SVD/decomposition rank","the number of indices (axes) it has — scalar 0, vector 1, matrix 2, …","the largest singular value","the number of nonzero entries"],a:1,
-    fb:"Tensor 'order/rank' counts indices, and is unrelated to the SVD rank of Lesson 8 — a 3-index tensor can still be rank-1 in the decomposition sense."},
-  q4:{opts:['"qk,qk->qk"','"qd,kd->qk"','"qd,dk->qdk"','"qk->kq"'],a:1,
-    fb:"Q is (queries × d), K is (keys × d); contracting d and keeping (q,k) gives the score matrix S = QKᵀ. Same contraction shape as matmul — the workhorse of attention."},
-  q5:{opts:["it changes the result","it changes the FLOP cost (matrix-chain ordering), though the result is identical","it changes which indices are free","only the first order is valid"],a:1,
-    fb:"Contraction is associative in value but not in cost — a good order can cut operations by orders of magnitude (the matrix-chain problem), which is what FlashAttention and einsum 'optimize' exploit."}
+  q1:{opts:["a and f are summed; t is the only free index","t is summed; a and f are free","only f is summed; a and t are both free","none are summed — all three survive to the output"],a:0,
+    fb:"The output string is just \"t\", so t is free — the result is a daily series. a and f each appear in the inputs but not the output: both contracted away. Option C describes the attribution string \"af,ft->at\", where the weights have not been applied yet."},
+  q2:{opts:['"ij->ji"','"ij->i"','"ii->"','"ij,ij->" (S with itself)'],a:2,
+    fb:"Repeating the letter on one operand — \"ii\" — forces the loop onto the diagonal, and the empty output string sums it to a scalar: Σᵢ S[i,i]. \"ij->ji\" is the transpose, \"ij->i\" sums each row, and \"ij,ij->\" on (S,S) is Σᵢⱼ S[i,j]² — the squared Frobenius norm, a different scalar."},
+  q3:{opts:["both cost 1,000 — associativity means cost is order-independent","150 vs 1,200 — left-first is 8× cheaper","1,200 vs 150 — right-first is 8× cheaper","150 vs 1,200, but the two orders give slightly different p"],a:1,
+    fb:"Left: af + ft = 10·5 + 5·20 = 50 + 100 = 150. Right: aft + at = 10·5·20 + 10·20 = 1,000 + 200 = 1,200. Ratio 8×. Associativity guarantees the same p either way — it says nothing about the cost of getting it."},
+  q4:{opts:["one big matrix product after flattening the batch axis into rows","the trace of each batch slice","an outer product across the batch axis","b independent matrix products, one per slice — the shape every attention head uses in parallel"],a:3,
+    fb:"b appears in both inputs and the output, so it is free — nothing mixes across slices; j is the only summed index. Slice b of the output is exactly (matrix b of the first input) × (matrix b of the second): batched matmul, the per-head workhorse of attention (Lesson 17)."},
+  q5:{opts:["matrix multiplication stops being associative when a third matrix is involved","the softmax is an entrywise nonlinearity on the full n×n score matrix — it must be materialized before V is applied","KᵀV has incompatible shapes, so the product does not exist","it can — standard attention already computes Q·(KᵀV)"],a:1,
+    fb:"Associativity holds for pure linear contractions. softmax(·) sits between the two products and needs every entry of QKᵀ (each row normalizes by its own full sum), so the n×n intermediate must exist. Kernelized \"linear attention\" removes or approximates the softmax precisely to unlock the φ(Q)·(φ(K)ᵀV) association — O(nd²) instead of O(n²d)."},
+  q6:{opts:['einsum("af,ft->at") — exposures times factor returns','einsum("at,bt->t") — contract both asset copies, keep the day','einsum("at,bt->ab") — contract time, keep the asset pair','einsum("a,at->t") — weights into the panel'],a:2,
+    fb:"Give the panel two different asset letters — a for one copy, b for the other — share the time letter, and sum it away: C[a,b] = Σₜ R[a,t]·R[b,t] = (RRᵀ)[a,b]. Days die, the asset pair survives. Option B contracts both asset letters instead, leaving one number per day — the squared daily cross-sectional sum, not a pair matrix."}
 };
-const sel={q1:null,q2:null,q3:null,q4:null,q5:null};let revealed=false;
-Object.keys(QS).forEach(id=>{const holder=document.querySelector('#'+id+' .opts');QS[id].opts.forEach((txt,i)=>{const b=document.createElement('button');b.className='opt';b.textContent=String.fromCharCode(65+i)+'.  '+txt;b.onclick=()=>{if(revealed)return;sel[id]=i;[...holder.children].forEach((c,ci)=>c.classList.toggle('sel',ci===i));document.getElementById('hint').style.display='none';};holder.appendChild(b);});});
-document.getElementById('check').onclick=async()=>{
-  if(revealed)return;if(Object.values(sel).some(v=>v===null)){document.getElementById('hint').style.display='inline';return;}
+const sel={q1:null,q2:null,q3:null,q4:null,q5:null,q6:null};let revealed=false;
+Object.keys(QS).forEach(id=>{const holder=document.querySelector('#'+id+' .opts');QS[id].opts.forEach((txt,i)=>{const b=document.createElement('button');b.className='opt';b.textContent=String.fromCharCode(65+i)+'.  '+txt;b.onclick=()=>{if(revealed)return;sel[id]=i;[...holder.children].forEach((c,ci)=>c.classList.toggle('sel',ci===i));el('hint').style.display='none';};holder.appendChild(b);});});
+el('check').onclick=async()=>{
+  if(revealed)return;if(Object.values(sel).some(v=>v===null)){el('hint').style.display='inline';return;}
   revealed=true;let score=0;
   Object.keys(QS).forEach(id=>{const a=QS[id].a,holder=document.querySelector('#'+id+' .opts'),fb=document.querySelector('#'+id+' .fb');[...holder.children].forEach((c,ci)=>{c.style.cursor='default';c.classList.remove('sel');if(ci===a)c.classList.add('correct');else if(ci===sel[id])c.classList.add('wrong');});if(sel[id]===a)score++;fb.textContent=QS[id].fb;fb.classList.add('show');});
-  document.getElementById('check').style.opacity='0.5';document.getElementById('check').textContent='Checked';
-  document.getElementById('scoreOut').textContent=score+' / 5';document.getElementById('done').classList.add('show');
-  try{await window.storage.set('mfs:lesson11',JSON.stringify({done:true,retrieval:score+'/5',ts:Date.now()}),false);}catch(e){}
+  el('check').style.opacity='0.5';el('check').textContent='Checked';
+  el('scoreOut').textContent=score+' / 6';el('done').classList.add('show');
+  try{await window.storage.set('mfs:lesson11',JSON.stringify({done:true,retrieval:score+'/6',ts:Date.now()}),false);}catch(e){}
 };
-function boot(){renderMath();draw();}
+function boot(){renderMath();drawPG();drawCost();}
 if(window.katex)boot();else window.addEventListener('load',boot);
-(async()=>{try{const r=await window.storage.get('mfs:lesson11',false);if(r&&r.value){const v=JSON.parse(r.value);if(v.done){const c=document.getElementById('chip');c.classList.add('show');c.textContent='completed · '+v.retrieval;}}}catch(e){}})();
+(async()=>{try{const r=await window.storage.get('mfs:lesson11',false);if(r&&r.value){const v=JSON.parse(r.value);if(v.done){const c=el('chip');c.classList.add('show');c.textContent='completed · '+v.retrieval;}}}catch(e){}})();
 </script>
 </body>
 </html>
