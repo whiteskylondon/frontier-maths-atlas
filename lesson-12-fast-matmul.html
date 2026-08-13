@@ -14,20 +14,21 @@
   .wrap{max-width:750px;margin:0 auto;padding:32px 24px 60px}
   .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 6px}
   h1{font-family:var(--serif);font-weight:600;font-size:27px;line-height:1.22;margin:0 0 6px;letter-spacing:-.01em}
-  .chip{display:none;font-family:var(--mono);font-size:11px;color:var(--ok);border:1px solid var(--ok);border-radius:20px;padding:3px 10px;vertical-align:middle;margin-left:10px}
+  .chip{display:none;font-family:var(--mono);font-size:11px;letter-spacing:.05em;color:var(--ok);border:1px solid var(--ok);border-radius:20px;padding:3px 10px;vertical-align:middle;margin-left:10px}
   .chip.show{display:inline-block}
   .sub{color:var(--muted);font-size:15px;margin:0 0 18px}
   .levels{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 26px}
   .levels .lk{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
   .levels .pill{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-family:var(--mono);color:var(--muted);background:var(--panel);border:1px solid var(--hair2);border-radius:20px;padding:4px 11px}
-  .levels .pill b{color:var(--accent);font-weight:700}
+  .levels .pill b{color:var(--accent);font-weight:700;letter-spacing:.03em}
   p.lead{font-size:16px;margin:0 0 22px}p.lead b{font-weight:600}
+  p.lead code,.step code{font-family:var(--mono);font-size:13.5px;background:var(--accent-bg);padding:1px 5px;border-radius:4px}
   .sec{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:36px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--hair)}
   .mblock{margin:16px 0;overflow-x:auto}
   .glo{list-style:none;padding:0;margin:14px 0 0}
   .glo li{display:flex;gap:14px;padding:9px 0;border-top:1px solid var(--hair);align-items:baseline}
   .glo li:first-child{border-top:none}
-  .glo .sym{flex:0 0 86px;text-align:right;padding-top:2px;font-family:var(--mono);font-size:13px;color:var(--accent)}
+  .glo .sym{flex:0 0 92px;text-align:right;padding-top:2px;font-family:var(--mono);font-size:13px;color:var(--accent)}
   .glo .def{font-size:14.5px}.glo .def .n{color:var(--muted)}
   .step{font-size:14.5px;color:var(--muted);margin:10px 0}
   .panel{background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:20px;margin:14px 0}
@@ -45,9 +46,9 @@
   .stat .k{font-size:11px;font-family:var(--mono);color:var(--muted);text-transform:uppercase}
   .stat .v{font-size:17px;font-weight:600;font-family:var(--mono);margin-top:2px}
   .stat .v.a{color:var(--accent)}.stat .v.g{color:var(--front)}
-  .scheme{background:var(--paper);border-radius:9px;padding:12px 14px;font-family:var(--mono);font-size:12.5px;line-height:1.7;overflow-x:auto;margin:14px 0 0}
-  .scheme b{color:var(--stras)}
-  .callout{font-size:14px;color:var(--muted);border-left:2px solid var(--accent);padding:2px 0 2px 14px;margin:14px 0 2px}
+  .scheme{background:var(--paper);border-radius:9px;padding:12px 14px;font-family:var(--mono);font-size:12.5px;line-height:1.7;overflow-x:auto;margin:14px 0 0;white-space:pre}
+  .scheme b{color:var(--stras);font-weight:600}
+  .callout{font-size:14px;color:var(--muted);border-left:2px solid var(--accent);padding:2px 0 2px 14px;margin:14px 0 2px;min-height:1.4em}
   .theorem{background:var(--accent-bg);border-radius:12px;padding:18px 20px;margin:16px 0}
   .theorem .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
   .theorem p{font-family:var(--serif);font-size:16px;line-height:1.55;margin:0}
@@ -80,75 +81,120 @@
   <p class="eyebrow">Lesson 12 · Wing I — the linear-algebra substrate</p>
   <h1>Fast matrix multiplication as a frontier<span class="chip" id="chip"></span></h1>
   <p class="sub">The most-run operation in computing has an exponent nobody has pinned down — and an AI has been hunting for it.</p>
-  <div class="levels"><span class="lk">Level</span><span class="pill"><b>US</b> Graduate</span><span class="pill"><b>FR</b> Master M2 – PhD</span></div>
+  <div class="levels"><span class="lk">Level</span><span class="pill"><b>US</b> Graduate</span><span class="pill"><b>FR</b> M2 – PhD</span></div>
 
-  <p class="lead">Multiplying two n×n matrices the obvious way costs about n³ scalar multiplications. For decades that looked fundamental — until Strassen showed in 1969 that a 2×2 block product needs only <b>7</b> multiplications instead of 8, and recursion turns that into an exponent below 3. The true exponent ω — how fast matrix multiplication <i>can</i> be — is one of the great open problems, and in 2022 an RL system (AlphaTensor) joined the search by treating the question as a game.</p>
+  <p class="lead">Rebuilding the Cross-Matrix of Lessons 7 and 11 is one big matrix multiplication: <code>einsum('at,bt->ab')</code> on a 500-asset × 2,500-day returns panel. Each of the 500² = 250,000 output cells is a dot product across 2,500 days, so the build costs about 500·500·2,500 ≈ 6.25×10⁸ multiply-adds. This lesson is about what "one big matmul" <b>fundamentally</b> costs. Done by the definition, cost grows as n³ in the matrix size. In 1969 Volker Strassen showed that a 2×2 product needs only <b>7</b> multiplications instead of 8 — and recursion turns that single saved multiplication into an exponent below 3. How low the exponent can go, a constant called <b>ω</b>, is a famous open problem; in 2022 an RL system, <b>AlphaTensor</b>, joined the search by playing algorithm discovery as a game.</p>
 
-  <div class="sec">Three regimes of cost</div>
-  <div class="mblock math" data-tex="\text{naive: } n^{3}\qquad\text{Strassen: } n^{\log_2 7}\approx n^{2.807}\qquad\text{frontier: } n^{\omega},\ \ \omega\approx 2.371" data-display="1"></div>
-  <p class="step">Strassen's saving compounds through the recursion — you recurse on 7 subproblems instead of 8, so the count is 7 per level rather than 8:</p>
-  <div class="mblock math" data-tex="T(n)=7\,T(n/2)+O(n^{2})\ \Longrightarrow\ T(n)=O\!\big(n^{\log_2 7}\big),\qquad \log_2 7 = 2.807\ldots" data-display="1"></div>
+  <div class="sec">The words, before the symbols</div>
   <ul class="glo">
-    <li><span class="sym">n³</span><span class="def">the <b>naive</b> count. <span class="n">Each of n² outputs is a length-n dot product — the definition, nothing clever.</span></span></li>
-    <li><span class="sym">ω</span><span class="def">the <b>exponent of matrix multiplication</b>. <span class="n">The infimum of exponents achievable; best known ≈ 2.371, and whether ω = 2 is open.</span></span></li>
-    <li><span class="sym">R</span><span class="def"><b>tensor rank</b> of the matmul map. <span class="n">The number of scalar multiplications in a bilinear algorithm — this is what bounds ω.</span></span></li>
+    <li><span class="sym" style="flex-basis:120px">multiply-add</span><span class="def">one scalar multiplication feeding an accumulator — the unit we count. <span class="n">Hardware fuses them (FMA); theory counts multiplications alone because, as you'll see, only multiplications recurse.</span></span></li>
+    <li><span class="sym" style="flex-basis:120px">exponent ω</span><span class="def">the smallest power τ such that n×n matmul can be done in roughly n^τ operations. <span class="n">"Roughly" hides constant factors — exactly where theory and practice part company.</span></span></li>
+    <li><span class="sym" style="flex-basis:120px">block</span><span class="def">a sub-matrix treated as a single entry. <span class="n">An identity written for 2×2 <i>numbers</i> runs verbatim on 2×2 <i>blocks</i> — that is what makes one small trick global.</span></span></li>
+    <li><span class="sym" style="flex-basis:120px">bilinear</span><span class="def">an algorithm whose every multiplication takes one (± sum of A-entries) times one (± sum of B-entries), with outputs assembled by additions. <span class="n">The model in which "number of multiplications" is a well-defined complexity measure.</span></span></li>
+    <li><span class="sym" style="flex-basis:120px">tensor</span><span class="def">a 3-indexed 0/1 array recording which product aᵢₖ·bₖⱼ feeds which output cᵢⱼ. <span class="n">Matrix multiplication as <i>data</i> instead of code — a fixed algebraic object.</span></span></li>
+    <li><span class="sym" style="flex-basis:120px">rank</span><span class="def">the fewest one-multiplication pieces that sum to that tensor. <span class="n">Lesson 8's rank with three indices instead of two — and it equals the multiplication count of the best bilinear recipe.</span></span></li>
+  </ul>
+  <p class="step">One honesty note before the fireworks: at Cross-Matrix size (n in the hundreds), tuned classical BLAS wins on constants, memory traffic, and error bounds. The exponent story is about asymptotics — and about what exhaustive discrete search can discover. Both matter; they answer different questions.</p>
+
+  <div class="sec">The trick — Strassen's seven products</div>
+  <p class="step">The naive 2×2 block product uses 8 block multiplications, one per (row, column, term). Strassen's observation: seven cleverly chosen products of ± sums of blocks carry enough information to assemble all four outputs by additions alone. Nothing is approximated — it is an algebraic identity.</p>
+  <div class="mblock math" data-tex="\begin{aligned}M_1&=(A_{11}+A_{22})(B_{11}+B_{22}) &\quad M_2&=(A_{21}+A_{22})\,B_{11}\\ M_3&=A_{11}(B_{12}-B_{22}) & M_4&=A_{22}(B_{21}-B_{11})\\ M_5&=(A_{11}+A_{12})\,B_{22} & M_6&=(A_{21}-A_{11})(B_{11}+B_{12})\\ M_7&=(A_{12}-A_{22})(B_{21}+B_{22})\end{aligned}" data-display="1"></div>
+  <div class="mblock math" data-tex="\begin{aligned}C_{11}&=M_1+M_4-M_5+M_7 &\quad C_{12}&=M_3+M_5\\ C_{21}&=M_2+M_4 & C_{22}&=M_1-M_2+M_3+M_6\end{aligned}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="A_{ij},B_{ij}"></span><span class="def">the four <b>blocks</b> of each input. <span class="n">Scalars at the recursion floor; matrices above it — where each Mᵢ becomes a recursive call.</span></span></li>
+    <li><span class="sym math" data-tex="M_1\ldots M_7"></span><span class="def">the seven products — the <b>only multiplications</b> performed. <span class="n">Each is (± sum of A-blocks)·(± sum of B-blocks): exactly the bilinear form above.</span></span></li>
+    <li><span class="sym math" data-tex="C_{ij}"></span><span class="def">the outputs, assembled by <b>additions alone</b>. <span class="n">The classic form spends 18 block additions (10 building the Mᵢ, 8 assembling C); at size n they cost O(n²) — invisible next to the multiplications' recursion.</span></span></li>
   </ul>
 
-  <div class="sec">See it — how the counts diverge with size</div>
+  <div class="sec">See it — seven multiplications, zero error</div>
   <div class="panel">
-    <p class="step" style="margin-top:0">Scalar-multiplication count for an n×n product, n = 2ᵏ, on a log scale. The lines are straight (power laws), and their <i>slopes</i> — 3.0, 2.807, 2.37 — are the exponents. Small gaps early, chasms later.</p>
-    <svg id="chart" viewBox="0 0 680 320" role="img" aria-label="Multiplication count versus matrix size for naive, Strassen and frontier algorithms"></svg>
-    <div class="legend">
-      <span><i class="sw" style="border-color:var(--naive)"></i>naive n³</span>
-      <span><i class="sw" style="border-color:var(--stras)"></i>Strassen n^2.807</span>
-      <span><i class="sw" style="border-color:var(--front)"></i>frontier n^2.37</span>
-    </div>
-    <div class="ctrls">
-      <div class="field"><label>matrix size n = 2ᵏ <b id="nOut">n = 512 (k=9)</b></label><input type="range" id="k" min="1" max="16" value="9" step="1" /></div>
-    </div>
+    <p class="step" style="margin-top:0">Seeded integer matrices, entries 1–9. All seven products are computed with the actual numbers, the four outputs are assembled from them, and the result is compared entry-by-entry against the naive 8-multiplication product.</p>
+    <div class="scheme" id="live"></div>
+    <div class="ctrls"><button class="primary" id="redraw">New matrices</button></div>
     <div class="tally">
-      <div class="stat"><div class="k">naive multiplications</div><div class="v" style="color:var(--naive)" id="cn">—</div></div>
-      <div class="stat"><div class="k">Strassen multiplications</div><div class="v" style="color:var(--stras)" id="cs">—</div></div>
-      <div class="stat"><div class="k">Strassen speedup</div><div class="v g" id="sp">—</div></div>
+      <div class="stat"><div class="k">block multiplications</div><div class="v a" id="s7">—</div></div>
+      <div class="stat"><div class="k">max |Strassen − naive|</div><div class="v g" id="sdiff">—</div></div>
+      <div class="stat"><div class="k">4×4, one recursion level</div><div class="v" id="s44">—</div></div>
     </div>
-    <p class="callout" id="cnote"></p>
+    <p class="callout" id="note1"></p>
   </div>
 
-  <div class="sec">The trick itself — Strassen's 7 products</div>
-  <p class="step">For 2×2 blocks, seven cleverly chosen products of <i>sums</i> of blocks suffice; the four output blocks are then just additions of those seven. No block is multiplied twice.</p>
-  <div class="scheme">
-<b>M₁</b>=(A₁₁+A₂₂)(B₁₁+B₂₂)  <b>M₂</b>=(A₂₁+A₂₂)B₁₁    <b>M₃</b>=A₁₁(B₁₂−B₂₂)<br>
-<b>M₄</b>=A₂₂(B₂₁−B₁₁)      <b>M₅</b>=(A₁₁+A₁₂)B₂₂    <b>M₆</b>=(A₂₁−A₁₁)(B₁₁+B₁₂)<br>
-<b>M₇</b>=(A₁₂−A₂₂)(B₂₁+B₂₂)<br>
-—<br>
-C₁₁=M₁+M₄−M₅+M₇   C₁₂=M₃+M₅   C₂₁=M₂+M₄   C₂₂=M₁−M₂+M₃+M₆
-  </div>
+  <div class="sec">From one saved multiplication to an exponent</div>
+  <p class="step">Run the identity on n×n matrices by splitting into 2×2 blocks of size n/2 and recursing: seven half-size subproblems, plus the 18 block additions. That recurrence is solved by the master theorem — the standard cookbook for divide-and-conquer costs:</p>
+  <div class="mblock math" data-tex="T(n)=7\,T\!\big(\tfrac{n}{2}\big)+O(n^{2})\ \Longrightarrow\ T(n)=\Theta\!\big(n^{\log_2 7}\big),\qquad \log_2 7 = 2.8074\ldots" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="7\,T(n/2)"></span><span class="def">seven recursive half-size products. <span class="n">The branching factor is the whole game: recursing on 8 would give n³ right back.</span></span></li>
+    <li><span class="sym math" data-tex="O(n^2)"></span><span class="def">the 18 block additions at this level. <span class="n">Master theorem: since log₂7 &gt; 2, the leaves beat the per-level work — additions never touch the exponent.</span></span></li>
+    <li><span class="sym math" data-tex="n^{\log_2 7}"></span><span class="def">7 raised to the number of levels: 7^(log₂n) = n^(log₂7). <span class="n">One recursion level on a 4×4 already shows it: 7² = 49 multiplications where the definition uses 4³ = 64.</span></span></li>
+  </ul>
+  <p class="step">The race since 1969: ω ≤ log₂7 ≈ 2.8074 (Strassen) → 2.376 (Coppersmith–Winograd, 1990) → 2.3728639 (Le Gall, 2014) → ≈ 2.3716 (Duan–Wu–Zhou and Williams–Xu–Xu–Zhou refinements, 2023–24). Every step is an upper bound on ω; the only lower bound known is the trivial ω ≥ 2 — you must at least touch all n² entries of each input. Whether ω = 2 is one of the great open problems of computer science.</p>
+
+  <div class="sec">The real object — a tensor and its rank</div>
+  <p class="step">Strip away the code and matrix multiplication is a fixed algebraic object: the tensor ⟨m,n,p⟩ from the vocabulary. A bilinear algorithm with r multiplications is <i>exactly</i> a way of writing that tensor as a sum of r rank-1 pieces — so "how fast can we multiply" is literally "what is the rank of this tensor": Lesson 8's question, one index higher.</p>
+  <div class="mblock math" data-tex="\operatorname{rank}\langle m,n,p\rangle=\min\Big\{r:\ \langle m,n,p\rangle=\textstyle\sum_{i=1}^{r} a_i\otimes b_i\otimes c_i\Big\},\qquad \omega=\inf\big\{\tau:\operatorname{rank}\langle n,n,n\rangle=O(n^{\tau})\big\}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="\langle m,n,p\rangle"></span><span class="def">the matmul tensor for an (m×n)·(n×p) product. <span class="n">An mnp-entry array of 0/1s — fixed, independent of any algorithm.</span></span></li>
+    <li><span class="sym math" data-tex="a_i\otimes b_i\otimes c_i"></span><span class="def">one rank-1 piece = one multiplication: which combination of A-entries, times which combination of B-entries, routed where. <span class="n">The three-index analogue of Lesson 8's σuvᵀ layer.</span></span></li>
+    <li><span class="sym math" data-tex="\inf"></span><span class="def">best exponent over <b>all</b> finite decompositions, at every block size. <span class="n">Any single finite rank bound instantly caps ω — the lever the whole subject turns on.</span></span></li>
+  </ul>
 
   <div class="theorem">
     <p class="lbl">The precise statement</p>
-    <p>Bilinear matrix multiplication of n×n matrices is encoded by the tensor ⟨n,n,n⟩; the minimum number of scalar multiplications in any bilinear algorithm equals that tensor's rank R. A rank-R decomposition of ⟨n,n,n⟩ yields an O(N^{log_n R}) recursive algorithm, so ω = inf over such constructions. Strassen's rank-7 decomposition of ⟨2,2,2⟩ gives ω ≤ log₂7 ≈ 2.807; successive results (Coppersmith–Winograd and descendants) push the best known bound to ω ≈ 2.371. Whether ω = 2 — multiplication essentially as cheap as reading the input — is open.</p>
+    <p>In the bilinear model, an (m×n)·(n×p) matrix product computable with r scalar multiplications exists if and only if rank⟨m,n,p⟩ ≤ r; recursing a rank-r decomposition of ⟨n,n,n⟩ yields an O(N^{log_n r}) algorithm, and ω = inf{τ : rank⟨n,n,n⟩ = O(n^τ)}. Strassen's construction shows rank⟨2,2,2⟩ ≤ 7, and Winograd and Hopcroft–Kerr proved 7 is optimal, so rank⟨2,2,2⟩ = 7 and ω ≤ log₂7 ≈ 2.8074. The current record is ω &lt; 2.3717. Trivially ω ≥ 2, and whether ω = 2 is open.</p>
   </div>
 
+  <div class="sec">See it — the race between exponents and constants</div>
+  <div class="panel">
+    <p class="step" style="margin-top:0">Multiplication counts on a log-log scale, n up to 2¹⁴: power laws are straight lines and their slopes — 3, 2.8074, 2.3716 — are the exponents. The slider c multiplies the fast algorithms' cost (c·n^ω): real implementations pay constants for their cleverness, and the crossover where Strassen actually beats naive moves with c.</p>
+    <svg id="chart" viewBox="0 0 680 320" role="img" aria-label="Multiplication count versus matrix size for naive, Strassen and frontier exponents with adjustable constant"></svg>
+    <div class="legend">
+      <span><i class="sw" style="border-color:var(--naive)"></i>naive n³</span>
+      <span><i class="sw" style="border-color:var(--stras)"></i>Strassen c·n^2.8074</span>
+      <span><i class="sw" style="border-color:var(--front)"></i>frontier c·n^2.3716 (galactic)</span>
+    </div>
+    <div class="ctrls">
+      <div class="field"><label>matrix size n = 2ᵏ <b id="nOut">—</b></label><input type="range" id="kk" min="1" max="14" value="10" step="1" /></div>
+      <div class="field"><label>constant factor c <b id="cOut">—</b></label><input type="range" id="cc" min="1" max="8" value="3" step="0.5" /></div>
+    </div>
+    <div class="tally">
+      <div class="stat"><div class="k">naive n³</div><div class="v" style="color:var(--naive)" id="tn">—</div></div>
+      <div class="stat"><div class="k">strassen c·n^2.8074</div><div class="v" style="color:var(--stras)" id="ts">—</div></div>
+      <div class="stat"><div class="k">strassen vs naive</div><div class="v g" id="tr">—</div></div>
+      <div class="stat"><div class="k">crossover n*</div><div class="v a" id="tx">—</div></div>
+    </div>
+    <p class="callout" id="note2"></p>
+  </div>
+
+  <div class="sec">An AI joins the hunt</div>
+  <p class="step">The tensor view turns algorithm discovery into a discrete search: find r rank-1 pieces summing <i>exactly</i> to ⟨n,n,n⟩. No gradients — a candidate decomposition is either an identity or garbage. For ⟨2,2,2⟩ the answer is settled at 7. For 4×4, the record stood at recursed Strassen's 7² = 49 for 53 years, until AlphaTensor (Fawzi et al., <i>Nature</i> 2022) cast decomposition-finding as a single-player game for the AlphaZero engine (Lesson 34) and found a rank-47 decomposition valid in arithmetic mod 2 — and, in standard arithmetic, improvements such as 4×5 by 5×5 in 76 multiplications, down from 80.</p>
+  <div class="mblock math" data-tex="\operatorname{rank}_{\mathbb{Z}_2}\langle 4,4,4\rangle\le 47\ \Longrightarrow\ \omega_{\mathbb{Z}_2}\le \log_4 47\approx 2.7773\;<\;\log_2 7\approx 2.8074" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="\mathbb{Z}_2"></span><span class="def">arithmetic mod 2 — bits. <span class="n">Tensor rank can depend on the field: the 47 is proven over Z₂ and does not automatically transfer to the reals.</span></span></li>
+    <li><span class="sym math" data-tex="\log_4 47"></span><span class="def">base 4 because recursing ⟨4,4,4⟩ divides n by 4 per level: T(n) = 47·T(n/4) + O(n²). <span class="n">In general, rank⟨k,k,k⟩ ≤ r gives ω ≤ log_k r.</span></span></li>
+    <li><span class="sym math" data-tex="76<80"></span><span class="def">the 4×5 by 5×5 record in standard arithmetic. <span class="n">Rectangular records matter too — recursive constructions can mix shapes.</span></span></li>
+  </ul>
+
   <div class="twist">
-    <p class="lbl">The twist — a computation is a tensor rank, and an AI went looking</p>
-    <p>The deep reframing is that "how fast can you multiply matrices" is literally "what is the <b>rank of the matmul tensor</b>" — a question in algebraic geometry, the same rank idea as the SVD (Lesson 8) lifted to three indices. That turned the search into something a machine could play: <b>AlphaTensor</b> (2022) used the AlphaZero engine — the MCTS-plus-RL core you'll meet in Wing VII (Lesson 34) — to search the space of tensor decompositions as a single-player game, and found new, lower-rank schemes for certain sizes and fields (including a 4×4 improvement over Strassen-squared in mod-2 arithmetic). Two honest caveats keep this grounded. The exotic ω ≈ 2.37 algorithms are <b>galactic</b>: their hidden constants are so enormous they never beat Strassen or naive on any matrix that fits in the universe — they're existence proofs, not code. And even Strassen only overtakes naive past a crossover size and trades multiplications for extra additions and memory, so tuned libraries use it selectively. The frontier is real mathematics; the practical winner is still mostly n³ with good cache behaviour.</p>
+    <p class="lbl">The twist — one finite number moves an infinite asymptote</p>
+    <p>Block recursion is a lever: a single finite discovery — one rank number for one small tensor — lowers the exponent for <b>all</b> n at once. AlphaTensor's 47 is not "4% better than 49"; recursed, it moves the asymptote over Z₂ from n^2.8074 to n^2.7773, for every matrix size forever. That is why people hunt tiny tensors: the ⟨2,2,2⟩ record fell once, in 1969, and the search space is so brutally discrete — exact decompositions, astronomically many candidates, no gradient to follow — that the 4×4 record then stood 53 years until decomposition-finding was reframed as a single-player RL game. An AI system nudging frontier mathematics forward is the bridge to Lesson 42's AlphaProof. The engineering counterweight keeps it honest: each Strassen recursion level weakens the floating-point error bound (you lose classical matmul's entrywise stability guarantee), so speed bought by exponent is partly paid in precision — one more reason production BLAS mostly declines.</p>
   </div>
 
   <div class="vol">
     <p class="lbl">Why this matters · volarixs</p>
-    <p>Matrix multiplication is the hot loop under almost everything you compute — every <code>XᵀX</code>, every covariance and factor-model fit, every backtest that projects a big panel. In practice the tuned BLAS underneath NumPy already exploits these ideas (blocking, and Strassen-style kernels for large sizes), which is why the cost scales closer to n^2.8 than n³ at scale and why matrix shape, not just size, drives runtime.</p>
-    <p>The connective thread to the rest of the wing: <b>rank governs cost</b> everywhere — low SVD rank compresses a matrix (Lesson 8), low tensor rank compresses the <i>act</i> of multiplying (here). And AlphaTensor is a clean preview of your own thesis — RL discovering mathematics — that lands fully in the reinforcement-learning wing.</p>
+    <p>The Cross-Matrix rebuild <i>is</i> this lesson's object: <code>einsum('at,bt->ab')</code> on the 500×2,500 returns panel is a (500×2,500)·(2,500×500) product — 500·500·2,500 = 6.25×10⁸ multiply-adds per rebuild — and <code>pca_factors</code> runs its eigendecomposition on top of that output. Knowing what a matmul fundamentally costs is knowing what your hottest loop costs.</p>
+    <p>The operational lesson is diagnosing when cost is <b>exponent-bound</b> versus <b>memory-bound</b>. At 500×2,500 it is memory-bound: tiled classical BLAS — the n³ algorithm with cache-aware blocking — beats Strassen there on constants, traffic, and error bounds, so intraday rebuilds should stay on it, and they do. The exponent starts to matter orders of magnitude past desk size; this lesson is what that frontier is, not a to-do for the stack.</p>
   </div>
 
   <div class="sec">Check yourself</div>
-  <div class="q" id="q1"><p class="stem">Multiplying two n×n matrices by the definition costs:</p><div class="opts"></div><p class="fb"></p></div>
-  <div class="q" id="q2"><p class="stem">Strassen multiplies 2×2 blocks with 7 products instead of 8, giving an exponent of:</p><div class="opts"></div><p class="fb"></p></div>
-  <div class="q" id="q3"><p class="stem">The matrix-multiplication exponent ω:</p><div class="opts"></div><p class="fb"></p></div>
-  <div class="q" id="q4"><p class="stem">Faster matrix-multiplication algorithms correspond to:</p><div class="opts"></div><p class="fb"></p></div>
-  <div class="q" id="q5"><p class="stem">AlphaTensor found new algorithms by:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q1"><p class="stem">Strassen swaps 8 block multiplications for 7, at the price of 18 extra block additions. Why does that win asymptotically?</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q2"><p class="stem">Solve the recurrence T(n) = 7 T(n/2) + O(n²).</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q3"><p class="stem">In the bilinear model, the minimum number of scalar multiplications needed for a matrix product equals:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q4"><p class="stem">AlphaTensor's headline "47" means, precisely:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q5"><p class="stem">Your BLAS multiplies Cross-Matrix-sized panels classically, not with Strassen. Why is that the right call?</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q6"><p class="stem">The Cross-Matrix build — einsum('at,bt->ab') on a 500-asset × 2,500-day panel — costs about:</p><div class="opts"></div><p class="fb"></p></div>
 
-  <div class="checkRow"><button class="primary" id="check">Check answers</button><span class="scoreOut" id="scoreOut"></span><span class="hint" id="hint">Answer all five first.</span></div>
-  <div class="done" id="done">Wing I complete — the substrate is laid. Next: Wing II's remaining engine, backprop as autodiff.</div>
+  <div class="checkRow"><button class="primary" id="check">Check answers</button><span class="scoreOut" id="scoreOut"></span><span class="hint" id="hint">Answer all six first.</span></div>
+  <div class="done" id="done">Wing I complete — the substrate is laid. Next: backprop as autodiff — the chain rule as a computation graph.</div>
 </div>
 
 <script>
@@ -156,72 +202,116 @@ C₁₁=M₁+M₄−M₅+M₇   C₁₂=M₃+M₅   C₂₁=M₂+M₄   C₂₂=
 if(!window.storage){window.storage={async get(k){const v=localStorage.getItem(k);if(v==null)throw new Error('missing');return{key:k,value:v}},async set(k,v){localStorage.setItem(k,v);return{key:k,value:v}},async delete(k){localStorage.removeItem(k);return{key:k,deleted:true}},async list(p){const ks=[];for(let i=0;i<localStorage.length;i++){const kk=localStorage.key(i);if(!p||kk.startsWith(p))ks.push(kk)}return{keys:ks}}};}
 function renderMath(){document.querySelectorAll('.math').forEach(el=>{const tex=el.getAttribute('data-tex');if(!tex||el.dataset.done)return;try{if(window.katex){katex.render(tex,el,{displayMode:el.dataset.display==='1',throwOnError:false});el.dataset.done='1';}else el.textContent=tex;}catch(e){el.textContent=tex;}});}
 
-const KMAX=16, L2_7=Math.log2(7), OMEGA=2.371;
-function fmt(x){ // large-number formatting
-  if(x<1e4)return Math.round(x).toLocaleString();
-  const e=Math.floor(Math.log10(x));return (x/Math.pow(10,e)).toFixed(2)+'×10'+sup(e);
-}
-function sup(n){const m={'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};return String(n).split('').map(c=>m[c]||c).join('');}
+/* deterministic rng — all randomness flows through here */
+function mulberry32(seed){let a=seed>>>0;return function(){a|=0;a=(a+0x6D2B79F5)|0;let t=Math.imul(a^(a>>>15),1|a);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296;}}
+function randn(rng){let u=0,v=0;while(!u)u=rng();while(!v)v=rng();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+const rng=mulberry32(112);
 
-function chart(kmark){
-  const W=680,H=320,padL=40,padR=14,padT=14,padB=30,iw=W-padL-padR,ih=H-padT-padB;
-  // y in log10 of count; naive=8^k, strassen=7^k, frontier=2^(omega*k)
-  const ymax=KMAX*Math.log10(8), X=k=>padL+(k/KMAX)*iw, Y=lg=>padT+(1-lg/ymax)*ih;
-  const curve=(base)=>{let p='';for(let k=0;k<=KMAX;k++){const lg=k*Math.log10(base);p+=(k?'L':'M')+X(k).toFixed(1)+' '+Y(lg).toFixed(1)+' ';}return p;};
-  const curveOmega=()=>{let p='';for(let k=0;k<=KMAX;k++){const lg=OMEGA*k*Math.log10(2);p+=(k?'L':'M')+X(k).toFixed(1)+' '+Y(lg).toFixed(1)+' ';}return p;};
+const L27=Math.log2(7), OM=2.3716, KX=14;
+function sup(n){const m={'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};return String(n).split('').map(c=>m[c]||c).join('');}
+function fmt(x){if(x<1e4)return Math.round(x).toLocaleString();const e=Math.floor(Math.log10(x));return (x/Math.pow(10,e)).toFixed(2)+'×10'+sup(e);}
+
+/* ---------- interactive 1: Strassen live on seeded integers ---------- */
+let MA,MB;
+const ri=()=>1+Math.floor(rng()*9);
+function strassen2(A,B){const[a11,a12,a21,a22]=A,[b11,b12,b21,b22]=B;
+  const M=[(a11+a22)*(b11+b22),(a21+a22)*b11,a11*(b12-b22),a22*(b21-b11),(a11+a12)*b22,(a21-a11)*(b11+b12),(a12-a22)*(b21+b22)];
+  return{M,C:[M[0]+M[3]-M[4]+M[6],M[2]+M[4],M[1]+M[3],M[0]-M[1]+M[2]+M[5]]};}
+function naive2(A,B){const[a11,a12,a21,a22]=A,[b11,b12,b21,b22]=B;
+  return[a11*b11+a12*b21,a11*b12+a12*b22,a21*b11+a22*b21,a21*b12+a22*b22];}
+function drawMats(){MA=[ri(),ri(),ri(),ri()];MB=[ri(),ri(),ri(),ri()];render1();}
+function render1(){
+  const{M,C}=strassen2(MA,MB),N=naive2(MA,MB);
+  const d=Math.max(...C.map((c,i)=>Math.abs(c-N[i])));
+  const[a11,a12,a21,a22]=MA,[b11,b12,b21,b22]=MB;
+  const p3=x=>String(x).padStart(3),p4=x=>String(x).padStart(4),sub='₁₂₃₄₅₆₇';
+  const F=[`(${a11}+${a22})(${b11}+${b22})`,`(${a21}+${a22})·${b11}`,`${a11}·(${b12}−${b22})`,`${a22}·(${b21}−${b11})`,`(${a11}+${a12})·${b22}`,`(${a21}−${a11})(${b11}+${b12})`,`(${a12}−${a22})(${b21}+${b22})`];
+  const w=Math.max(...F.map(f=>f.length));
+  const lines=[
+    `A = │${a11} ${a12}│   B = │${b11} ${b12}│   Strassen C = │${p3(C[0])} ${p3(C[1])}│   naive C = │${p3(N[0])} ${p3(N[1])}│`,
+    `    │${a21} ${a22}│       │${b21} ${b22}│                │${p3(C[2])} ${p3(C[3])}│             │${p3(N[2])} ${p3(N[3])}│`,
+    ``];
+  for(let i=0;i<7;i+=2){
+    let r=`M${sub[i]} = ${F[i].padEnd(w)} = <b>${p4(M[i])}</b>`;
+    if(i+1<7)r+=`    M${sub[i+1]} = ${F[i+1].padEnd(w)} = <b>${p4(M[i+1])}</b>`;
+    lines.push(r);
+  }
+  lines.push(``);
+  const cf=['M₁+M₄−M₅+M₇','M₃+M₅','M₂+M₄','M₁−M₂+M₃+M₆'];
+  lines.push(`C₁₁ = ${cf[0].padEnd(11)} = <b>${p4(C[0])}</b>    C₁₂ = ${cf[1].padEnd(11)} = <b>${p4(C[1])}</b>`);
+  lines.push(`C₂₁ = ${cf[2].padEnd(11)} = <b>${p4(C[2])}</b>    C₂₂ = ${cf[3].padEnd(11)} = <b>${p4(C[3])}</b>`);
+  document.getElementById('live').innerHTML=lines.join('\n');
+  document.getElementById('s7').textContent='7 vs 8';
+  document.getElementById('sdiff').textContent=String(d);
+  document.getElementById('s44').textContent=(7**2)+' vs '+(4**3);
+  document.getElementById('note1').textContent=`Exact agreement: max|Strassen − naive| = ${d} on these integers — an identity, not an approximation. One level up, a 4×4 product as 2×2 blocks of 2×2s uses 7² = ${7**2} block multiplications against ${4**3} naive, and every further recursion level multiplies the saving by another 8/7.`;
+}
+document.getElementById('redraw').onclick=drawMats;
+
+/* ---------- interactive 2: the exponent race ---------- */
+function chart2(kmark,c){
+  const W=680,H=320,padL=44,padR=14,padT=14,padB=30,iw=W-padL-padR,ih=H-padT-padB;
+  const ymax=3*KX*Math.log10(2)+0.6, lg2=Math.log10(2), lgc=Math.log10(c);
+  const X=k=>padL+(k/KX)*iw, Y=lg=>padT+(1-Math.max(0,lg)/ymax)*ih;
+  const path=(slope,off)=>{let p='';for(let k=0;k<=KX;k++){p+=(k?'L':'M')+X(k).toFixed(1)+' '+Y(off+slope*k*lg2).toFixed(1)+' ';}return p;};
   let s='';
-  // gridlines every 3 decades
-  for(let dd=0;dd<=ymax;dd+=3){const y=Y(dd);s+=`<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="var(--hair)"/><text x="${padL-4}" y="${y+3}" text-anchor="end" font-family="var(--mono)" font-size="9" fill="var(--faint)">10${sup(dd)}</text>`;}
+  for(let dd=0;dd<=12;dd+=3){const y=Y(dd);s+=`<line x1="${padL}" y1="${y.toFixed(1)}" x2="${W-padR}" y2="${y.toFixed(1)}" stroke="var(--hair)"/><text x="${padL-4}" y="${(y+3).toFixed(1)}" text-anchor="end" font-family="var(--mono)" font-size="9" fill="var(--faint)">10${sup(dd)}</text>`;}
   s+=`<line x1="${padL}" y1="${padT+ih}" x2="${W-padR}" y2="${padT+ih}" stroke="var(--hair2)"/>`;
-  s+=`<text x="${padL}" y="${H-8}" font-family="var(--mono)" font-size="9" fill="var(--faint)">n=2</text>`;
-  s+=`<text x="${W-padR}" y="${H-8}" text-anchor="end" font-family="var(--mono)" font-size="9" fill="var(--faint)">n=2¹⁶</text>`;
-  // marker
-  const xm=X(kmark);s+=`<line x1="${xm}" y1="${padT}" x2="${xm}" y2="${padT+ih}" stroke="var(--accent)" stroke-dasharray="4 4" opacity="0.6"/>`;
-  s+=`<path d="${curveOmega()}" fill="none" stroke="var(--front)" stroke-width="2"/>`;
-  s+=`<path d="${curve(7)}" fill="none" stroke="var(--stras)" stroke-width="2"/>`;
-  s+=`<path d="${curve(8)}" fill="none" stroke="var(--naive)" stroke-width="2"/>`;
-  // dots at marker
-  [['8','var(--naive)'],['7','var(--stras)']].forEach(([b,c])=>{const lg=kmark*Math.log10(+b);s+=`<circle cx="${xm.toFixed(1)}" cy="${Y(lg).toFixed(1)}" r="3.4" fill="${c}"/>`;});
-  const lgo=OMEGA*kmark*Math.log10(2);s+=`<circle cx="${xm.toFixed(1)}" cy="${Y(lgo).toFixed(1)}" r="3.4" fill="var(--front)"/>`;
+  s+=`<text x="${padL}" y="${H-8}" font-family="var(--mono)" font-size="9" fill="var(--faint)">n=1</text>`;
+  s+=`<text x="${W-padR}" y="${H-8}" text-anchor="end" font-family="var(--mono)" font-size="9" fill="var(--faint)">n=2¹⁴</text>`;
+  const kstar=Math.log2(Math.pow(c,1/(3-L27)));
+  if(kstar>0.05&&kstar<=KX){const xs=X(kstar);s+=`<line x1="${xs.toFixed(1)}" y1="${padT}" x2="${xs.toFixed(1)}" y2="${padT+ih}" stroke="var(--series)" stroke-dasharray="3 4" opacity="0.7"/><circle cx="${xs.toFixed(1)}" cy="${Y(3*kstar*lg2).toFixed(1)}" r="3.6" fill="var(--series)"/><text x="${(xs+5).toFixed(1)}" y="${padT+12}" font-family="var(--mono)" font-size="9" fill="var(--series)">crossover</text>`;}
+  const xm=X(kmark);s+=`<line x1="${xm.toFixed(1)}" y1="${padT}" x2="${xm.toFixed(1)}" y2="${padT+ih}" stroke="var(--accent)" stroke-dasharray="4 4" opacity="0.6"/>`;
+  s+=`<path d="${path(OM,lgc)}" fill="none" stroke="var(--front)" stroke-width="2"/>`;
+  s+=`<path d="${path(L27,lgc)}" fill="none" stroke="var(--stras)" stroke-width="2"/>`;
+  s+=`<path d="${path(3,0)}" fill="none" stroke="var(--naive)" stroke-width="2"/>`;
+  [[3,0,'var(--naive)'],[L27,lgc,'var(--stras)'],[OM,lgc,'var(--front)']].forEach(([sl,off,col])=>{s+=`<circle cx="${xm.toFixed(1)}" cy="${Y(off+sl*kmark*lg2).toFixed(1)}" r="3.4" fill="${col}"/>`;});
   document.getElementById('chart').innerHTML=s;
 }
-function update(){
-  const k=+document.getElementById('k').value,n=Math.pow(2,k);
+function update2(){
+  const k=+document.getElementById('kk').value,c=+document.getElementById('cc').value,n=Math.pow(2,k);
   document.getElementById('nOut').textContent=`n = ${n.toLocaleString()} (k=${k})`;
-  const naive=Math.pow(8,k),stras=Math.pow(7,k),sp=Math.pow(8/7,k);
-  document.getElementById('cn').textContent=fmt(naive);
-  document.getElementById('cs').textContent=fmt(stras);
-  document.getElementById('sp').textContent=sp.toFixed(sp<10?2:1)+'×';
-  chart(k);
-  document.getElementById('cnote').textContent = k<=4
-    ? `At n=${n}, Strassen saves only ~${sp.toFixed(2)}× in multiplications — and its extra additions plus recursion overhead often make naive faster here. The exponents barely separate at small n.`
-    : `At n=${n}, Strassen's exponent (2.807 vs 3.0) already yields ~${sp.toFixed(1)}× fewer multiplications, and the gap keeps widening — that's the whole payoff of a smaller exponent. The frontier line (2.37) sits below both, but its real-world constants are astronomically large.`;
+  document.getElementById('cOut').textContent='c = '+c.toFixed(1);
+  const naive=Math.pow(n,3),fast=c*Math.pow(n,L27),nstar=Math.pow(c,1/(3-L27)),ratio=naive/fast;
+  document.getElementById('tn').textContent=fmt(naive);
+  document.getElementById('ts').textContent=fmt(fast);
+  document.getElementById('tr').textContent=ratio>=1?ratio.toFixed(2)+'× fewer':(1/ratio).toFixed(2)+'× more';
+  document.getElementById('tx').textContent='n ≈ '+Math.round(nstar).toLocaleString();
+  chart2(k,c);
+  const note=document.getElementById('note2');
+  if(c<=1)note.textContent=`With c = 1 the smaller exponent wins from n = 1 — but no real implementation has c = 1: the 18 block additions, worse cache behaviour, and recursion overhead all feed the constant. Slide c up for the honest picture.`;
+  else if(n<nstar)note.textContent=`At n = ${n.toLocaleString()} with constant c = ${c.toFixed(1)}, Strassen-style costs ${fmt(fast)} against ${fmt(naive)} naive — ${(fast/naive).toFixed(2)}× more. The crossover sits at n* ≈ ${Math.round(nstar).toLocaleString()}: below it constants and memory traffic win, which is why tuned BLAS keeps tiled classical matmul at Cross-Matrix sizes.`;
+  else note.textContent=`At n = ${n.toLocaleString()} the exponent has taken over: ${fmt(fast)} vs ${fmt(naive)} — ${ratio.toFixed(2)}× fewer multiplications, and the gap only widens. Two honesty notes: each recursion level weakens Strassen's floating-point error bound, so libraries that do ship it cap the depth; and the n^2.3716 frontier line is "galactic" — its true constant is astronomically beyond this slider.`;
 }
-document.getElementById('k').addEventListener('input',update);
+document.getElementById('kk').addEventListener('input',update2);
+document.getElementById('cc').addEventListener('input',update2);
 
+/* ---------- retrieval ---------- */
 const QS={
-  q1:{opts:["O(n²)","O(n³) — n² dot products of length n","O(n log n)","O(2ⁿ)"],a:1,
-    fb:"Each of the n² output entries is a length-n dot product, so the definition costs n·n² = n³ scalar multiplications. Everything faster is an algorithm, not the definition."},
-  q2:{opts:["exactly 2","log₂7 ≈ 2.807","2.371","3 (no improvement)"],a:1,
-    fb:"Recursing on 7 subproblems of half the size gives T(n)=7T(n/2)+O(n²) = O(n^{log₂7}), and log₂7 ≈ 2.807 — the first sub-cubic exponent."},
-  q3:{opts:["is known exactly to be 2.5","has best-known bound ≈ 2.37, and whether ω = 2 is an open problem","was proven to equal 3","is irrelevant to real computers"],a:1,
-    fb:"ω is the infimum of achievable exponents; the best-known upper bound is ≈ 2.371, and whether it can reach 2 (as cheap as reading the input) remains open."},
-  q4:{opts:["using more memory only","lower-rank decompositions of the matrix-multiplication tensor","larger block sizes","higher-precision arithmetic"],a:1,
-    fb:"A bilinear matmul algorithm is a decomposition of the ⟨n,n,n⟩ tensor; its rank is the multiplication count, so a lower-rank decomposition is a faster algorithm — the same rank idea as SVD, in three indices."},
-  q5:{opts:["brute-forcing all algorithms","reinforcement learning (AlphaZero-style search) over tensor decompositions","asking a large language model","measuring GPU timings"],a:1,
-    fb:"AlphaTensor cast tensor decomposition as a single-player game and used the AlphaZero MCTS+RL engine (Wing VII) to find new low-rank schemes — though many fast algorithms remain 'galactic', impractical in constants."}
+  q1:{opts:["It doesn't — the 18 additions exactly cancel the saved multiplication","Additions are free in floating-point hardware","Only multiplications recurse: the tree branches 7 ways instead of 8, while all the additions cost O(n²) per level and are absorbed by the recurrence","The seven products can run in parallel; the eight cannot"],a:2,
+    fb:"Block multiplications are the recursive calls — they set the branching factor, 7 vs 8, and the branching factor is what an exponent is. The 18 block additions cost O(n²) at each level, and T(n)=7T(n/2)+O(n²) absorbs them: they inflate the constant, never the exponent."},
+  q2:{opts:["Θ(n^log₂7) ≈ n^2.8074 — the leaves dominate (master theorem, log₂7 > 2)","Θ(n² log n) — the two terms balance","Θ(n²) — the additive work dominates","Θ(n³) — recursion cannot beat the definition"],a:0,
+    fb:"Master theorem with a=7, b=2: compare n^{log₂7} ≈ n^{2.8074} against the per-level O(n²). Since log₂7 > 2, the leaf count 7^{log₂n} = n^{log₂7} dominates and T(n) = Θ(n^{log₂7})."},
+  q3:{opts:["the number of nonzero entries in the product","the number of additions in the best schedule","the condition number of the map","the rank of the matmul tensor ⟨m,n,p⟩ — the fewest rank-1 terms summing to it"],a:3,
+    fb:"A bilinear algorithm with r multiplications is exactly a rank-r decomposition of ⟨m,n,p⟩, and vice versa — minimal multiplication count = tensor rank. For ⟨2,2,2⟩ that rank is exactly 7: Strassen's construction meets the Winograd / Hopcroft–Kerr lower bound."},
+  q4:{opts:["4×4 real-matrix multiplication now costs 47 multiplications in every arithmetic","in arithmetic mod 2, rank⟨4,4,4⟩ ≤ 47 — beating recursed Strassen's 7² = 49 and giving ω(Z₂) ≤ log₄47 ≈ 2.7773","ω = 2.3716 was discovered by reinforcement learning","47 additions suffice for any 4×4 product"],a:1,
+    fb:"The rank-47 decomposition is valid over Z₂ (arithmetic mod 2), where it beats the 49 of one recursed Strassen level; recursing it gives ω(Z₂) ≤ log₄47 ≈ 2.7773. In standard arithmetic AlphaTensor's wins were elsewhere — e.g. 4×5 by 5×5 in 76 multiplications, down from 80."},
+  q5:{opts:["Strassen requires power-of-2 dimensions","Strassen is numerically exact only for integers","below a crossover in the hundreds-to-thousands, Strassen's constants and extra memory traffic lose to tiled classical matmul — and its error bound degrades with each recursion level","the asymptotic gain was never actually proven"],a:2,
+    fb:"Strassen's saving is asymptotic. At desk sizes the 18 additions, extra workspace, and worse cache behaviour push its real crossover into the hundreds-to-thousands, and each recursion level weakens the floating-point error bound. Tiled classical n³ wins where you live; the exponent matters far past that."},
+  q6:{opts:["500·500·2,500 ≈ 6.25×10⁸ multiply-adds: each of the 500² = 250,000 output cells is a length-2,500 dot product","500·2,500 ≈ 1.25×10⁶ — one pass over the panel","2,500³ ≈ 1.6×10¹⁰ — days cubed","500³ ≈ 1.25×10⁸ — assets cubed"],a:0,
+    fb:"The output is 500×500 and each cell is a dot product over 2,500 days: 250,000 × 2,500 = 6.25×10⁸ multiply-adds — a (500×2,500)·(2,500×500) product. At this size the binding constraint is memory traffic, not the exponent."}
 };
-const sel={q1:null,q2:null,q3:null,q4:null,q5:null};let revealed=false;
+const sel={q1:null,q2:null,q3:null,q4:null,q5:null,q6:null};let revealed=false;
 Object.keys(QS).forEach(id=>{const holder=document.querySelector('#'+id+' .opts');QS[id].opts.forEach((txt,i)=>{const b=document.createElement('button');b.className='opt';b.textContent=String.fromCharCode(65+i)+'.  '+txt;b.onclick=()=>{if(revealed)return;sel[id]=i;[...holder.children].forEach((c,ci)=>c.classList.toggle('sel',ci===i));document.getElementById('hint').style.display='none';};holder.appendChild(b);});});
 document.getElementById('check').onclick=async()=>{
   if(revealed)return;if(Object.values(sel).some(v=>v===null)){document.getElementById('hint').style.display='inline';return;}
   revealed=true;let score=0;
   Object.keys(QS).forEach(id=>{const a=QS[id].a,holder=document.querySelector('#'+id+' .opts'),fb=document.querySelector('#'+id+' .fb');[...holder.children].forEach((c,ci)=>{c.style.cursor='default';c.classList.remove('sel');if(ci===a)c.classList.add('correct');else if(ci===sel[id])c.classList.add('wrong');});if(sel[id]===a)score++;fb.textContent=QS[id].fb;fb.classList.add('show');});
   document.getElementById('check').style.opacity='0.5';document.getElementById('check').textContent='Checked';
-  document.getElementById('scoreOut').textContent=score+' / 5';document.getElementById('done').classList.add('show');
-  try{await window.storage.set('mfs:lesson12',JSON.stringify({done:true,retrieval:score+'/5',ts:Date.now()}),false);}catch(e){}
+  document.getElementById('scoreOut').textContent=score+' / 6';document.getElementById('done').classList.add('show');
+  try{await window.storage.set('mfs:lesson12',JSON.stringify({done:true,retrieval:score+'/6',ts:Date.now()}),false);}catch(e){}
 };
-function boot(){renderMath();update();}
+function boot(){renderMath();drawMats();update2();}
 if(window.katex)boot();else window.addEventListener('load',boot);
 (async()=>{try{const r=await window.storage.get('mfs:lesson12',false);if(r&&r.value){const v=JSON.parse(r.value);if(v.done){const c=document.getElementById('chip');c.classList.add('show');c.textContent='completed · '+v.retrieval;}}}catch(e){}})();
 </script>
