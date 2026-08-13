@@ -8,27 +8,15 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
 <style>
   :root{
-    --paper:#FAFAF6; --ink:#1A1C22; --muted:#63676E; --faint:#9A9EA4;
-    --hair:#E4E3DB; --hair2:#D4D3CA; --panel:#FFFFFF;
-    --accent:#24507A; --accent-bg:#EAF0F6; --series:#B07A2E;
-    --miss:#B23A3A; --ok:#2F6B4F; --ok-bg:#E9F1EC;
-    --vol:#8A5A2B; --vol-bg:#F6EFE6;
-    --serif:Iowan Old Style,Palatino,"Palatino Linotype",Georgia,serif;
-    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    --paper:#FAFAF6;--ink:#1A1C22;--muted:#63676E;--faint:#9A9EA4;--hair:#E4E3DB;--hair2:#D4D3CA;--panel:#FFFFFF;
+    --accent:#24507A;--accent-bg:#EAF0F6;--series:#B07A2E;--miss:#B23A3A;--ok:#2F6B4F;--ok-bg:#E9F1EC;
+    --vol:#8A5A2B;--vol-bg:#F6EFE6;--serif:Iowan Old Style,Palatino,Georgia,serif;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
   }
-  @media (prefers-color-scheme: dark){
-    :root{
-      --paper:#15161A; --ink:#E9E8E2; --muted:#A2A6AC; --faint:#71757B;
-      --hair:#2A2C31; --hair2:#3A3C42; --panel:#1B1D22;
-      --accent:#7FB0E0; --accent-bg:#1E2A38; --series:#D9A85E;
-      --miss:#E07A7A; --ok:#7FC49F; --ok-bg:#1C2A22;
-      --vol:#D9A066; --vol-bg:#2A2115;
-    }
-  }
+  @media (prefers-color-scheme:dark){:root{--paper:#15161A;--ink:#E9E8E2;--muted:#A2A6AC;--faint:#71757B;--hair:#2A2C31;--hair2:#3A3C42;--panel:#1B1D22;--accent:#7FB0E0;--accent-bg:#1E2A38;--series:#D9A85E;--miss:#E07A7A;--ok:#7FC49F;--ok-bg:#1C2A22;--vol:#D9A066;--vol-bg:#2A2115;}}
   *{box-sizing:border-box}
   body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.62;-webkit-font-smoothing:antialiased}
-  .wrap{max-width:740px;margin:0 auto;padding:32px 24px 60px}
+  .wrap{max-width:750px;margin:0 auto;padding:32px 24px 60px}
   .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 6px}
   h1{font-family:var(--serif);font-weight:600;font-size:27px;line-height:1.22;margin:0 0 6px;letter-spacing:-.01em}
   .chip{display:none;font-family:var(--mono);font-size:11px;letter-spacing:.05em;color:var(--ok);border:1px solid var(--ok);border-radius:20px;padding:3px 10px;vertical-align:middle;margin-left:10px}
@@ -40,45 +28,28 @@
   .levels .pill b{color:var(--accent);font-weight:700;letter-spacing:.03em}
   p.lead{font-size:16px;margin:0 0 22px}
   p.lead b{font-weight:600}
-  .sec{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:34px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--hair)}
+  .sec{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:36px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--hair)}
   .mblock{margin:16px 0;overflow-x:auto}
   .glo{list-style:none;padding:0;margin:14px 0 0}
   .glo li{display:flex;gap:14px;padding:9px 0;border-top:1px solid var(--hair);align-items:baseline}
   .glo li:first-child{border-top:none}
-  .glo .sym{flex:0 0 118px;text-align:right;padding-top:2px}
+  .glo .sym{flex:0 0 92px;text-align:right;padding-top:2px}
   .glo .def{font-size:14.5px}
   .glo .def .n{color:var(--muted)}
   .step{font-size:14.5px;color:var(--muted);margin:10px 0}
-  .rule{background:var(--accent-bg);border-radius:10px;padding:12px 16px;margin:14px 0;font-size:14px}
-  .rule .rl{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
   .panel{background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:20px;margin:14px 0}
   .ctrls{display:flex;flex-wrap:wrap;gap:16px 26px;align-items:flex-end;margin:0 0 12px}
-  .field{display:flex;flex-direction:column;gap:6px;min-width:150px;flex:1}
+  .field{display:flex;flex-direction:column;gap:6px;min-width:220px;flex:1}
   .field label{font-size:12px;color:var(--muted);font-family:var(--mono);letter-spacing:.03em;display:flex;justify-content:space-between}
   .field label b{color:var(--ink);font-weight:600}
   input[type=range]{width:100%;accent-color:var(--accent);height:20px}
-  .btns{display:flex;flex-wrap:wrap;gap:8px;margin:2px 0 12px}
-  button.act{font-family:var(--sans);font-size:14px;padding:8px 14px;border-radius:8px;border:1px solid var(--hair2);background:var(--panel);color:var(--ink);cursor:pointer}
-  button.act:hover{border-color:var(--accent);color:var(--accent)}
-  button.act.primary{background:var(--accent);border-color:var(--accent);color:#fff}
-  button.act.primary:hover{color:#fff;opacity:.92}
   svg{max-width:100%;height:auto;display:block}
-  .legend{display:flex;flex-wrap:wrap;gap:16px;margin:10px 0 2px;font-size:12.5px;color:var(--muted);font-family:var(--mono)}
-  .legend span{display:inline-flex;align-items:center;gap:6px}
-  .dot{width:9px;height:9px;border-radius:50%;display:inline-block}
-  .matwrap{display:flex;flex-wrap:wrap;gap:18px;align-items:center;margin:6px 0 4px}
-  .mtx{display:inline-grid;grid-template-columns:repeat(2,minmax(64px,auto));gap:2px;border-left:2px solid var(--ink);border-right:2px solid var(--ink);padding:6px 10px;font-family:var(--mono);font-size:14px}
-  .mtx div{text-align:right;padding:2px 8px}
-  .mtx .lbl{grid-column:1 / span 2;text-align:center;font-size:11px;color:var(--muted);border:none;letter-spacing:.08em}
-  .eig{font-family:var(--mono);font-size:13px;color:var(--muted);line-height:1.7}
-  .eig b{color:var(--ink)}
-  .eig .kap{color:var(--series)}
   .tally{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 2px}
-  .stat{flex:1;min-width:120px;background:var(--paper);border-radius:9px;padding:9px 12px}
+  .stat{flex:1;min-width:118px;background:var(--paper);border-radius:9px;padding:9px 12px}
   .stat .k{font-size:11px;font-family:var(--mono);letter-spacing:.04em;color:var(--muted);text-transform:uppercase}
-  .stat .v{font-size:19px;font-weight:600;font-family:var(--mono);margin-top:2px}
-  .stat .v.a{color:var(--accent)} .stat .v.s{color:var(--series)}
-  .callout{font-size:14px;color:var(--muted);border-left:2px solid var(--accent);padding:2px 0 2px 14px;margin:16px 0 2px}
+  .stat .v{font-size:18px;font-weight:600;font-family:var(--mono);margin-top:2px}
+  .stat .v.a{color:var(--accent)}.stat .v.g{color:var(--ok)}.stat .v.s{color:var(--series)}
+  .callout{font-size:14px;color:var(--muted);border-left:2px solid var(--accent);padding:2px 0 2px 14px;margin:16px 0 2px;min-height:1.4em}
   .theorem{background:var(--accent-bg);border-radius:12px;padding:18px 20px;margin:16px 0}
   .theorem .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
   .theorem p{font-family:var(--serif);font-size:16px;line-height:1.55;margin:0}
@@ -87,8 +58,7 @@
   .twist p{margin:0;font-size:14.6px}
   .vol{background:var(--vol-bg);border:1px solid var(--vol);border-radius:12px;padding:18px 20px;margin:16px 0}
   .vol .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:var(--vol);margin:0 0 8px}
-  .vol p{margin:0 0 10px;font-size:14.8px}
-  .vol p:last-child{margin-bottom:0}
+  .vol p{margin:0 0 10px;font-size:14.8px}.vol p:last-child{margin-bottom:0}
   .vol code{font-family:var(--mono);font-size:13px;background:rgba(138,90,43,.12);padding:1px 5px;border-radius:4px}
   .q{border:1px solid var(--hair);border-radius:12px;padding:16px 18px;margin:12px 0;background:var(--panel)}
   .q .stem{font-size:15px;font-weight:500;margin:0 0 12px}
@@ -98,237 +68,297 @@
   .opt.sel{border-color:var(--accent);background:var(--accent-bg)}
   .opt.correct{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
   .opt.wrong{background:#F7ECEC;border-color:var(--miss);color:var(--miss)}
-  @media (prefers-color-scheme: dark){ .opt.wrong{background:#2E1E1E} }
+  @media (prefers-color-scheme:dark){.opt.wrong{background:#2E1E1E}}
   .fb{font-size:13.5px;color:var(--muted);margin:10px 0 0;line-height:1.5;display:none}
   .fb.show{display:block}
-  .checkRow{display:flex;align-items:center;gap:14px;margin:16px 0 0;flex-wrap:wrap}
+  .checkRow{display:flex;align-items:center;gap:14px;margin:18px 0 0;flex-wrap:wrap}
   .hint{font-size:13px;color:var(--miss);display:none}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-family:var(--sans);font-size:14px;padding:8px 14px;border-radius:8px;border:1px solid var(--accent);cursor:pointer}
+  .scoreOut{font-family:var(--mono);font-size:14px;font-weight:600}
   .done{display:none;align-items:center;gap:10px;background:var(--ok-bg);color:var(--ok);border-radius:10px;padding:12px 16px;font-size:14px;margin:14px 0 0}
   .done.show{display:flex}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <p class="eyebrow">Lesson 05 · Linear models &amp; ML</p>
+  <p class="eyebrow">Lesson 05 · Wing 0 — statistical &amp; linear-algebra foundations</p>
   <h1>Least squares in matrix form: XᵀX, the normal equations, and ridge<span class="chip" id="chip"></span></h1>
-  <p class="sub">One gradient turns fitting a model into a matrix equation — and XᵀX runs the show.</p>
+  <p class="sub">One orthogonality condition turns a factor fit into a matrix equation — and the eigenvalues of XᵀX decide whether you can trust the answer.</p>
   <div class="levels">
     <span class="lk">Level</span>
-    <span class="pill"><b>US</b> Graduate · ML / linear models</span>
-    <span class="pill"><b>FR</b> Master M2 · ENSAE 3A</span>
+    <span class="pill"><b>US</b> Graduate · ML</span>
+    <span class="pill"><b>FR</b> M2 · ENSAE 3A</span>
   </div>
 
-  <p class="lead">Stack the data: an <b>n×p design matrix X</b> (rows = observations, columns = features) and a response vector <b>y</b>. A linear model predicts ŷ = Xβ, and least squares asks for the β minimising the squared error ‖y − Xβ‖². Differentiate once and the answer collapses to a single matrix equation whose entire behaviour — stability, precision, when it fails — is governed by the <b>p×p Gram matrix XᵀX</b>.</p>
+  <p class="lead">A trading book made or lost money on each of 250 days; three published factor indices — <b>market</b>, <b>value</b>, <b>momentum</b> — also moved each day. The cleanest question a risk desk can ask: <b>how much of the book is each factor?</b> Stack the factor returns into a table, one row per day, one column per factor plus a column of ones for the standing drift — that table is the <b>design matrix</b> X ("design" because you chose its columns). The book's returns stack into a vector y. A <b>beta</b> is a sensitivity — how many units of book return arrive per unit of factor return — and the hat on β̂ means "estimated from data" rather than known. <b>Least squares</b> picks the betas that make the leftover part of y — the <b>residual</b> — as small as possible in the sum-of-squares sense. Lesson 4 already told us what that leftover must look like: the closest point in a subspace leaves a remainder orthogonal to it. Today that geometry becomes a matrix equation, and one k×k object — <b>XᵀX</b> — turns out to control the answer's existence, its stability, and its error bars.</p>
 
-  <div class="sec">The objective, then one gradient</div>
-  <div class="mblock math" data-tex="\hat{y}=X\beta,\qquad \mathrm{RSS}(\beta)=\lVert y-X\beta\rVert^{2}=(y-X\beta)^{\top}(y-X\beta)" data-display="1"></div>
-  <p class="step">Expand the quadratic (the middle two terms are equal scalars, so they combine):</p>
-  <div class="mblock math" data-tex="\mathrm{RSS}(\beta)=y^{\top}y\;-\;2\,\beta^{\top}X^{\top}y\;+\;\beta^{\top}\,X^{\top}X\,\beta" data-display="1"></div>
-  <div class="rule">
-    <p class="rl">The vector-calculus rules doing the work</p>
-    <div class="mblock math" data-tex="\nabla_{\beta}\big(\beta^{\top}b\big)=b\qquad\qquad \nabla_{\beta}\big(\beta^{\top}A\beta\big)=(A+A^{\top})\beta=2A\beta\ \ \text{for symmetric }A" data-display="1"></div>
-    <p style="margin:6px 0 0;color:var(--muted)">XᵀX is symmetric, so the second rule fires with A = XᵀX and gives the factor of 2 — the step that's easy to drop.</p>
-  </div>
-  <p class="step">Apply them, set the gradient to zero, and read off the <b>normal equations</b>:</p>
-  <div class="mblock math" data-tex="\nabla_{\beta}\,\mathrm{RSS}=-2X^{\top}y+2X^{\top}X\beta\;=\;0\quad\Longrightarrow\quad X^{\top}X\,\hat\beta=X^{\top}y\quad\Longrightarrow\quad \boxed{\;\hat\beta=(X^{\top}X)^{-1}X^{\top}y\;}" data-display="1"></div>
+  <div class="sec">The words, before any formula</div>
   <ul class="glo">
-    <li><span class="sym math" data-tex="X"></span><span class="def"><b>design matrix</b> (n×p). <span class="n">Each column a feature, each row an observation.</span></span></li>
-    <li><span class="sym math" data-tex="X^{\top}X"></span><span class="def">the <b>Gram matrix</b> (p×p), symmetric and positive semidefinite. <span class="n">Invertible ⟺ the columns of X are linearly independent (full column rank). Everything hinges on it.</span></span></li>
-    <li><span class="sym math" data-tex="X^{\top}y"></span><span class="def">feature–response cross-products (p×1).</span></li>
-    <li><span class="sym math" data-tex="\hat\beta"></span><span class="def">the <b>OLS estimate</b>. <span class="n">The unique RSS-minimiser when XᵀX is invertible.</span></span></li>
+    <li><span class="sym math" data-tex="X"></span><span class="def"><b>design matrix</b> — the n×k spreadsheet of explanatory data: n = 250 rows (days), k = 4 columns (ones, MKT, VAL, MOM). <span class="n">Everything below is about the geometry of its four columns as vectors in 250-dimensional day-space.</span></span></li>
+    <li><span class="sym math" data-tex="y,\ \hat y"></span><span class="def"><b>response</b> — the book's daily returns; ŷ is the model's reconstruction of them. <span class="n">ŷ must lie in the span of X's columns; y almost never does.</span></span></li>
+    <li><span class="sym math" data-tex="\beta,\ \hat\beta"></span><span class="def"><b>loadings / hedge ratios</b> — the sensitivities; β̂ is their least-squares estimate. <span class="n">β̂ is what the desk actually trades on: it says how much index future to short per unit of book.</span></span></li>
+    <li><span class="sym math" data-tex="r"></span><span class="def"><b>residual</b> r = y − Xβ̂ — the part no factor explains; the alpha candidate. <span class="n">Least squares makes it orthogonal to every factor by construction.</span></span></li>
+    <li><span class="sym math" data-tex="X^{\top}X"></span><span class="def"><b>Gram matrix</b> — the k×k table of dot products between columns: how big each factor is and how much any two overlap. <span class="n">Collinearity, conditioning, error bars: all of it is stored here.</span></span></li>
+    <li><span class="sym math" data-tex="\kappa"></span><span class="def"><b>condition number</b> — λ<sub>max</sub>/λ<sub>min</sub> of XᵀX: how uneven the information is across directions of β-space. <span class="n">Large κ = some combination of betas is nearly unmeasured.</span></span></li>
+    <li><span class="sym math" data-tex="\mathrm{VIF}"></span><span class="def"><b>variance inflation factor</b> — the multiplier that collinearity applies to one beta's variance. <span class="n">Quantified below; it is the number that tells you whether individual loadings are trustworthy.</span></span></li>
   </ul>
 
-  <div class="sec">The hat matrix — it's the Lesson-4 projection, in matrix form</div>
-  <div class="mblock math" data-tex="\hat{y}=X\hat\beta=\underbrace{X(X^{\top}X)^{-1}X^{\top}}_{H}\,y,\qquad H^{2}=H,\quad H^{\top}=H,\quad \operatorname{tr}(H)=p" data-display="1"></div>
-  <p class="step">H is the orthogonal projector onto the column space of X: ŷ = Hy is Lesson 4's "closest point in the subspace", now the subspace is span of the feature columns. The residual is orthogonal to every feature — which is just the normal equations rearranged, <span class="math" data-tex="X^{\top}(y-\hat y)=0"></span>.</p>
+  <div class="sec">The setup — one book, three factors</div>
+  <p class="step">The page simulates the panel with truths fixed so you can watch the estimator work: α = 1 bp/day of true alpha, β = (1.0, 0.4, −0.3) on market, value, momentum; factor vols 1.0%, 0.6%, 0.6% a day; idiosyncratic noise σ = 0.5%/day; n = 250 days, seeded and reproducible.</p>
+  <div class="mblock math" data-tex="y_t=\alpha+\beta_{\mathrm{MKT}}\,\mathrm{MKT}_t+\beta_{\mathrm{VAL}}\,\mathrm{VAL}_t+\beta_{\mathrm{MOM}}\,\mathrm{MOM}_t+\varepsilon_t\ \ \Longleftrightarrow\ \ y=X\beta+\varepsilon" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="y"></span><span class="def">book returns, an n-vector (units: %/day). <span class="n">One year of daily P&amp;L, de-levered.</span></span></li>
+    <li><span class="sym math" data-tex="X"></span><span class="def">columns (1, MKT, VAL, MOM) — the ones column carries the intercept α. <span class="n">Forgetting it forces the fit through zero and biases every beta.</span></span></li>
+    <li><span class="sym math" data-tex="\beta"></span><span class="def">the k-vector (α, β<sub>MKT</sub>, β<sub>VAL</sub>, β<sub>MOM</sub>). <span class="n">Truth here: (0.01, 1.0, 0.4, −0.3) in %/day units — α is the 0.01.</span></span></li>
+    <li><span class="sym math" data-tex="\varepsilon"></span><span class="def">idiosyncratic noise, E[ε]=0, Var(ε)=σ²Iₙ. <span class="n">The Gauss–Markov assumptions live entirely in this term.</span></span></li>
+  </ul>
 
-  <div class="sec">See it — XᵀX conditioning, coefficient blow-up, and ridge</div>
+  <div class="sec">One orthogonality condition → the normal equations</div>
+  <p class="step">Lesson 4: the closest point to y inside a subspace is its orthogonal projection, and the leftover is perpendicular to the whole subspace. Here the subspace is span(x₁,…,x₄) — the four columns. So the optimal residual must have zero dot product with <i>each column</i>. Stack those k statements into one matrix line and solve:</p>
+  <div class="mblock math" data-tex="X^{\top}\!\big(y-X\hat\beta\big)=0\;\;\Longrightarrow\;\;X^{\top}X\,\hat\beta=X^{\top}y\;\;\Longrightarrow\;\;\boxed{\;\hat\beta=(X^{\top}X)^{-1}X^{\top}y\;}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="X^{\top}r"></span><span class="def">the k dot products ⟨xⱼ, r⟩ stacked into one vector — <b>orthogonality, columnwise</b>. <span class="n">Interactive 2 below computes them and shows they vanish to machine precision, not approximately.</span></span></li>
+    <li><span class="sym math" data-tex="X^{\top}X\hat\beta=X^{\top}y"></span><span class="def">the <b>normal equations</b> — k linear equations in k unknowns. <span class="n">"Normal" as in perpendicular. The calculus route agrees: ∇β‖y−Xβ‖² = −2Xᵀ(y−Xβ), and zeroing the gradient is the same condition.</span></span></li>
+    <li><span class="sym math" data-tex="(X^{\top}X)^{-1}"></span><span class="def">exists ⟺ the columns of X are linearly independent (full column rank). <span class="n">Two identical factors, or k &gt; n, and OLS simply has no unique answer.</span></span></li>
+  </ul>
+
+  <div class="sec">See it — the conditioning experiment</div>
+  <p class="step">Now make value and momentum returns correlated at level ρ and refit. The damage to each collinear beta is exactly quantified by the variance inflation factor:</p>
+  <div class="mblock math" data-tex="\mathrm{VIF}_j=\frac{1}{1-R_j^{2}},\qquad \mathrm{SE}\big(\hat\beta_j\big)=\mathrm{SE}_{\perp}\big(\hat\beta_j\big)\cdot\sqrt{\mathrm{VIF}_j}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="R_j^{2}"></span><span class="def">the R² from regressing column j on the <i>other</i> columns — how predictable this factor is from the rest. <span class="n">In this panel MKT is independent, so R² for VAL is just ρ² against MOM.</span></span></li>
+    <li><span class="sym math" data-tex="\mathrm{SE}_{\perp}"></span><span class="def">the standard error the beta would have if the factors were orthogonal. <span class="n">At ρ = 0.95: VIF = 1/(1−0.95²) ≈ 10.3, so each collinear SE is √10.3 ≈ 3.2× wider. Pure formula — the panel below confirms it empirically.</span></span></li>
+  </ul>
   <div class="panel">
     <div class="ctrls">
-      <div class="field"><label>feature correlation ρ(x₁,x₂) <b id="rhoOut">0.90</b></label><input type="range" id="rho" min="0" max="0.99" value="0.90" step="0.01" /></div>
-      <div class="field"><label>ridge penalty λ <b id="lamOut">8</b></label><input type="range" id="lam" min="0" max="40" value="8" step="0.5" /></div>
-      <div class="field"><label>noise σ <b id="noiseOut">1.0</b></label><input type="range" id="noise" min="0.2" max="3" value="1.0" step="0.1" /></div>
+      <div class="field"><label>correlation ρ(VAL, MOM) <b id="rhoOut">0.95</b></label><input type="range" id="rho" min="0" max="0.98" value="0.95" step="0.01" /></div>
     </div>
-    <div class="btns">
-      <button class="act" id="one">New sample</button>
-      <button class="act primary" id="many">Run 200 resamples</button>
-      <button class="act" id="reset">Reset</button>
-    </div>
-    <div class="matwrap">
-      <div class="mtx" id="mtx">
-        <div class="lbl">XᵀX (latest sample)</div>
-        <div id="m00">—</div><div id="m01">—</div>
-        <div id="m10">—</div><div id="m11">—</div>
-      </div>
-      <div class="eig" id="eig">eigenvalues —<br>condition number —</div>
-    </div>
-    <svg id="plot" viewBox="0 0 680 380" role="img" aria-label="Estimated coefficient cloud in (beta1, beta2) space for OLS versus ridge"></svg>
-    <div class="legend">
-      <span><i class="dot" style="background:var(--accent)"></i>OLS β̂ = (XᵀX)⁻¹Xᵀy</span>
-      <span><i class="dot" style="background:var(--series)"></i>ridge β̂ = (XᵀX+λI)⁻¹Xᵀy</span>
-      <span><i class="dot" style="background:var(--ink)"></i>true β</span>
-      <span><i class="dot" style="border:1px solid var(--faint);background:transparent"></i>origin</span>
+    <svg id="sausage" viewBox="0 0 680 330" role="img" aria-label="Scatter of estimated value and momentum betas over 200 seeded refits"></svg>
+    <p class="step"><span style="color:var(--accent)">●</span> β̂ over 200 seeded refits &nbsp; <span style="color:var(--ink)">●</span> true β &nbsp; <span style="color:var(--series)">- -</span> the pinned line β̂<sub>VAL</sub>+β̂<sub>MOM</sub> = 0.1</p>
+    <div class="tally">
+      <div class="stat"><div class="k">α̂ (true 1 bp)</div><div class="v" id="sA">—</div></div>
+      <div class="stat"><div class="k">β̂ mkt (true 1.0)</div><div class="v" id="sM">—</div></div>
+      <div class="stat"><div class="k">β̂ val (true 0.4)</div><div class="v a" id="sV">—</div></div>
+      <div class="stat"><div class="k">β̂ mom (true −0.3)</div><div class="v a" id="sO">—</div></div>
     </div>
     <div class="tally">
-      <div class="stat"><div class="k">condition number κ</div><div class="v s" id="kap">—</div></div>
-      <div class="stat"><div class="k">spread of OLS β̂</div><div class="v a" id="vols">—</div></div>
-      <div class="stat"><div class="k">spread of ridge β̂</div><div class="v s" id="vrid">—</div></div>
-      <div class="stat"><div class="k">resamples</div><div class="v" id="cnt">0</div></div>
+      <div class="stat"><div class="k">κ(XᵀX)</div><div class="v s" id="sKap">—</div></div>
+      <div class="stat"><div class="k">VIF 1/(1−ρ²)</div><div class="v s" id="sVif">—</div></div>
+      <div class="stat"><div class="k">SE β̂ val</div><div class="v a" id="sSeV">—</div></div>
+      <div class="stat"><div class="k">SE β̂ mom</div><div class="v a" id="sSeO">—</div></div>
+      <div class="stat"><div class="k">sd(v−m)/sd(v+m)</div><div class="v g" id="sRat">—</div></div>
     </div>
-    <p class="callout" id="note"></p>
+    <p class="callout" id="note1"></p>
   </div>
+
+  <div class="sec">The hat matrix — Lesson 4's projection, computable</div>
+  <p class="step">Substitute β̂ back into ŷ = Xβ̂ and the whole fit collapses into a single matrix acting on y. It is called the hat matrix because it literally puts the hat on y — and it is precisely the orthogonal projector of Lesson 4, now something you can print:</p>
+  <div class="mblock math" data-tex="\hat y=X\hat\beta=\underbrace{X(X^{\top}X)^{-1}X^{\top}}_{P}\,y,\qquad P^{\top}=P,\quad P^{2}=P,\quad \operatorname{tr}(P)=k" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="P"></span><span class="def">the <b>orthogonal projector</b> onto col(X) — n×n, built only from the factors. <span class="n">ŷ = Py: the fit is a linear function of y before you ever see y.</span></span></li>
+    <li><span class="sym math" data-tex="P^{2}=P"></span><span class="def"><b>idempotent</b> — projecting twice is projecting once: once you're in the subspace, you stay. <span class="n">With Pᵀ = P this forces every eigenvalue to be 0 or 1 — a projector has no other options.</span></span></li>
+    <li><span class="sym math" data-tex="\operatorname{tr}(P)=k"></span><span class="def">the eigenvalue-1 count = dimensions absorbed by the fit — here 4. <span class="n">This trace is the "degrees of freedom used", the k in the n−k below.</span></span></li>
+    <li><span class="sym math" data-tex="I-P"></span><span class="def">the <b>residual-maker</b>: r = (I−P)y, the projector onto the orthogonal complement. <span class="n">Also idempotent, with trace n−k — the room the residual lives in.</span></span></li>
+  </ul>
+  <div class="panel">
+    <div class="ctrls">
+      <div class="field"><label>days in the small panel n <b id="nOut">24</b></label><input type="range" id="nn" min="10" max="60" value="24" step="2" /></div>
+    </div>
+    <svg id="proj" viewBox="0 0 680 240" role="img" aria-label="Book returns, fitted values and residuals across days"></svg>
+    <p class="step"><span style="color:var(--ink)">●</span> y (book, %/day) &nbsp; <span style="color:var(--accent)">—</span> ŷ = Py (factor-explained) &nbsp; <span style="color:var(--series)">│</span> residual r = (I−P)y</p>
+    <div class="tally">
+      <div class="stat"><div class="k">trace(P)</div><div class="v g" id="tTr">—</div></div>
+      <div class="stat"><div class="k">maxⱼ |xⱼᵀr|</div><div class="v a" id="tOrth">—</div></div>
+      <div class="stat"><div class="k">max |P²−P|ᵢⱼ</div><div class="v a" id="tIdem">—</div></div>
+      <div class="stat"><div class="k">σ̂ (true 0.5%)</div><div class="v" id="tSig">—</div></div>
+      <div class="stat"><div class="k">R²</div><div class="v" id="tR2">—</div></div>
+    </div>
+    <p class="callout" id="note2"></p>
+  </div>
+
+  <div class="sec">Precision — Gauss–Markov and σ²(XᵀX)⁻¹</div>
+  <p class="step">How good is β̂? Under the model's noise assumptions the answer is one matrix formula — and estimating σ² honestly reuses Lesson 2's degrees-of-freedom story, with k fitted directions eaten instead of one:</p>
+  <div class="mblock math" data-tex="\operatorname{Var}\big(\hat\beta\big)=\sigma^{2}\,(X^{\top}X)^{-1},\qquad \hat\sigma^{2}=\frac{\lVert y-X\hat\beta\rVert^{2}}{n-k}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="\sigma^{2}"></span><span class="def">the noise variance — one number, but it multiplies a whole matrix. <span class="n">XᵀX/σ² is exactly the Fisher information for β in the Gaussian model — Lesson 3 in matrix form.</span></span></li>
+    <li><span class="sym math" data-tex="(X^{\top}X)^{-1}"></span><span class="def">the geometry of precision: diagonal entries give each SE², off-diagonals the estimation covariances. <span class="n">Along a unit eigenvector with eigenvalue λ the variance is σ²/λ — small λ, huge doubt. This is where the sausage above comes from.</span></span></li>
+    <li><span class="sym math" data-tex="n-k"></span><span class="def">residual degrees of freedom — 250 − 4 = 246 here. <span class="n">The residual is trapped in an (n−k)-dimensional subspace, so dividing by n would understate σ². Lesson 2's n−1 is the k=1, intercept-only case.</span></span></li>
+  </ul>
+  <p class="step">One sobering constant from this formula: SE(α̂) ≈ σ/√n = 0.5%/√250 ≈ 3.2 bp/day. The simulated book's true alpha is 1 bp — a year of daily data cannot distinguish it from zero. Betas fare better only because factor vol amplifies their signal.</p>
 
   <div class="theorem">
     <p class="lbl">The precise statement</p>
-    <p>When X has full column rank, RSS is strictly convex and β̂ = (XᵀX)⁻¹Xᵀy is its unique global minimiser; ŷ = Hy is the orthogonal projection of y onto col(X), with residual orthogonal to every column. The estimator's variance is Var(β̂) = σ²(XᵀX)⁻¹, so small eigenvalues of XᵀX mean large coefficient variance. Ridge, β̂λ = (XᵀX+λI)⁻¹Xᵀy, is defined for every λ&gt;0 — even when XᵀX is singular.</p>
+    <p>Let y = Xβ + ε with E[ε] = 0, Var(ε) = σ²Iₙ, and X ∈ ℝⁿˣᵏ of full column rank. Then ‖y − Xβ‖² is strictly convex with unique minimiser β̂ = (XᵀX)⁻¹Xᵀy, characterised by Xᵀ(y − Xβ̂) = 0. The fit ŷ = Py is the orthogonal projection of y onto col(X), where P = X(XᵀX)⁻¹Xᵀ is symmetric and idempotent with tr(P) = k. The estimator is unbiased, E[β̂] = β, with Var(β̂) = σ²(XᵀX)⁻¹, and among all linear unbiased estimators it has minimal variance (Gauss–Markov). Finally σ̂² = ‖y − Xβ̂‖²/(n−k) is unbiased for σ².</p>
   </div>
 
   <div class="twist">
-    <p class="lbl">The twist — XᵀX's eigenvalues are the whole story</p>
-    <p>Because Var(β̂) = σ²(XᵀX)⁻¹, a single tiny eigenvalue of XᵀX — the signature of near-collinear features — inflates coefficient variance without bound: the estimate becomes a wild, unreliable number that flips sign from sample to sample. Ridge adds λ to every eigenvalue, so (XᵀX+λI) can't be singular and the small directions stop exploding — you accept a little bias to buy a lot of variance back, the same shrinkage trade as Lessons 2 and 3. Two connections worth carrying: XᵀX/σ² is exactly the <b>Fisher information</b> for β in the Gaussian model, so "well-conditioned XᵀX" literally means "lots of information, tight coefficients" — Lesson 3 in matrix form. And when <b>p &gt; n</b>, XᵀX is singular and OLS simply does not exist; regularisation isn't a refinement, it's the only way to get an answer.</p>
+    <p class="lbl">The twist — a tiny eigenvalue is a flat direction of the loss</p>
+    <p>Diagonalise XᵀX. Along a unit eigenvector v with eigenvalue λ, the RSS curves like λ·t² — and Var(vᵀβ̂) = σ²/λ. A tiny λ therefore means a <i>nearly flat valley</i> in the loss: you can slide β̂ far along v and the fit barely changes, so the data barely pins it down. That is what ρ = 0.95 does above: the difference direction (β̂<sub>VAL</sub> − β̂<sub>MOM</sub>) gets the small eigenvalue and inflates ~10× in variance, while the sum direction keeps a large eigenvalue and stays pinned — individual betas become garbage while β̂<sub>VAL</sub>+β̂<sub>MOM</sub> and the fitted values ŷ remain perfectly estimable. The repair is spectral surgery, not more data: ridge replaces XᵀX by XᵀX+λI (every eigenvalue lifted, nothing near zero), and Lesson 8's truncated pseudoinverse simply refuses to divide by the small σ² directions. Both trade a little bias for the variance you just watched explode.</p>
   </div>
 
   <div class="vol">
     <p class="lbl">Why this matters · volarixs</p>
-    <p>A cross-sectional factor regression <i>is</i> this object: returns on a design matrix of factor exposures, β̂ = (XᵀX)⁻¹Xᵀy the loadings, ŷ = Hy the factor-explained return, and your <b>alpha the residual (I−H)y</b> — orthogonal to the factors by construction, straight from Lesson 4. When factors are correlated (value/quality, size/liquidity), XᵀX is ill-conditioned and loadings flip sign across samples — the coefficient cloud above, in your panel.</p>
-    <p>Two operational takeaways: the <b>condition number of XᵀX</b> is a diagnostic you can compute on any factor panel to know whether the loadings are trustworthy before you act on them; and with many signals on limited history you drift toward <code>p &gt; n</code>, where OLS is undefined and ridge (or its cousins — lasso, elastic net, the same Ledoit–Wolf shrinkage spirit) is mandatory, not optional.</p>
+    <p>A factor regression of book returns on drivers <i>is</i> this object: β̂ = (XᵀX)⁻¹Xᵀy are the hedge ratios, ŷ = Py the factor-explained P&amp;L, and <b>alpha is the residual (I−P)y</b> — orthogonal to the drivers by construction, straight from Lesson 4. When drivers are collinear (value/quality, two vol tenors), XᵀX is ill-conditioned and the hedge ratios slide along the sausage: signs flip refit to refit, which is precisely the pathology <code>sign_stability</code> is built to flag before a ratio goes into production.</p>
+    <p>And <code>pca_factors</code> diagonalises exactly this matrix — XᵀX on the centred returns panel is the covariance being eigendecomposed. Its small eigenvalues are the untrustworthy directions of any regression run on those drivers, so the same spectrum doubles as a conditioning diagnostic: κ(XᵀX) before trusting loadings, and Lesson 8's numerical-rank read ("count the non-negligible eigenvalues") as the honest number of independent drivers in the book.</p>
   </div>
 
   <div class="sec">Check yourself</div>
-  <div class="q" id="q1"><p class="stem">Differentiating RSS(β) = ‖y − Xβ‖² and setting the gradient to zero gives:</p><div class="opts"></div><p class="fb"></p></div>
-  <div class="q" id="q2"><p class="stem">If two columns of X are nearly collinear, then:</p><div class="opts"></div><p class="fb"></p></div>
-  <div class="q" id="q3"><p class="stem">Ridge replaces (XᵀX)⁻¹ with (XᵀX + λI)⁻¹, which:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q1"><p class="stem">Lesson 4 says the best ŷ in the span of the factor columns leaves a residual orthogonal to that span. In matrices, this orthogonality is:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q2"><p class="stem">The hat matrix P = X(XᵀX)⁻¹Xᵀ satisfies:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q3"><p class="stem">Var(β̂) = σ²(XᵀX)⁻¹ says that:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q4"><p class="stem">Your value and momentum factor returns are 95% correlated. Relative to uncorrelated factors, the variance of β̂<sub>VAL</sub>:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q5"><p class="stem">σ̂² divides the residual sum of squares by n−k rather than n because:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q6"><p class="stem">At ρ = 0.95 the individual value and momentum betas are unreliable, yet the desk can still trust:</p><div class="opts"></div><p class="fb"></p></div>
 
   <div class="checkRow">
-    <button class="act primary" id="check">Check answers</button>
-    <span class="hint" id="hint">Select an answer for all three first.</span>
+    <button class="primary" id="check">Check answers</button>
+    <span class="scoreOut" id="scoreOut"></span>
+    <span class="hint" id="hint">Answer all six first.</span>
   </div>
-  <div class="done" id="done">Phase 2 underway — the matrix machinery is now in place for everything that follows.</div>
+  <div class="done" id="done">The matrix machinery is in place. Next: matrix fundamentals — inner products &amp; eigenvectors.</div>
 </div>
 
 <script>
 /* storage shim: window.storage (Claude artifacts) or localStorage (web) */
 if(!window.storage){window.storage={async get(k){const v=localStorage.getItem(k);if(v==null)throw new Error('missing');return{key:k,value:v}},async set(k,v){localStorage.setItem(k,v);return{key:k,value:v}},async delete(k){localStorage.removeItem(k);return{key:k,deleted:true}},async list(p){const ks=[];for(let i=0;i<localStorage.length;i++){const kk=localStorage.key(i);if(!p||kk.startsWith(p))ks.push(kk)}return{keys:ks}}};}
-function renderMath(){
-  document.querySelectorAll('.math').forEach(el=>{
-    const tex=el.getAttribute('data-tex'); if(!tex||el.dataset.done)return;
-    try{ if(window.katex){katex.render(tex,el,{displayMode:el.dataset.display==='1',throwOnError:false});el.dataset.done='1';} else {el.textContent=tex;} }
-    catch(e){ el.textContent=tex; }
-  });
-}
-const N=50, BTRUE=[1.5,-1.0], RANGE=5;
-const olsB=[], ridB=[]; let latest=null;
-const rho=()=>parseFloat(document.getElementById('rho').value);
-const lam=()=>parseFloat(document.getElementById('lam').value);
-const noise=()=>parseFloat(document.getElementById('noise').value);
-function randn(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
-function sample(){
-  const r=rho(),s=noise(),root=Math.sqrt(1-r*r);
-  const x1=[],x2=[],y=[];let m1=0,m2=0,my=0;
-  for(let i=0;i<N;i++){const z1=randn(),z2=randn();const a=z1,b=r*z1+root*z2;
-    const yy=BTRUE[0]*a+BTRUE[1]*b+s*randn();x1.push(a);x2.push(b);y.push(yy);m1+=a;m2+=b;my+=yy;}
-  m1/=N;m2/=N;my/=N;
-  let s11=0,s22=0,s12=0,g1=0,g2=0;
-  for(let i=0;i<N;i++){const a=x1[i]-m1,b=x2[i]-m2,c=y[i]-my;s11+=a*a;s22+=b*b;s12+=a*b;g1+=a*c;g2+=b*c;}
-  const XtX=[[s11,s12],[s12,s22]], Xty=[g1,g2];
-  const inv2=(M)=>{const d=M[0][0]*M[1][1]-M[0][1]*M[1][0];return [[M[1][1]/d,-M[0][1]/d],[-M[1][0]/d,M[0][0]/d]];};
-  const mv=(M,v)=>[M[0][0]*v[0]+M[0][1]*v[1],M[1][0]*v[0]+M[1][1]*v[1]];
-  const bOLS=mv(inv2(XtX),Xty);
-  const l=lam(),Ml=[[s11+l,s12],[s12,s22+l]];
-  const bRID=mv(inv2(Ml),Xty);
-  olsB.push(bOLS);ridB.push(bRID);
-  if(olsB.length>2000){olsB.shift();ridB.shift();}
-  // eigen of XtX (symmetric 2x2)
-  const tr=(s11+s22)/2, disc=Math.sqrt(((s11-s22)/2)**2+s12*s12);
-  latest={XtX,l1:tr+disc,l2:tr-disc};
-}
-function meanVec(A){let a=0,b=0;for(const p of A){a+=p[0];b+=p[1];}return [a/A.length,b/A.length];}
-function spread(A){const m=meanVec(A);let s=0;for(const p of A)s+=(p[0]-m[0])**2+(p[1]-m[1])**2;return s/A.length;}
-function render(){
-  const PW=680,PH=380,padL=44,padR=16,padT=16,padB=34,iw=PW-padL-padR,ih=PH-padT-padB;
-  const b1lo=BTRUE[0]-RANGE,b1hi=BTRUE[0]+RANGE,b2lo=BTRUE[1]-RANGE,b2hi=BTRUE[1]+RANGE;
-  const sx=b=>padL+((b-b1lo)/(b1hi-b1lo))*iw, sy=b=>padT+(1-(b-b2lo)/(b2hi-b2lo))*ih;
-  const inBox=p=>p[0]>=b1lo&&p[0]<=b1hi&&p[1]>=b2lo&&p[1]<=b2hi;
-  let s='';
-  // axes
-  if(0>=b1lo&&0<=b1hi)s+=`<line x1="${sx(0)}" y1="${padT}" x2="${sx(0)}" y2="${padT+ih}" stroke="var(--hair)" stroke-width="1"/>`;
-  if(0>=b2lo&&0<=b2hi)s+=`<line x1="${padL}" y1="${sy(0)}" x2="${PW-padR}" y2="${sy(0)}" stroke="var(--hair)" stroke-width="1"/>`;
-  [b1lo+1,BTRUE[0],b1hi-1].forEach(v=>{s+=`<text x="${sx(v)}" y="${padT+ih+18}" text-anchor="middle" font-family="var(--mono)" font-size="11" fill="var(--faint)">${v.toFixed(1)}</text>`;});
-  s+=`<text x="${padL-6}" y="${padT+8}" text-anchor="end" font-family="var(--mono)" font-size="11" fill="var(--faint)">β₂</text>`;
-  s+=`<text x="${PW-padR}" y="${padT+ih+18}" text-anchor="end" font-family="var(--mono)" font-size="11" fill="var(--faint)">β₁</text>`;
-  // clouds
-  olsB.forEach(p=>{if(inBox(p))s+=`<circle cx="${sx(p[0]).toFixed(1)}" cy="${sy(p[1]).toFixed(1)}" r="2.3" fill="var(--accent)" opacity="0.34"/>`;});
-  ridB.forEach(p=>{if(inBox(p))s+=`<circle cx="${sx(p[0]).toFixed(1)}" cy="${sy(p[1]).toFixed(1)}" r="2.3" fill="var(--series)" opacity="0.40"/>`;});
-  // origin + true
-  if(0>=b1lo&&0<=b1hi&&0>=b2lo&&0<=b2hi)s+=`<circle cx="${sx(0)}" cy="${sy(0)}" r="4" fill="none" stroke="var(--faint)" stroke-width="1.2"/>`;
-  s+=`<circle cx="${sx(BTRUE[0])}" cy="${sy(BTRUE[1])}" r="5" fill="var(--ink)"/>`;
-  s+=`<text x="${sx(BTRUE[0])+8}" y="${sy(BTRUE[1])-6}" font-family="var(--mono)" font-size="11" fill="var(--ink)">true β</text>`;
-  document.getElementById('plot').innerHTML=s;
-  // matrix panel
-  if(latest){const M=latest.XtX;
-    document.getElementById('m00').textContent=M[0][0].toFixed(1);
-    document.getElementById('m01').textContent=M[0][1].toFixed(1);
-    document.getElementById('m10').textContent=M[1][0].toFixed(1);
-    document.getElementById('m11').textContent=M[1][1].toFixed(1);
-    const kap=latest.l1/Math.max(latest.l2,1e-9);
-    document.getElementById('eig').innerHTML=`eigenvalues <b>${latest.l1.toFixed(1)}</b>, <b>${latest.l2.toFixed(2)}</b><br>condition number κ = <span class="kap">${kap.toFixed(0)}</span>`;
-    document.getElementById('kap').textContent=kap>=1000?Math.round(kap).toLocaleString():kap.toFixed(0);
-  }
-  document.getElementById('vols').textContent=olsB.length?spread(olsB).toFixed(2):'—';
-  document.getElementById('vrid').textContent=ridB.length?spread(ridB).toFixed(2):'—';
-  document.getElementById('cnt').textContent=olsB.length;
-  if(olsB.length>=30){
-    const r=rho(),l=lam();
-    document.getElementById('note').textContent=
-      `ρ=${r.toFixed(2)} makes XᵀX ${r>0.85?'badly':(r>0.5?'moderately':'well')}-conditioned (κ≈${(latest.l1/Math.max(latest.l2,1e-9)).toFixed(0)}). The blue OLS cloud stretches along the ill-conditioned direction — that spread is Var(β̂)=σ²(XᵀX)⁻¹ made visible. Ridge (λ=${l}) pulls the ochre cloud tight and toward the origin: smaller variance, at the cost of a bias away from the true β.`;
-  }
-}
-function reset(){olsB.length=0;ridB.length=0;latest=null;
-  document.getElementById('rho').value='0.90';document.getElementById('rhoOut').textContent='0.90';
-  document.getElementById('lam').value='8';document.getElementById('lamOut').textContent='8';
-  document.getElementById('noise').value='1.0';document.getElementById('noiseOut').textContent='1.0';
-  sample();render();
-  document.getElementById('note').textContent='Hit “Run 200 resamples”. Each draw re-estimates β̂ from fresh data; the clouds are the sampling distributions of OLS vs ridge. Push ρ toward 1 and watch the blue cloud explode along one direction.';}
-['rho','lam','noise'].forEach(id=>{
-  const out=id+'Out';
-  document.getElementById(id).addEventListener('input',e=>{document.getElementById(out).textContent=(id==='rho'?parseFloat(e.target.value).toFixed(2):e.target.value);});
-  document.getElementById(id).addEventListener('change',()=>{olsB.length=0;ridB.length=0;sample();render();});
-});
-document.getElementById('one').onclick=()=>{sample();render();};
-document.getElementById('many').onclick=()=>{for(let i=0;i<200;i++)sample();render();};
-document.getElementById('reset').onclick=reset;
+function renderMath(){document.querySelectorAll('.math').forEach(el=>{const tex=el.getAttribute('data-tex');if(!tex||el.dataset.done)return;try{if(window.katex){katex.render(tex,el,{displayMode:el.dataset.display==='1',throwOnError:false});el.dataset.done='1';}else el.textContent=tex;}catch(e){el.textContent=tex;}});}
 
+/* ---------- deterministic randomness: every draw flows through mulberry32 ---------- */
+function mulberry32(seed){let a=seed>>>0;return function(){a|=0;a=(a+0x6D2B79F5)|0;let t=Math.imul(a^(a>>>15),1|a);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296;}}
+function randn(rng){let u=0,v=0;while(!u)u=rng();while(!v)v=rng();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+
+/* ---------- the factor panel: y = α + 1.0·MKT + 0.4·VAL − 0.3·MOM + σε (%/day) ---------- */
+const SEED=105,NDAYS=250,KCOLS=4,ALPHA=0.01,BETA=[1.0,0.4,-0.3],FVOL=[1.0,0.6,0.6],SIG=0.5,B=200;
+function genPanel(rho,seed,n){
+  const rng=mulberry32(seed),q=Math.sqrt(1-rho*rho),X=[],y=[];
+  for(let t=0;t<n;t++){
+    const zM=randn(rng),zV=randn(rng),zO=randn(rng),zE=randn(rng);
+    const mkt=FVOL[0]*zM,val=FVOL[1]*zV,mom=FVOL[2]*(rho*zV+q*zO);
+    X.push([1,mkt,val,mom]);y.push(ALPHA+BETA[0]*mkt+BETA[1]*val+BETA[2]*mom+SIG*zE);
+  }
+  return{X,y};
+}
+/* ---------- normal-equations machinery (4×4, exact order shared with verify script) ---------- */
+function gram(X){const M=[[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]];for(const r of X)for(let i=0;i<4;i++)for(let j=i;j<4;j++)M[i][j]+=r[i]*r[j];for(let i=1;i<4;i++)for(let j=0;j<i;j++)M[i][j]=M[j][i];return M;}
+function inv4(M){const A=M.map((r,i)=>r.concat([0,1,2,3].map(j=>i===j?1:0)));
+  for(let c=0;c<4;c++){let p=c;for(let r=c+1;r<4;r++)if(Math.abs(A[r][c])>Math.abs(A[p][c]))p=r;const tp=A[c];A[c]=A[p];A[p]=tp;
+    const d=A[c][c];for(let j=0;j<8;j++)A[c][j]/=d;
+    for(let r=0;r<4;r++){if(r===c)continue;const f=A[r][c];if(!f)continue;for(let j=0;j<8;j++)A[r][j]-=f*A[c][j];}}
+  return A.map(r=>r.slice(4));}
+function fit(X,y){
+  const n=X.length,G=gram(X),Gi=inv4(G),g=[0,0,0,0];
+  for(let t=0;t<n;t++)for(let i=0;i<4;i++)g[i]+=X[t][i]*y[t];
+  const b=[0,1,2,3].map(i=>Gi[i][0]*g[0]+Gi[i][1]*g[1]+Gi[i][2]*g[2]+Gi[i][3]*g[3]);
+  const res=[];let rss=0;
+  for(let t=0;t<n;t++){const e=y[t]-(X[t][0]*b[0]+X[t][1]*b[1]+X[t][2]*b[2]+X[t][3]*b[3]);res.push(e);rss+=e*e;}
+  const s2=rss/(n-KCOLS),se=[0,1,2,3].map(i=>Math.sqrt(s2*Gi[i][i]));
+  return{G,Gi,b,res,rss,s2,se};
+}
+function eig4(Min){const A=Min.map(r=>r.slice());
+  for(let sw=0;sw<80;sw++){let off=0;for(let i=0;i<4;i++)for(let j=i+1;j<4;j++)off+=A[i][j]*A[i][j];if(off<1e-20)break;
+    for(let p=0;p<4;p++)for(let q=p+1;q<4;q++){if(Math.abs(A[p][q])<1e-30)continue;
+      const th=(A[q][q]-A[p][p])/(2*A[p][q]),sg=th>=0?1:-1,tt=sg/(Math.abs(th)+Math.sqrt(th*th+1)),c=1/Math.sqrt(tt*tt+1),sn=tt*c;
+      for(let k=0;k<4;k++){const kp=A[k][p],kq=A[k][q];A[k][p]=c*kp-sn*kq;A[k][q]=sn*kp+c*kq;}
+      for(let k=0;k<4;k++){const pk=A[p][k],qk=A[q][k];A[p][k]=c*pk-sn*qk;A[q][k]=sn*pk+c*qk;}}}
+  return[A[0][0],A[1][1],A[2][2],A[3][3]].sort((x,y)=>y-x);}
+function sd(a){const m=a.reduce((x,y)=>x+y,0)/a.length;let s=0;for(const v of a)s+=(v-m)*(v-m);return Math.sqrt(s/(a.length-1));}
+const set=(id,txt)=>{document.getElementById(id).textContent=txt;};
+
+/* ---------- interactive 1: the conditioning experiment ---------- */
+function sausagePts(rho){const pts=[];for(let i=1;i<=B;i++){const P=genPanel(rho,SEED+i,NDAYS),f=fit(P.X,P.y);pts.push([f.b[2],f.b[3]]);}return pts;}
+function drawSausage(pts){
+  const W=680,H=330,padL=46,padR=14,padT=14,padB=36,iw=W-padL-padR,ih=H-padT-padB;
+  const v0=BETA[1]-1.0,v1=BETA[1]+1.0,m0=BETA[2]-1.0,m1=BETA[2]+1.0,SUM=BETA[1]+BETA[2];
+  const sx=v=>padL+(v-v0)/(v1-v0)*iw,sy=m=>padT+(1-(m-m0)/(m1-m0))*ih;
+  let s='';
+  s+=`<line x1="${padL}" y1="${sy(BETA[2]).toFixed(1)}" x2="${W-padR}" y2="${sy(BETA[2]).toFixed(1)}" stroke="var(--hair)"/>`;
+  s+=`<line x1="${sx(BETA[1]).toFixed(1)}" y1="${padT}" x2="${sx(BETA[1]).toFixed(1)}" y2="${padT+ih}" stroke="var(--hair)"/>`;
+  s+=`<line x1="${sx(v0).toFixed(1)}" y1="${sy(SUM-v0).toFixed(1)}" x2="${sx(v1).toFixed(1)}" y2="${sy(SUM-v1).toFixed(1)}" stroke="var(--series)" stroke-dasharray="5 4" stroke-width="1.3"/>`;
+  pts.forEach(p=>{if(p[0]>v0&&p[0]<v1&&p[1]>m0&&p[1]<m1)s+=`<circle cx="${sx(p[0]).toFixed(1)}" cy="${sy(p[1]).toFixed(1)}" r="2.6" fill="var(--accent)" opacity="0.35"/>`;});
+  s+=`<circle cx="${sx(BETA[1]).toFixed(1)}" cy="${sy(BETA[2]).toFixed(1)}" r="5" fill="var(--ink)"/>`;
+  s+=`<text x="${(sx(BETA[1])+9).toFixed(1)}" y="${(sy(BETA[2])-8).toFixed(1)}" font-family="var(--mono)" font-size="11" fill="var(--ink)">true (${BETA[1].toFixed(1)}, ${BETA[2].toFixed(1)})</text>`;
+  [v0,BETA[1],v1].forEach(v=>{s+=`<text x="${sx(v).toFixed(1)}" y="${H-8}" text-anchor="middle" font-family="var(--mono)" font-size="11" fill="var(--faint)">${v.toFixed(1)}</text>`;});
+  s+=`<text x="${W-padR}" y="${H-8}" text-anchor="end" font-family="var(--mono)" font-size="11" fill="var(--faint)">β̂ VAL</text>`;
+  s+=`<text x="${padL-8}" y="${padT+10}" text-anchor="end" font-family="var(--mono)" font-size="11" fill="var(--faint)">β̂ MOM</text>`;
+  document.getElementById('sausage').innerHTML=s;
+}
+function upd1(){
+  const rho=parseFloat(document.getElementById('rho').value);
+  document.getElementById('rhoOut').textContent=rho.toFixed(2);
+  const P=genPanel(rho,SEED,NDAYS),f=fit(P.X,P.y),ev=eig4(f.G),kap=ev[0]/Math.max(ev[3],1e-12),vif=1/(1-rho*rho);
+  const pts=sausagePts(rho),sums=pts.map(p=>p[0]+p[1]),difs=pts.map(p=>p[0]-p[1]);
+  const sdS=sd(sums),sdD=sd(difs),rat=sdD/sdS,thr=Math.sqrt((1+rho)/(1-rho));
+  set('sA',(f.b[0]*100).toFixed(2)+' bp');set('sM',f.b[1].toFixed(3));set('sV',f.b[2].toFixed(3));set('sO',f.b[3].toFixed(3));
+  set('sKap',kap.toFixed(1));set('sVif',vif.toFixed(1)+'×');set('sSeV',f.se[2].toFixed(3));set('sSeO',f.se[3].toFixed(3));set('sRat',rat.toFixed(1)+'×');
+  drawSausage(pts);
+  const tail=rho>0.8?' Individual betas are becoming garbage; how the exposure splits between value and momentum is what the data cannot say.'
+    :(rho>0.3?' The valley is forming: the cloud leans along the dashed line as the difference direction softens.'
+    :' With near-orthogonal factors the cloud is round — every direction of β-space is equally well measured.');
+  document.getElementById('note1').textContent=
+    `ρ = ${rho.toFixed(2)}: VIF = ${vif.toFixed(1)}, so each collinear beta carries ${vif.toFixed(1)}× the variance of the orthogonal case (SE ×${Math.sqrt(vif).toFixed(2)}). Across ${B} seeded refits the spread is ${sdD.toFixed(3)} along β̂VAL−β̂MOM but only ${sdS.toFixed(3)} along β̂VAL+β̂MOM — ${rat.toFixed(1)}× elongated (theory √((1+ρ)/(1−ρ)) = ${thr.toFixed(1)}). The sum stays pinned near its true ${(BETA[1]+BETA[2]).toFixed(1)}.`+tail;
+}
+
+/* ---------- interactive 2: the projection picture ---------- */
+function drawProj(y,f,n){
+  const W=680,H=240,padL=40,padR=12,padT=12,padB=26,iw=W-padL-padR,ih=H-padT-padB;
+  const fv=y.map((v,t)=>v-f.res[t]);
+  let lo=Infinity,hi=-Infinity;for(let t=0;t<n;t++){lo=Math.min(lo,y[t],fv[t]);hi=Math.max(hi,y[t],fv[t]);}
+  const pd=(hi-lo)*0.08;lo-=pd;hi+=pd;
+  const sx=t=>padL+(t+0.5)/n*iw,sy=v=>padT+(1-(v-lo)/(hi-lo))*ih;
+  let s='';
+  if(lo<0&&hi>0)s+=`<line x1="${padL}" y1="${sy(0).toFixed(1)}" x2="${W-padR}" y2="${sy(0).toFixed(1)}" stroke="var(--hair2)"/>`;
+  for(let t=0;t<n;t++)s+=`<line x1="${sx(t).toFixed(1)}" y1="${sy(fv[t]).toFixed(1)}" x2="${sx(t).toFixed(1)}" y2="${sy(y[t]).toFixed(1)}" stroke="var(--series)" stroke-width="2" opacity="0.55"/>`;
+  s+=`<polyline fill="none" stroke="var(--accent)" stroke-width="1.6" points="${fv.map((v,t)=>sx(t).toFixed(1)+','+sy(v).toFixed(1)).join(' ')}"/>`;
+  for(let t=0;t<n;t++)s+=`<circle cx="${sx(t).toFixed(1)}" cy="${sy(y[t]).toFixed(1)}" r="2.6" fill="var(--ink)"/>`;
+  s+=`<text x="${padL-6}" y="${padT+10}" text-anchor="end" font-family="var(--mono)" font-size="11" fill="var(--faint)">%</text>`;
+  s+=`<text x="${W-padR}" y="${H-8}" text-anchor="end" font-family="var(--mono)" font-size="11" fill="var(--faint)">day</text>`;
+  document.getElementById('proj').innerHTML=s;
+}
+function upd2(){
+  const n=parseInt(document.getElementById('nn').value,10);
+  document.getElementById('nOut').textContent=n;
+  const P=genPanel(0.6,9000+n,n),f=fit(P.X,P.y),X=P.X,Gi=f.Gi;
+  const T=X.map(r=>[0,1,2,3].map(j=>r[0]*Gi[0][j]+r[1]*Gi[1][j]+r[2]*Gi[2][j]+r[3]*Gi[3][j]));
+  const Pm=[];for(let i=0;i<n;i++){const row=new Float64Array(n);for(let j=0;j<n;j++)row[j]=T[i][0]*X[j][0]+T[i][1]*X[j][1]+T[i][2]*X[j][2]+T[i][3]*X[j][3];Pm.push(row);}
+  let tr=0;for(let i=0;i<n;i++)tr+=Pm[i][i];
+  let maxIdem=0;for(let i=0;i<n;i++)for(let j=0;j<n;j++){let s=0;for(let k=0;k<n;k++)s+=Pm[i][k]*Pm[k][j];const d=Math.abs(s-Pm[i][j]);if(d>maxIdem)maxIdem=d;}
+  let maxOrth=0;for(let jc=0;jc<4;jc++){let s=0;for(let t=0;t<n;t++)s+=X[t][jc]*f.res[t];if(Math.abs(s)>maxOrth)maxOrth=Math.abs(s);}
+  let my=0;for(const v of P.y)my+=v;my/=n;let tss=0;for(const v of P.y)tss+=(v-my)*(v-my);
+  const r2=1-f.rss/tss;
+  set('tTr',tr.toFixed(9));set('tOrth',maxOrth.toExponential(1));set('tIdem',maxIdem.toExponential(1));set('tSig',Math.sqrt(f.s2).toFixed(3)+'%');set('tR2',r2.toFixed(3));
+  drawProj(P.y,f,n);
+  document.getElementById('note2').textContent=
+    `n = ${n} days: the four columns absorb exactly trace(P) = ${tr.toFixed(6)} dimensions of day-space; the residual is confined to the other ${n-KCOLS}. Every column's dot product with the residual is at most ${maxOrth.toExponential(1)} — not statistically small, arithmetically zero. That orthogonality IS the normal equations, and σ̂² divides by n−k = ${n-KCOLS} because that is the room the residual actually lives in (Lesson 2's n−1, generalised).`;
+}
+document.getElementById('rho').addEventListener('input',upd1);
+document.getElementById('nn').addEventListener('input',upd2);
+
+/* ---------- retrieval ---------- */
 const QS={
-  q1:{opts:["Xβ̂ = y, so β̂ = X⁻¹y","XᵀXβ̂ = Xᵀy, so β̂ = (XᵀX)⁻¹Xᵀy","β̂ = Xᵀy","β̂ = X(XᵀX)⁻¹"],a:1,
-    fb:"∇RSS = −2Xᵀy + 2XᵀXβ; zeroing it gives the normal equations XᵀXβ̂ = Xᵀy. X itself is generally not square, so X⁻¹ doesn't exist — you invert the square Gram matrix XᵀX."},
-  q2:{opts:["XᵀX is near-singular, so β̂ has huge variance (Var β̂ = σ²(XᵀX)⁻¹)","OLS is unaffected by collinearity","the residuals stop being orthogonal to X","β̂ is forced to exactly zero"],a:0,
-    fb:"Collinear columns give XᵀX a tiny eigenvalue; (XᵀX)⁻¹ then has a huge eigenvalue, so Var(β̂)=σ²(XᵀX)⁻¹ blows up and the estimate flips sign across samples — the elongated blue cloud."},
-  q3:{opts:["makes the estimator unbiased","is invertible for every λ>0 and shrinks β̂, trading a little bias for much less variance","has no effect when features are correlated","only works when p<n"],a:1,
-    fb:"Adding λI lifts every eigenvalue by λ, so (XᵀX+λI) is always invertible and the small-eigenvalue directions stop exploding. Ridge is deliberately biased — that's the price for the variance reduction, and it's exactly why it works when p>n too."}
+  q1:{opts:["X(y − Xβ̂) = 0 — the design matrix annihilates the residual","‖y − Xβ̂‖ = 0 — the fit is exact","Xᵀ(y − Xβ̂) = 0, which rearranges to the normal equations XᵀXβ̂ = Xᵀy","(y − Xβ̂)ᵀ(y − Xβ̂) = 0"],a:2,
+    fb:"Each column must be perpendicular to the residual: ⟨xⱼ, r⟩ = 0 for all j, stacked as Xᵀ(y − Xβ̂) = 0 (note the transpose — k conditions, not n). Expanding gives XᵀXβ̂ = Xᵀy. Interactive 2 shows these dot products vanishing at machine precision (~10⁻¹⁴), arithmetically zero."},
+  q2:{opts:["Pᵀ = P and P² = P, with trace(P) = k — an orthogonal projector onto the span of the factor columns","P⁻¹ = Pᵀ — it is an orthogonal (rotation) matrix","P² = I — applying it twice undoes it","trace(P) = n, one degree of freedom per day"],a:0,
+    fb:"Symmetric and idempotent: projecting a second time changes nothing, so eigenvalues are only 0 or 1, and the number of 1s — the trace — is k = 4, the dimensions the fit absorbs. A rotation is invertible; P deliberately is not (it collapses n dimensions to k)."},
+  q3:{opts:["all coefficients have the same variance σ²","estimation error depends only on how many days you have","β̂ is biased unless XᵀX is diagonal","precision is set by the geometry of the factor panel: along an eigenvector of XᵀX with eigenvalue λ, the variance is σ²/λ — collinear directions are the poorly measured ones"],a:3,
+    fb:"The whole covariance matrix of β̂ is σ²(XᵀX)⁻¹, so precision differs by direction: big-λ directions are tight, small-λ directions are wide (σ²/λ). n matters only through the eigenvalues. OLS stays unbiased regardless — collinearity is a variance disease, not a bias one."},
+  q4:{opts:["is unchanged — correlation between regressors does not matter for OLS","inflates by VIF = 1/(1−0.95²) ≈ 10.3, so its standard error is ≈ 3.2× wider than with orthogonal factors","exactly doubles","shrinks — correlated factors reinforce each other's signal"],a:1,
+    fb:"VIF = 1/(1−R²ⱼ) with R²ⱼ = 0.95² = 0.9025, giving ≈ 10.3× the variance and √10.3 ≈ 3.2× the SE. Operationally: the value and momentum hedge ratios each become untradeable numbers, even though the combined exposure stays well measured (q6)."},
+  q5:{opts:["n−k gives a smaller, more conservative estimate of σ²","k days are dropped from the sample as outliers","fitting k coefficients forces the residual into an (n−k)-dimensional subspace, so ‖r‖² carries only n−k noise dimensions — Lesson 2's n−1 is the k=1 special case","it corrects for correlation between the factors"],a:2,
+    fb:"r = (I−P)y and I−P is a projector of trace n−k: the residual literally lives in an (n−k)-dimensional space, so E‖r‖² = (n−k)σ². Dividing by n would understate σ² — and note the smaller divisor n−k makes σ̂² larger, so option A has it backwards. Lesson 2's n−1 is this with X a single ones column."},
+  q6:{opts:["the sum β̂VAL + β̂MOM and the fitted values ŷ — the well-conditioned directions of XᵀX","nothing — the whole regression is invalid under collinearity","only β̂MOM, since momentum has the stronger signal","the difference β̂VAL − β̂MOM, which averages the noise away"],a:0,
+    fb:"Collinearity puts the small eigenvalue on the difference direction (σ²/λ huge) but the sum direction keeps a large eigenvalue and stays tight — the sausage is long along v−m and thin along v+m. And ŷ = Py needs only the projection, which is stable. The difference is exactly the flat direction; it averages nothing away."}
 };
-const sel={q1:null,q2:null,q3:null};let revealed=false;
-Object.keys(QS).forEach(id=>{
-  const holder=document.querySelector('#'+id+' .opts');
-  QS[id].opts.forEach((txt,i)=>{
-    const b=document.createElement('button');b.className='opt';b.textContent=String.fromCharCode(65+i)+'.  '+txt;
-    b.onclick=()=>{if(revealed)return;sel[id]=i;[...holder.children].forEach((c,ci)=>c.classList.toggle('sel',ci===i));document.getElementById('hint').style.display='none';};
-    holder.appendChild(b);
-  });
-});
+const sel={q1:null,q2:null,q3:null,q4:null,q5:null,q6:null};let revealed=false;
+Object.keys(QS).forEach(id=>{const holder=document.querySelector('#'+id+' .opts');QS[id].opts.forEach((txt,i)=>{const b=document.createElement('button');b.className='opt';b.textContent=String.fromCharCode(65+i)+'.  '+txt;b.onclick=()=>{if(revealed)return;sel[id]=i;[...holder.children].forEach((c,ci)=>c.classList.toggle('sel',ci===i));document.getElementById('hint').style.display='none';};holder.appendChild(b);});});
 document.getElementById('check').onclick=async()=>{
-  if(revealed)return;
-  if(sel.q1===null||sel.q2===null||sel.q3===null){document.getElementById('hint').style.display='inline';return;}
+  if(revealed)return;if(Object.values(sel).some(v=>v===null)){document.getElementById('hint').style.display='inline';return;}
   revealed=true;let score=0;
-  Object.keys(QS).forEach(id=>{
-    const a=QS[id].a,holder=document.querySelector('#'+id+' .opts'),fb=document.querySelector('#'+id+' .fb');
-    [...holder.children].forEach((c,ci)=>{c.style.cursor='default';c.classList.remove('sel');if(ci===a)c.classList.add('correct');else if(ci===sel[id])c.classList.add('wrong');});
-    if(sel[id]===a)score++;fb.textContent=QS[id].fb;fb.classList.add('show');
-  });
-  const btn=document.getElementById('check');btn.style.opacity='0.5';btn.textContent='Checked · '+score+'/3';
-  document.getElementById('done').classList.add('show');
-  try{await window.storage.set('mfs:lesson05',JSON.stringify({done:true,retrieval:score+'/3',ts:Date.now()}),false);}catch(e){}
+  Object.keys(QS).forEach(id=>{const a=QS[id].a,holder=document.querySelector('#'+id+' .opts'),fb=document.querySelector('#'+id+' .fb');[...holder.children].forEach((c,ci)=>{c.style.cursor='default';c.classList.remove('sel');if(ci===a)c.classList.add('correct');else if(ci===sel[id])c.classList.add('wrong');});if(sel[id]===a)score++;fb.textContent=QS[id].fb;fb.classList.add('show');});
+  document.getElementById('check').style.opacity='0.5';document.getElementById('check').textContent='Checked';
+  document.getElementById('scoreOut').textContent=score+' / 6';document.getElementById('done').classList.add('show');
+  try{await window.storage.set('mfs:lesson05',JSON.stringify({done:true,retrieval:score+'/6',ts:Date.now()}),false);}catch(e){}
 };
-function boot(){renderMath();sample();render();document.getElementById('note').textContent='Hit “Run 200 resamples”. Each draw re-estimates β̂ from fresh data; the clouds are the sampling distributions of OLS vs ridge. Push ρ toward 1 and watch the blue cloud explode along one direction.';}
+function boot(){renderMath();upd1();upd2();}
 if(window.katex)boot();else window.addEventListener('load',boot);
 (async()=>{try{const r=await window.storage.get('mfs:lesson05',false);if(r&&r.value){const v=JSON.parse(r.value);if(v.done){const c=document.getElementById('chip');c.classList.add('show');c.textContent='completed · '+v.retrieval;}}}catch(e){}})();
 </script>
