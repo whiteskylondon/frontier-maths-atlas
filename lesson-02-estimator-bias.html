@@ -8,31 +8,17 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
 <style>
   :root{
-    --paper:#FAFAF6; --ink:#1A1C22; --muted:#63676E; --faint:#9A9EA4;
-    --hair:#E4E3DB; --hair2:#D4D3CA; --panel:#FFFFFF;
-    --accent:#24507A; --accent-bg:#EAF0F6;
-    --series:#B07A2E; --series-bg:#F6EEE1;
-    --miss:#B23A3A; --ok:#2F6B4F; --ok-bg:#E9F1EC;
-    --vol:#8A5A2B; --vol-bg:#F6EFE6;
-    --serif:Iowan Old Style,Palatino,"Palatino Linotype",Georgia,serif;
-    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    --paper:#FAFAF6;--ink:#1A1C22;--muted:#63676E;--faint:#9A9EA4;--hair:#E4E3DB;--hair2:#D4D3CA;--panel:#FFFFFF;
+    --accent:#24507A;--accent-bg:#EAF0F6;--series:#B07A2E;--miss:#B23A3A;--ok:#2F6B4F;--ok-bg:#E9F1EC;
+    --vol:#8A5A2B;--vol-bg:#F6EFE6;--serif:Iowan Old Style,Palatino,Georgia,serif;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
   }
-  @media (prefers-color-scheme: dark){
-    :root{
-      --paper:#15161A; --ink:#E9E8E2; --muted:#A2A6AC; --faint:#71757B;
-      --hair:#2A2C31; --hair2:#3A3C42; --panel:#1B1D22;
-      --accent:#7FB0E0; --accent-bg:#1E2A38;
-      --series:#D9A85E; --series-bg:#2A2013;
-      --miss:#E07A7A; --ok:#7FC49F; --ok-bg:#1C2A22;
-      --vol:#D9A066; --vol-bg:#2A2115;
-    }
-  }
+  @media (prefers-color-scheme:dark){:root{--paper:#15161A;--ink:#E9E8E2;--muted:#A2A6AC;--faint:#71757B;--hair:#2A2C31;--hair2:#3A3C42;--panel:#1B1D22;--accent:#7FB0E0;--accent-bg:#1E2A38;--series:#D9A85E;--miss:#E07A7A;--ok:#7FC49F;--ok-bg:#1C2A22;--vol:#D9A066;--vol-bg:#2A2115;}}
   *{box-sizing:border-box}
   body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.62;-webkit-font-smoothing:antialiased}
-  .wrap{max-width:740px;margin:0 auto;padding:32px 24px 60px}
+  .wrap{max-width:750px;margin:0 auto;padding:32px 24px 60px}
   .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 6px}
-  h1{font-family:var(--serif);font-weight:600;font-size:29px;line-height:1.2;margin:0 0 6px;letter-spacing:-.01em}
+  h1{font-family:var(--serif);font-weight:600;font-size:27px;line-height:1.22;margin:0 0 6px;letter-spacing:-.01em}
   .chip{display:none;font-family:var(--mono);font-size:11px;letter-spacing:.05em;color:var(--ok);border:1px solid var(--ok);border-radius:20px;padding:3px 10px;vertical-align:middle;margin-left:10px}
   .chip.show{display:inline-block}
   .sub{color:var(--muted);font-size:15px;margin:0 0 18px}
@@ -42,51 +28,43 @@
   .levels .pill b{color:var(--accent);font-weight:700;letter-spacing:.03em}
   p.lead{font-size:16px;margin:0 0 22px}
   p.lead b{font-weight:600}
-  .sec{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:34px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--hair)}
+  .sec{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:36px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--hair)}
   .mblock{margin:16px 0;overflow-x:auto}
   .glo{list-style:none;padding:0;margin:14px 0 0}
   .glo li{display:flex;gap:14px;padding:9px 0;border-top:1px solid var(--hair);align-items:baseline}
   .glo li:first-child{border-top:none}
-  .glo .sym{flex:0 0 118px;text-align:right;padding-top:2px}
+  .glo .sym{flex:0 0 118px;text-align:right;padding-top:2px;font-size:14px}
   .glo .def{font-size:14.5px}
   .glo .def .n{color:var(--muted)}
   .step{font-size:14.5px;color:var(--muted);margin:10px 0}
   .panel{background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:20px;margin:14px 0}
-  .ctrls{display:flex;flex-wrap:wrap;gap:18px 28px;align-items:flex-end;margin:0 0 14px}
-  .field{display:flex;flex-direction:column;gap:6px;min-width:150px;flex:1}
+  .imgs{display:flex;flex-wrap:wrap;gap:22px;align-items:flex-start}
+  .imgs figure{margin:0;display:flex;flex-direction:column;gap:6px}
+  .imgs figcaption{font-family:var(--mono);font-size:12px;color:var(--muted)}
+  .ctrls{display:flex;flex-wrap:wrap;gap:16px 26px;align-items:flex-end;margin:0 0 12px}
+  .field{display:flex;flex-direction:column;gap:6px;min-width:200px;flex:1}
   .field label{font-size:12px;color:var(--muted);font-family:var(--mono);letter-spacing:.03em;display:flex;justify-content:space-between}
   .field label b{color:var(--ink);font-weight:600}
   input[type=range]{width:100%;accent-color:var(--accent);height:20px}
-  .btns{display:flex;flex-wrap:wrap;gap:8px;margin:2px 0 12px}
-  button.act{font-family:var(--sans);font-size:14px;padding:8px 14px;border-radius:8px;border:1px solid var(--hair2);background:var(--panel);color:var(--ink);cursor:pointer}
-  button.act:hover{border-color:var(--accent);color:var(--accent)}
-  button.act.primary{background:var(--accent);border-color:var(--accent);color:#fff}
-  button.act.primary:hover{color:#fff;opacity:.92}
   svg{max-width:100%;height:auto;display:block}
-  .legend{display:flex;flex-wrap:wrap;gap:16px;margin:10px 0 2px;font-size:12.5px;color:var(--muted);font-family:var(--mono)}
+  .legend{display:flex;flex-wrap:wrap;gap:14px;margin:10px 0 2px;font-size:12px;color:var(--muted);font-family:var(--mono)}
   .legend span{display:inline-flex;align-items:center;gap:6px}
   .sw{width:14px;height:10px;border-radius:2px;display:inline-block}
   .tally{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 2px}
-  .stat{flex:1;min-width:120px;background:var(--paper);border-radius:9px;padding:9px 12px}
-  .stat .k{font-size:11px;font-family:var(--mono);letter-spacing:.05em;color:var(--muted);text-transform:uppercase}
-  .stat .v{font-size:21px;font-weight:600;font-family:var(--mono);margin-top:2px}
-  .stat .v.neg{color:var(--series)}
-  .callout{font-size:14px;color:var(--muted);border-left:2px solid var(--accent);padding:2px 0 2px 14px;margin:16px 0 2px}
+  .stat{flex:1;min-width:140px;background:var(--paper);border-radius:9px;padding:9px 12px}
+  .stat .k{font-size:11px;font-family:var(--mono);letter-spacing:.04em;color:var(--muted);text-transform:uppercase}
+  .stat .v{font-size:17px;font-weight:600;font-family:var(--mono);margin-top:2px}
+  .stat .v.a{color:var(--accent)}.stat .v.g{color:var(--ok)}.stat .v.s{color:var(--series)}
+  .callout{font-size:14px;color:var(--muted);border-left:2px solid var(--accent);padding:2px 0 2px 14px;margin:16px 0 2px;min-height:1.4em}
   .theorem{background:var(--accent-bg);border-radius:12px;padding:18px 20px;margin:16px 0}
   .theorem .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
-  .theorem p{font-family:var(--serif);font-size:16.5px;line-height:1.55;margin:0}
+  .theorem p{font-family:var(--serif);font-size:16px;line-height:1.55;margin:0}
   .twist{border:1px dashed var(--hair2);border-radius:12px;padding:16px 18px;margin:16px 0;background:var(--panel)}
   .twist .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
-  .twist p{margin:0 0 12px;font-size:14.6px}
-  .mserow{display:flex;flex-wrap:wrap;gap:8px}
-  .mse{flex:1;min-width:110px;background:var(--paper);border-radius:8px;padding:8px 10px;border:1px solid var(--hair)}
-  .mse.win{border-color:var(--ok);background:var(--ok-bg)}
-  .mse .k{font-size:11px;font-family:var(--mono);color:var(--muted)}
-  .mse .v{font-size:16px;font-weight:600;font-family:var(--mono);margin-top:2px}
+  .twist p{margin:0;font-size:14.6px}
   .vol{background:var(--vol-bg);border:1px solid var(--vol);border-radius:12px;padding:18px 20px;margin:16px 0}
   .vol .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:var(--vol);margin:0 0 8px}
-  .vol p{margin:0 0 10px;font-size:14.8px}
-  .vol p:last-child{margin-bottom:0}
+  .vol p{margin:0 0 10px;font-size:14.8px}.vol p:last-child{margin-bottom:0}
   .vol code{font-family:var(--mono);font-size:13px;background:rgba(138,90,43,.12);padding:1px 5px;border-radius:4px}
   .q{border:1px solid var(--hair);border-radius:12px;padding:16px 18px;margin:12px 0;background:var(--panel)}
   .q .stem{font-size:15px;font-weight:500;margin:0 0 12px}
@@ -96,224 +74,283 @@
   .opt.sel{border-color:var(--accent);background:var(--accent-bg)}
   .opt.correct{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
   .opt.wrong{background:#F7ECEC;border-color:var(--miss);color:var(--miss)}
-  @media (prefers-color-scheme: dark){ .opt.wrong{background:#2E1E1E} }
+  @media (prefers-color-scheme:dark){.opt.wrong{background:#2E1E1E}}
   .fb{font-size:13.5px;color:var(--muted);margin:10px 0 0;line-height:1.5;display:none}
   .fb.show{display:block}
-  .checkRow{display:flex;align-items:center;gap:14px;margin:16px 0 0;flex-wrap:wrap}
+  .checkRow{display:flex;align-items:center;gap:14px;margin:18px 0 0;flex-wrap:wrap}
   .hint{font-size:13px;color:var(--miss);display:none}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-family:var(--sans);font-size:14px;padding:8px 14px;border-radius:8px;border:1px solid var(--accent);cursor:pointer}
+  .scoreOut{font-family:var(--mono);font-size:14px;font-weight:600}
   .done{display:none;align-items:center;gap:10px;background:var(--ok-bg);color:var(--ok);border-radius:10px;padding:12px 16px;font-size:14px;margin:14px 0 0}
   .done.show{display:flex}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <p class="eyebrow">Lesson 02 · Estimation &amp; inference</p>
+  <p class="eyebrow">Lesson 02 · Wing 0 — statistical &amp; linear-algebra foundations</p>
   <h1>Estimators, bias, and the n−1 story<span class="chip" id="chip"></span></h1>
-  <p class="sub">Why dividing by n understates the spread — and why "unbiased" still isn't "best".</p>
+  <p class="sub">Why dividing by n understates realized vol, why n−1 doesn't fully fix it — and why "unbiased" was never the prize.</p>
   <div class="levels">
     <span class="lk">Level</span>
     <span class="pill"><b>US</b> Advanced undergraduate</span>
-    <span class="pill"><b>FR</b> Licence L3 – Master M1 · ENSAE 1A</span>
+    <span class="pill"><b>FR</b> Licence L3 – Master 1 · ENSAE 1A</span>
   </div>
 
-  <p class="lead">Same world as before: draws from a population with true variance <b>σ² = 144</b> (σ = 12), but now both μ and σ² are unknown. To estimate the spread you sum squared deviations — from <b>x̄</b>, because μ isn't available. That single substitution is the whole story: x̄ is fit to your data, so it sits closer to the points than the true μ does, and the deviations come out systematically too small.</p>
+  <p class="lead">A vol desk looks back at the last <b>20 daily returns</b> of an index and quotes one number: the <b>realized volatility</b> — the typical size of a daily move, scaled up to a year. That number comes out of an <b>estimator</b>: a fixed recipe that turns observed data into a guess at something true but hidden. Run the recipe on many different months and the guesses scatter; the shape of that scatter is the <b>sampling distribution</b>, the same object underneath Lesson&nbsp;1's confidence intervals. If the scatter centres on the truth the recipe is <b>unbiased</b>; if its long-run average misses — every month, in the same direction — that systematic gap is <b>bias</b>. This lesson finds bias hiding inside the most routine calculation in finance, twice: the two classic recipes for variance are both shaded, for two different reasons, and one of the two shavings survives every divisor you throw at it.</p>
 
-  <div class="sec">The two estimators</div>
-  <div class="mblock math" data-tex="S^2_{n}=\frac{1}{n}\sum_{i=1}^{n}(x_i-\bar{x})^2\qquad\qquad S^2_{n-1}=\frac{1}{n-1}\sum_{i=1}^{n}(x_i-\bar{x})^2" data-display="1"></div>
+  <div class="sec">The words, in plain English</div>
   <ul class="glo">
-    <li><span class="sym math" data-tex="\bar{x}"></span><span class="def">the <b>sample mean</b> we subtract. <span class="n">Being chosen to fit the sample, it minimises Σ(xᵢ−c)² over c — so deviations from x̄ are the smallest they can be, smaller than from the true μ.</span></span></li>
-    <li><span class="sym math" data-tex="\sum(x_i-\bar{x})^2"></span><span class="def">the <b>sum of squares</b> (SS) — total squared spread around x̄. <span class="n">Both estimators share this numerator; they differ only in the divisor.</span></span></li>
-    <li><span class="sym math" data-tex="S^2_{n}"></span><span class="def">the <b>MLE</b> (divide by n). <span class="n">This is what maximum likelihood hands you for a normal — and it is biased low.</span></span></li>
-    <li><span class="sym math" data-tex="S^2_{n-1}"></span><span class="def">the <b>Bessel-corrected</b> estimator (divide by n−1). <span class="n">Exactly unbiased for the variance of any distribution with finite variance.</span></span></li>
-    <li><span class="sym math" data-tex="n-1"></span><span class="def"><b>degrees of freedom</b>: n data points minus the 1 constraint spent computing x̄. <span class="n">The correction is nothing more than "give back the freedom you used".</span></span></li>
+    <li><span class="sym"><b>estimator</b></span><span class="def">a formula applied to data, written with a hat: σ̂² estimates σ². <span class="n">The recipe is the estimator; the number it prints on one particular window is an estimate.</span></span></li>
+    <li><span class="sym"><b>sampling distribution</b></span><span class="def">the spread of the estimator's outputs across many possible data windows. <span class="n">You only ever see one draw from it — this month's number — but its shape governs how much to trust that draw.</span></span></li>
+    <li><span class="sym"><b>bias</b></span><span class="def">the gap between the sampling distribution's centre and the truth: E[σ̂²] − σ². <span class="n">Noise averages out; bias doesn't. A biased vol estimator misquotes in the same direction forever.</span></span></li>
+    <li><span class="sym"><b>degrees of freedom</b></span><span class="def">how many numbers in the data remain free after the constraints you imposed. <span class="n">Computing the sample mean pins down one linear combination — 20 returns minus 1 constraint leave 19 free deviations.</span></span></li>
+    <li><span class="sym"><b>realized volatility</b></span><span class="def">the standard deviation of recent daily returns, annualized by √252. <span class="n">The desk's backward-looking vol number, as opposed to implied vol, which markets quote forward.</span></span></li>
   </ul>
 
-  <div class="sec">Why ÷ n is biased — the derivation</div>
-  <p class="step">Split each deviation through the true μ (algebraic identity, exact for every sample):</p>
-  <div class="mblock math" data-tex="\sum_{i}(x_i-\bar{x})^2=\sum_{i}(x_i-\mu)^2-\,n(\bar{x}-\mu)^2" data-display="1"></div>
-  <p class="step">Take expectations. The first term averages to nσ²; the second is n·Var(x̄) = n·(σ²/n) = σ²:</p>
-  <div class="mblock math" data-tex="\mathbb{E}\!\left[\sum_i(x_i-\bar{x})^2\right]=n\sigma^2-\sigma^2=(n-1)\,\sigma^2" data-display="1"></div>
-  <p class="step">So the honest divisor is n−1, and dividing by n falls short by the factor (n−1)/n:</p>
-  <div class="mblock math" data-tex="\mathbb{E}[S^2_{n-1}]=\sigma^2\quad(\text{unbiased})\qquad\qquad\mathbb{E}[S^2_{n}]=\frac{n-1}{n}\,\sigma^2\quad(\text{biased low})" data-display="1"></div>
-  <p class="step">At n = 2 that factor is ½: the MLE expects <i>half</i> the true variance. The gap fades as n grows — both estimators are consistent.</p>
+  <div class="sec">Two recipes for one number</div>
+  <p class="step">The true world in this lesson: daily index returns with true daily vol σ = 1.2% (σ² = 1.44 %²) and a whisper of drift, ≈ 0.02% a day. The desk sees a window of n = 20 returns, subtracts the sample mean because the true drift μ is unavailable, and divides the sum of squared deviations by… what, exactly? Two candidates:</p>
+  <div class="mblock math" data-tex="\hat\sigma^2_{n}=\frac{1}{n}\sum_{i=1}^{n}(r_i-\bar r)^2\qquad s^2=\frac{1}{n-1}\sum_{i=1}^{n}(r_i-\bar r)^2\qquad \hat\sigma_{\mathrm{ann}}=\sqrt{s^2}\cdot\sqrt{252}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="r_i"></span><span class="def">the i-th <b>daily return</b>, in percent. <span class="n">Modelled i.i.d. here; Lesson 7 relaxes that for the Cross-Matrix.</span></span></li>
+    <li><span class="sym math" data-tex="\bar r"></span><span class="def">the <b>sample mean</b> of the window. <span class="n">Chosen by the data to minimise Σ(rᵢ−c)² over all c — so deviations from r̄ are the smallest they can possibly be, smaller than from the true μ.</span></span></li>
+    <li><span class="sym math" data-tex="\hat\sigma^2_{n}"></span><span class="def">variance with the <b>÷n divisor</b>. <span class="n">This is exactly what maximum likelihood hands you for a Gaussian — Lesson 3 derives it — and it is biased low.</span></span></li>
+    <li><span class="sym math" data-tex="s^2"></span><span class="def">the <b>Bessel-corrected</b> variance, ÷(n−1). <span class="n">Exactly unbiased for σ² under any distribution with finite variance.</span></span></li>
+    <li><span class="sym math" data-tex="\sqrt{252}"></span><span class="def">the <b>annualization</b> factor: 252 trading days, and variance adds across independent days. <span class="n">Multiplicative — so any bias in the daily number passes straight through to the annual quote.</span></span></li>
+  </ul>
 
-  <div class="sec">See it — sampling distributions of the two estimators</div>
+  <div class="sec">Why ÷n comes out low — the derivation</div>
+  <p class="step">The culprit is r̄. It is fitted to this particular window, so it sits closer to these 20 points than the true μ does, and squared deviations measured from it come out too small. Split each deviation through μ — an exact algebraic identity, true for every sample:</p>
+  <div class="mblock math" data-tex="\sum_{i}(r_i-\bar r)^2=\sum_{i}(r_i-\mu)^2-\,n(\bar r-\mu)^2" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="\mu"></span><span class="def">the <b>true drift</b> — unknown, which is why we subtracted r̄ instead. <span class="n">The identity quantifies the cost of that substitution.</span></span></li>
+    <li><span class="sym math" data-tex="n(\bar r-\mu)^2"></span><span class="def">the <b>stolen piece</b>: how much spread disappears because r̄ chased the sample. <span class="n">Always ≥ 0 — fitting can only shrink the measured spread, never inflate it.</span></span></li>
+  </ul>
+  <p class="step">Take expectations. The first term averages to nσ²; the stolen piece averages to n·Var(r̄) = n·(σ²/n) = σ² — exactly one observation's worth of variance:</p>
+  <div class="mblock math" data-tex="\mathbb{E}\!\left[\sum_i(r_i-\bar r)^2\right]=n\sigma^2-\sigma^2=(n-1)\,\sigma^2" data-display="1"></div>
+  <p class="step">So the honest divisor is n−1, and dividing by n falls short by the ratio of the two:</p>
+  <div class="mblock math" data-tex="\mathbb{E}[s^2]=\sigma^2\quad(\text{unbiased})\qquad\qquad \mathbb{E}[\hat\sigma^2_{n}]=\frac{n-1}{n}\,\sigma^2\quad(\text{biased low})" data-display="1"></div>
+  <p class="step">At n = 20 — one trading month — the factor is exactly (n−1)/n = 0.95: a built-in <b>5% shading of variance</b>. At n = 2 it is ½: the ÷n recipe expects <i>half</i> the true variance. The gap fades as n grows; both estimators are consistent.</p>
+
+  <div class="sec">See it — thousands of trading months</div>
   <div class="panel">
     <div class="ctrls">
-      <div class="field">
-        <label>sample size <i>n</i> <b id="nOut">5</b></label>
-        <input type="range" id="n" min="2" max="120" value="5" step="1" />
-      </div>
+      <div class="field"><label>window length n (days) <b id="nOut">20</b></label><input type="range" id="n" min="5" max="120" value="20" step="1" /></div>
+      <div class="field"><label>windows simulated <b id="mOut">4,000</b></label><input type="range" id="m" min="500" max="8000" value="4000" step="500" /></div>
     </div>
-    <div class="btns">
-      <button class="act" id="one">Draw one</button>
-      <button class="act primary" id="many">Run 400</button>
-      <button class="act" id="reset">Reset</button>
-    </div>
-    <svg id="plot" viewBox="0 0 680 340" role="img" aria-label="Overlaid sampling distributions of the two variance estimators against the true variance"></svg>
+    <svg id="plot" viewBox="0 0 680 320" role="img" aria-label="Sampling distributions of the two variance estimators against the true variance"></svg>
     <div class="legend">
-      <span><i class="sw" style="background:var(--accent);opacity:.5"></i>S²₍ₙ₋₁₎ unbiased</span>
-      <span><i class="sw" style="background:var(--series);opacity:.5"></i>S²₍ₙ₎ MLE (biased)</span>
-      <span><i class="sw" style="background:var(--ink)"></i>true σ² = 144</span>
+      <span><i class="sw" style="background:var(--series);opacity:.55"></i>σ̂²ₙ (÷n, MLE)</span>
+      <span><i class="sw" style="background:var(--accent);opacity:.55"></i>s² (÷(n−1))</span>
+      <span><i class="sw" style="background:var(--ink)"></i>true σ²</span>
+      <span>┊ dashed = empirical means</span>
     </div>
     <div class="tally">
-      <div class="stat"><div class="k">mean of S²₍ₙ₋₁₎</div><div class="v" id="mNm1">—</div></div>
-      <div class="stat"><div class="k">mean of S²₍ₙ₎</div><div class="v" id="mN">—</div></div>
-      <div class="stat"><div class="k">bias of S²₍ₙ₎</div><div class="v neg" id="bN">—</div></div>
+      <div class="stat"><div class="k">mean s² (%²/day)</div><div class="v a" id="mUnb">—</div></div>
+      <div class="stat"><div class="k">mean σ̂²ₙ (%²/day)</div><div class="v s" id="mMle">—</div></div>
+      <div class="stat"><div class="k">E[σ̂²ₙ]/σ² · emp vs (n−1)/n</div><div class="v" id="ratio">—</div></div>
+      <div class="stat"><div class="k">ann. vol quote · mean vs true</div><div class="v g" id="volq">—</div></div>
     </div>
-    <p class="callout" id="note">At small n the biased MLE's mean sits visibly left of the true line. Drag n up and the two distributions slide together — bias vanishes as n → ∞.</p>
+    <p class="callout" id="note1"></p>
   </div>
 
+  <p class="step">Everything so far used no normality — only i.i.d. draws with a finite variance. Normality enters only when you want the exact <i>shape</i> of the sampling distribution you just watched, and the exact size of the second bias below.</p>
   <div class="theorem">
     <p class="lbl">The precise statement</p>
-    <p>For i.i.d. data with finite variance σ², E[S²₍ₙ₋₁₎] = σ² exactly — unbiasedness needs no normality assumption. The MLE satisfies E[S²₍ₙ₎] = (n−1)/n · σ², biased downward. Both converge to σ² as n → ∞ (consistency); normality is required only for the estimator's exact sampling distribution, not for these expectations.</p>
+    <p>For i.i.d. returns with finite variance σ²: E[s²] = σ² exactly and E[σ̂²ₙ] = (n−1)/n · σ², with no distributional assumption. If the returns are moreover Gaussian, then (n−1)s²/σ² ~ χ²ₙ₋₁, so Var(s²) = 2σ⁴/(n−1), and the sample standard deviation satisfies E[s] = c₄(n)·σ with c₄(n) = √(2/(n−1)) · Γ(n/2)/Γ((n−1)/2) &lt; 1. Both estimators are consistent: bias and variance vanish as n → ∞.</p>
+  </div>
+
+  <div class="sec">The deeper cut — s underquotes σ even after Bessel</div>
+  <p class="step">The desk does not quote variance; it quotes vol — the square root. And unbiasedness does not survive a square root. The root function is concave: pushing a scattered s² through it drags the average down, so E[s] &lt; √E[s²] = σ strictly, whenever s² has any scatter at all. That is <b>Jensen's inequality</b> doing the shaving, not the divisor. For Gaussian returns the shortfall is an exact constant:</p>
+  <div class="mblock math" data-tex="\mathbb{E}[s]=c_4(n)\,\sigma,\qquad c_4(n)=\sqrt{\tfrac{2}{n-1}}\;\frac{\Gamma\!\left(n/2\right)}{\Gamma\!\left((n-1)/2\right)}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="c_4(n)"></span><span class="def">the <b>vol-bias factor</b>: always &lt; 1, rising to 1 as n → ∞. <span class="n">c₄(20) ≈ 0.9869 — a 20-day vol quote runs about 1.3% below the truth, systematically.</span></span></li>
+    <li><span class="sym math" data-tex="\Gamma"></span><span class="def">the <b>gamma function</b>, the smooth extension of the factorial: Γ(k) = (k−1)! at integers. <span class="n">It appears because s² is χ²-distributed and E[√χ²] is a gamma-ratio integral.</span></span></li>
+  </ul>
+  <p class="step">Annualization inherits the shave multiplicatively: with true daily vol 1.2%, the honest annual number is 1.2·√252 ≈ 19.05%, but the average 20-day quote is c₄(20)×that ≈ 18.80% — roughly <b>25 bp of index vol, missing every month in the same direction</b>. And because the culprit is Jensen, not the divisor, no choice of divisor under the root repairs it; only rescaling by c₄(n) (a normality-specific constant) does.</p>
+
+  <div class="sec">Accuracy is MSE — the divisor bake-off</div>
+  <p class="step">Bias is only half of accuracy. The full score is mean squared error, MSE = variance + bias², and for Gaussian returns every divisor k applied to the same sum of squares SS = Σ(rᵢ−r̄)² has a closed form:</p>
+  <div class="mblock math" data-tex="\operatorname{MSE}(k)=\mathbb{E}\!\left[\Big(\tfrac{SS}{k}-\sigma^2\Big)^{\!2}\right]=\frac{2(n-1)+(n-1-k)^2}{k^2}\;\sigma^4,\qquad \arg\min_k \operatorname{MSE}(k)=n+1" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="SS"></span><span class="def">the shared numerator, distributed as σ²·χ²ₙ₋₁ under normality. <span class="n">All three candidate estimators are the same SS with different price tags.</span></span></li>
+    <li><span class="sym math" data-tex="2(n-1)"></span><span class="def">the <b>variance term</b> (in units of σ⁴/k²). <span class="n">Bigger divisors shrink it — shrinking toward zero always cuts scatter.</span></span></li>
+    <li><span class="sym math" data-tex="(n-1-k)^2"></span><span class="def">the <b>bias² term</b>: zero exactly at k = n−1. <span class="n">Minimising the sum, not this term alone, gives k = n+1 — a little bias is worth buying.</span></span></li>
+  </ul>
+  <div class="panel">
+    <div class="ctrls">
+      <div class="field"><label>window length n (days) <b id="n2Out">20</b></label><input type="range" id="n2" min="5" max="120" value="20" step="1" /></div>
+    </div>
+    <div class="imgs">
+      <figure style="flex:1;min-width:280px">
+        <svg id="biasSvg" viewBox="0 0 330 220" role="img" aria-label="Relative bias of the two estimators versus window length"></svg>
+        <figcaption>relative bias vs n (deterministic)</figcaption>
+        <div class="legend"><span><i class="sw" style="background:var(--series)"></i>÷n for σ²: −1/n</span><span><i class="sw" style="background:var(--accent)"></i>s for σ: c₄(n)−1</span></div>
+      </figure>
+      <figure style="flex:1;min-width:280px">
+        <svg id="mseSvg" viewBox="0 0 330 220" role="img" aria-label="MSE of three divisors versus window length"></svg>
+        <figcaption>MSE / σ⁴ vs n (deterministic)</figcaption>
+        <div class="legend"><span><i class="sw" style="background:var(--miss)"></i>÷(n−1)</span><span><i class="sw" style="background:var(--series)"></i>÷n</span><span><i class="sw" style="background:var(--ok)"></i>÷(n+1)</span></div>
+      </figure>
+    </div>
+    <div class="tally">
+      <div class="stat"><div class="k">÷n variance shading</div><div class="v s" id="shadeV">—</div></div>
+      <div class="stat"><div class="k">c₄(n)</div><div class="v a" id="c4Out">—</div></div>
+      <div class="stat"><div class="k">s shave on σ</div><div class="v a" id="shaveS">—</div></div>
+      <div class="stat"><div class="k">MSE ÷(n+1) vs ÷(n−1)</div><div class="v g" id="mseGain">—</div></div>
+    </div>
+    <p class="callout" id="note2"></p>
   </div>
 
   <div class="twist">
-    <p class="lbl">The twist — unbiased is not "best"</p>
-    <p>Accuracy is mean squared error, MSE = variance + bias². Minimising MSE over divisors S = Σ(xᵢ−x̄)²/k gives, for normal data, <b>k = n+1</b> — not n−1. Trading a little bias for enough variance reduction wins. The full ordering is <b>MSE(÷(n+1)) &lt; MSE(÷n) &lt; MSE(÷(n−1))</b>: the unbiased estimator has the <i>worst</i> MSE of the three, and the "wrong" MLE beats it. This is the bias–variance trade-off in one line, and the reason shrinkage estimators exist. Watch it below (clearest at small n):</p>
-    <div class="mserow">
-      <div class="mse" id="mse-np1"><div class="k">MSE ÷(n+1)</div><div class="v" id="v-np1">—</div></div>
-      <div class="mse" id="mse-n"><div class="k">MSE ÷n</div><div class="v" id="v-n">—</div></div>
-      <div class="mse" id="mse-nm1"><div class="k">MSE ÷(n−1)</div><div class="v" id="v-nm1">—</div></div>
-    </div>
+    <p class="lbl">The twist — unbiasedness is not the prize</p>
+    <p>The full MSE ordering is <b>÷(n+1) &lt; ÷n &lt; ÷(n−1)</b> at every n: the "wrong" MLE beats the unbiased estimator, and a divisor nobody teaches beats them both. Trading a small, known bias for a larger cut in variance is a strictly better deal — this is the bias–variance trade-off in one line, the germ of every shrinkage estimator, and the exact tension Wing V reopens at the scale of neural networks. And the second shaving is stranger still: <b>no divisor fixes s</b>. The bias of s for σ comes from pushing scatter through a concave square root — Jensen's inequality — so it lives above the divisor entirely. Unbiasedness is not preserved by nonlinear functions; it is a property of a coordinate system, not of an estimator's quality.</p>
   </div>
 
   <div class="vol">
     <p class="lbl">Why this matters · volarixs</p>
-    <p>Variance bias isn't academic for you — it's the vol you annualise and, more sharply, the <b>covariance matrices</b> under your factor and regime models. On a short window (exactly when regimes shift and you <i>want</i> short windows), the ÷n estimator understates realised vol; the correction bites most when data is scarce.</p>
-    <p>One dimension up it gets worse: the sample covariance matrix is unbiased entry-by-entry but a poor estimate of the <i>matrix</i> once the number of assets approaches the number of observations — its eigenvalues fan out and the inverse (what any Markowitz or factor step needs) explodes. The fix is precisely the twist above: deliberately bias toward a simpler target to cut variance — <code>Ledoit–Wolf shrinkage</code>. Same bias–variance trade you just watched, now on <code>Σ̂</code>.</p>
+    <p>Every realized-vol input into the <code>Cross-Matrix</code> and every covariance entry feeding <code>pca_factors</code> is one of these two estimators evaluated on a short window — the choice of divisor is baked into every cell. On the 20-day windows the platform favours, ÷n versus ÷(n−1) is a systematic <b>5% shading of variance</b> (the (n−1)/n = 0.95 factor), applied uniformly across the whole matrix.</p>
+    <p>Sharper still: at n = 20 the sampling noise of the estimate is not small relative to what's being traded. The relative standard deviation of s² is √(2/(n−1)) ≈ 32% of the variance level — roughly 16% on the vol quote itself — which is the same order as the vol moves a regime shift produces. A 20-day realized-vol series is an estimator's sampling distribution unrolled in time; treating its wiggles as pure market signal double-counts the noise you just watched in the histogram.</p>
   </div>
 
   <div class="sec">Check yourself</div>
-  <div class="q" id="q1"><p class="stem">The MLE estimator S²₍ₙ₎ (divide by n) systematically:</p><div class="opts"></div><p class="fb"></p></div>
-  <div class="q" id="q2"><p class="stem">We divide by n−1 rather than n because:</p><div class="opts"></div><p class="fb"></p></div>
-  <div class="q" id="q3"><p class="stem">Among estimators Σ(xᵢ−x̄)²/k for normal data, which k minimises mean squared error?</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q1"><p class="stem">A desk's estimator σ̂² of the true variance σ² is called <i>biased</i> when:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q2"><p class="stem">Dividing the sum of squared deviations by n−1 rather than n is justified because:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q3"><p class="stem">Even with the n−1 divisor, s = √s² systematically underquotes σ because:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q4"><p class="stem">For Gaussian returns, which divisor k in Σ(rᵢ−r̄)²/k minimises mean squared error for σ²?</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q5"><p class="stem">A desk quotes 20-day realized vol as s·√252 (n−1 divisor) and finds it runs systematically ≈1.3% low relative to true σ. The correct fix is:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q6"><p class="stem">At n = 20, replacing the ÷(n−1) divisor with ÷n changes the variance estimate, on average, by:</p><div class="opts"></div><p class="fb"></p></div>
 
   <div class="checkRow">
-    <button class="act primary" id="check">Check answers</button>
-    <span class="hint" id="hint">Select an answer for all three first.</span>
+    <button class="primary" id="check">Check answers</button>
+    <span class="scoreOut" id="scoreOut"></span>
+    <span class="hint" id="hint">Answer all six first.</span>
   </div>
-  <div class="done" id="done">Lesson complete — saved. Next: MLE done properly — consistency, and the sampling distribution behind these estimates.</div>
+  <div class="done" id="done">The divisor is a choice, and every choice is a bet. Next: maximum likelihood, done properly.</div>
 </div>
 
 <script>
 /* storage shim: window.storage (Claude artifacts) or localStorage (web) */
 if(!window.storage){window.storage={async get(k){const v=localStorage.getItem(k);if(v==null)throw new Error('missing');return{key:k,value:v}},async set(k,v){localStorage.setItem(k,v);return{key:k,value:v}},async delete(k){localStorage.removeItem(k);return{key:k,deleted:true}},async list(p){const ks=[];for(let i=0;i<localStorage.length;i++){const kk=localStorage.key(i);if(!p||kk.startsWith(p))ks.push(kk)}return{keys:ks}}};}
-function renderMath(){
-  document.querySelectorAll('.math').forEach(el=>{
-    const tex=el.getAttribute('data-tex'); if(!tex||el.dataset.done)return;
-    try{ if(window.katex){katex.render(tex,el,{displayMode:el.dataset.display==='1',throwOnError:false});el.dataset.done='1';} else {el.textContent=tex;} }
-    catch(e){ el.textContent=tex; }
-  });
-}
+function renderMath(){document.querySelectorAll('.math').forEach(el=>{const tex=el.getAttribute('data-tex');if(!tex||el.dataset.done)return;try{if(window.katex){katex.render(tex,el,{displayMode:el.dataset.display==='1',throwOnError:false});el.dataset.done='1';}else el.textContent=tex;}catch(e){el.textContent=tex;}});}
+const $=id=>document.getElementById(id);
 
-const MU=50,SIGMA=12,TRUE=144;
-const XMAX=3*TRUE, B=46;
-const estNm1=[],estN=[],ss=[];
-const nVal=()=>parseInt(document.getElementById('n').value,10);
-function randn(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
-function drawSamples(k){
-  const n=nVal();
-  for(let r=0;r<k;r++){
-    let s=0;const xs=[];for(let j=0;j<n;j++){const x=MU+SIGMA*randn();xs.push(x);s+=x;}
-    const xbar=s/n;let S=0;for(const x of xs)S+=(x-xbar)*(x-xbar);
-    ss.push(S);estNm1.push(S/(n-1));estN.push(S/n);
+/* ---------- deterministic randomness ---------- */
+function mulberry32(seed){let a=seed>>>0;return function(){a|=0;a=(a+0x6D2B79F5)|0;let t=Math.imul(a^(a>>>15),1|a);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296;}}
+function randn(rng){let u=0,v=0;while(!u)u=rng();while(!v)v=rng();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+
+/* ---------- world & theory ---------- */
+const MU=0.02,SIG=1.2,TRUE=SIG*SIG,SEED=102,ANN=Math.sqrt(252);
+function lgamma(x){const c=[676.5203681218851,-1259.1392167224028,771.32342877765313,-176.61502916214059,12.507343278686905,-0.13857109526572012,9.9843695780195716e-6,1.5056327351493116e-7];if(x<0.5)return Math.log(Math.PI/Math.sin(Math.PI*x))-lgamma(1-x);x-=1;let a=0.99999999999980993,t=x+7.5;for(let i=0;i<8;i++)a+=c[i]/(x+i+1);return 0.5*Math.log(2*Math.PI)+(x+0.5)*Math.log(t)-t+Math.log(a);}
+function c4(n){return Math.sqrt(2/(n-1))*Math.exp(lgamma(n/2)-lgamma((n-1)/2));}
+function mseK(n,k){return (2*(n-1)+(n-1-k)*(n-1-k))/(k*k);}
+
+/* ---------- interactive 1: seeded sampling distributions ---------- */
+function simulate(n,M){
+  const rng=mulberry32(SEED);
+  const mle=new Float64Array(M),unb=new Float64Array(M);
+  let sumN=0,sumU=0,sumS=0;
+  for(let w=0;w<M;w++){
+    let m=0;const rs=new Float64Array(n);
+    for(let i=0;i<n;i++){const r=MU+SIG*randn(rng);rs[i]=r;m+=r;}
+    m/=n;let SS=0;for(let i=0;i<n;i++){const d=rs[i]-m;SS+=d*d;}
+    mle[w]=SS/n;unb[w]=SS/(n-1);
+    sumN+=mle[w];sumU+=unb[w];sumS+=Math.sqrt(unb[w]);
   }
-  const cap=4000;if(estN.length>cap){const o=estN.length-cap;estN.splice(0,o);estNm1.splice(0,o);ss.splice(0,o);}
-  renderPlot();
+  return{mle,unb,meanN:sumN/M,meanU:sumU/M,meanS:sumS/M};
 }
-function mean(a){let s=0;for(const v of a)s+=v;return a.length?s/a.length:0;}
-function renderPlot(){
-  const PW=680,PH=340,padL=44,padR=16,padT=16,padB=34,iw=PW-padL-padR,ih=PH-padT-padB,y0=padT+ih;
+const XMAX=3*TRUE,B=46;
+function update1(){
+  const n=+$('n').value,M=+$('m').value;
+  $('nOut').textContent=n;$('mOut').textContent=M.toLocaleString();
+  const r=simulate(n,M);
+  const PW=680,PH=320,padL=14,padR=14,padT=20,padB=32,iw=PW-padL-padR,ih=PH-padT-padB,y0=padT+ih;
   const X=v=>padL+Math.max(0,Math.min(1,v/XMAX))*iw;
-  const binW=XMAX/B, hN=new Array(B).fill(0), hNm1=new Array(B).fill(0);
-  estN.forEach(v=>{let b=Math.floor(v/binW);if(b<0)b=0;if(b>=B)b=B-1;hN[b]++;});
-  estNm1.forEach(v=>{let b=Math.floor(v/binW);if(b<0)b=0;if(b>=B)b=B-1;hNm1[b]++;});
-  let mx=1;for(let i=0;i<B;i++){mx=Math.max(mx,hN[i],hNm1[i]);}
-  const bw=iw/B;
-  let s='';
-  s+=`<line x1="${padL}" y1="${y0}" x2="${PW-padR}" y2="${y0}" stroke="var(--hair2)" stroke-width="1"/>`;
-  [0,TRUE,2*TRUE,XMAX].forEach(v=>{s+=`<text x="${X(v)}" y="${y0+18}" text-anchor="middle" font-family="var(--mono)" font-size="11" fill="var(--faint)">${v}</text>`;});
-  function bars(h,fill){let p='';for(let i=0;i<B;i++){if(!h[i])continue;const bh=(h[i]/mx)*ih;p+=`<rect x="${(padL+i*bw).toFixed(1)}" y="${(y0-bh).toFixed(1)}" width="${(bw+0.5).toFixed(1)}" height="${bh.toFixed(1)}" fill="${fill}" opacity="0.45"/>`;}return p;}
-  s+=bars(hNm1,'var(--accent)');
-  s+=bars(hN,'var(--series)');
-  // true plumb
-  s+=`<line x1="${X(TRUE)}" y1="${padT-2}" x2="${X(TRUE)}" y2="${y0}" stroke="var(--ink)" stroke-width="1.6"/>`;
-  s+=`<text x="${X(TRUE)}" y="${padT+8}" text-anchor="middle" font-family="var(--mono)" font-size="11" fill="var(--ink)">σ²=144</text>`;
-  if(estN.length){
-    const mN=mean(estN),mNm1=mean(estNm1);
-    [['var(--series)',mN],['var(--accent)',mNm1]].forEach(([c,m])=>{
-      s+=`<line x1="${X(m)}" y1="${padT}" x2="${X(m)}" y2="${y0}" stroke="${c}" stroke-width="1.6" stroke-dasharray="5 4"/>`;
-    });
-  }
-  document.getElementById('plot').innerHTML=s;
-  // stats
-  const n=nVal(),count=estN.length;
-  const mN=count?mean(estN):null,mNm1=count?mean(estNm1):null;
-  document.getElementById('mNm1').textContent=count?mNm1.toFixed(1):'—';
-  document.getElementById('mN').textContent=count?mN.toFixed(1):'—';
-  document.getElementById('bN').textContent=count?(mN-TRUE>=0?'+':'')+(mN-TRUE).toFixed(1):'—';
-  // MSE for three divisors from stored SS
-  if(count){
-    let seN=0,seNm1=0,seNp1=0;
-    for(let i=0;i<ss.length;i++){const S=ss[i];
-      const eN=S/n,eNm1=S/(n-1),eNp1=S/(n+1);
-      seN+=(eN-TRUE)**2;seNm1+=(eNm1-TRUE)**2;seNp1+=(eNp1-TRUE)**2;}
-    const mseN=seN/count,mseNm1=seNm1/count,mseNp1=seNp1/count;
-    document.getElementById('v-n').textContent=Math.round(mseN);
-    document.getElementById('v-nm1').textContent=Math.round(mseNm1);
-    document.getElementById('v-np1').textContent=Math.round(mseNp1);
-    const wins=[['mse-np1',mseNp1],['mse-n',mseN],['mse-nm1',mseNm1]].sort((a,b)=>a[1]-b[1])[0][0];
-    ['mse-np1','mse-n','mse-nm1'].forEach(id=>document.getElementById(id).classList.toggle('win',id===wins&&count>=50));
-    if(count>=40){document.getElementById('note').textContent=`Mean of S²₍ₙ₋₁₎ sits on 144; mean of S²₍ₙ₎ sits low at about ${(TRUE*(n-1)/n).toFixed(0)} = (n−1)/n·σ². Raise n and the gap closes. The MSE row confirms the twist: ÷(n+1) wins, ÷(n−1) loses.`;}
-  } else {
-    ['v-n','v-nm1','v-np1'].forEach(id=>document.getElementById(id).textContent='—');
-    ['mse-np1','mse-n','mse-nm1'].forEach(id=>document.getElementById(id).classList.remove('win'));
-  }
+  const binW=XMAX/B,hN=new Array(B).fill(0),hU=new Array(B).fill(0);
+  for(let i=0;i<M;i++){let b=Math.floor(r.mle[i]/binW);if(b<0)b=0;if(b>=B)b=B-1;hN[b]++;b=Math.floor(r.unb[i]/binW);if(b<0)b=0;if(b>=B)b=B-1;hU[b]++;}
+  let mx=1;for(let i=0;i<B;i++)mx=Math.max(mx,hN[i],hU[i]);
+  const bw=iw/B;let s='';
+  s+=`<line x1="${padL}" y1="${y0}" x2="${PW-padR}" y2="${y0}" stroke="var(--hair2)"/>`;
+  [0,TRUE,2*TRUE,3*TRUE].forEach(v=>{s+=`<text x="${X(v)}" y="${y0+18}" text-anchor="middle" font-family="var(--mono)" font-size="11" fill="var(--faint)">${v.toFixed(2)}</text>`;});
+  function bars(h,fill){let p='';for(let i=0;i<B;i++){if(!h[i])continue;const bh=(h[i]/mx)*ih;p+=`<rect x="${(padL+i*bw).toFixed(1)}" y="${(y0-bh).toFixed(1)}" width="${(bw+0.5).toFixed(1)}" height="${bh.toFixed(1)}" fill="${fill}" opacity="0.5"/>`;}return p;}
+  s+=bars(hU,'var(--accent)');s+=bars(hN,'var(--series)');
+  s+=`<line x1="${X(TRUE)}" y1="${padT-4}" x2="${X(TRUE)}" y2="${y0}" stroke="var(--ink)" stroke-width="1.6"/>`;
+  s+=`<text x="${X(TRUE)+5}" y="${padT+6}" font-family="var(--mono)" font-size="11" fill="var(--ink)">σ²=${TRUE.toFixed(2)}</text>`;
+  [['var(--series)',r.meanN],['var(--accent)',r.meanU]].forEach(([c,m])=>{s+=`<line x1="${X(m)}" y1="${padT}" x2="${X(m)}" y2="${y0}" stroke="${c}" stroke-width="1.6" stroke-dasharray="5 4"/>`;});
+  $('plot').innerHTML=s;
+  $('mUnb').textContent=r.meanU.toFixed(4);
+  $('mMle').textContent=r.meanN.toFixed(4);
+  $('ratio').textContent=(r.meanN/TRUE).toFixed(4)+' / '+((n-1)/n).toFixed(4);
+  $('volq').textContent=(r.meanS*ANN).toFixed(2)+'% / '+(SIG*ANN).toFixed(2)+'%';
+  $('note1').textContent=`Across ${M.toLocaleString()} windows of ${n} days: the ÷n mean sits ${(100*(1-r.meanN/TRUE)).toFixed(1)}% below the true ${TRUE.toFixed(2)} %² (theory says 1/n = ${(100/n).toFixed(1)}%), while ÷(n−1) lands at ${r.meanU.toFixed(2)}. But the mean annualized vol quote built from s is ${(r.meanS*ANN).toFixed(2)}% against a true ${(SIG*ANN).toFixed(2)}% — Jensen's shave, which no divisor repairs.`;
 }
-function resetSim(){estN.length=0;estNm1.length=0;ss.length=0;renderPlot();document.getElementById('note').textContent='At small n the biased MLE\u2019s mean sits visibly left of the true line. Drag n up and the two distributions slide together \u2014 bias vanishes as n \u2192 \u221e.';}
+$('n').addEventListener('input',update1);
+$('m').addEventListener('input',update1);
 
-document.getElementById('n').addEventListener('input',e=>{document.getElementById('nOut').textContent=e.target.value;});
-document.getElementById('n').addEventListener('change',()=>{const had=estN.length;estN.length=0;estNm1.length=0;ss.length=0;drawSamples(had>0?Math.min(Math.max(had,400),1600):400);});
-document.getElementById('one').onclick=()=>drawSamples(1);
-document.getElementById('many').onclick=()=>drawSamples(400);
-document.getElementById('reset').onclick=resetSim;
+/* ---------- interactive 2: deterministic bias & MSE curves ---------- */
+function update2(){
+  const n=+$('n2').value;$('n2Out').textContent=n;
+  const W=330,H=220,padL=40,padR=8,padT=10,padB=26,iw=W-padL-padR,ih=H-padT-padB;
+  const X=v=>padL+(v-5)/(120-5)*iw;
+  /* bias chart: y in [-21,0] percent */
+  const yB=b=>padT+(-b/21)*ih;
+  let s='';
+  [[0,'0'],[-5,'−5%'],[-10,'−10%'],[-15,'−15%'],[-20,'−20%']].forEach(([g,l])=>{s+=`<line x1="${padL}" y1="${yB(g).toFixed(1)}" x2="${W-padR}" y2="${yB(g).toFixed(1)}" stroke="var(--hair)"/>`;s+=`<text x="${padL-5}" y="${(yB(g)+3.5).toFixed(1)}" text-anchor="end" font-family="var(--mono)" font-size="9.5" fill="var(--faint)">${l}</text>`;});
+  let p1='',p2='';
+  for(let k=5;k<=120;k++){p1+=`${X(k).toFixed(1)},${yB(-100/k).toFixed(1)} `;p2+=`${X(k).toFixed(1)},${yB(100*(c4(k)-1)).toFixed(1)} `;}
+  s+=`<polyline points="${p1}" fill="none" stroke="var(--series)" stroke-width="2"/>`;
+  s+=`<polyline points="${p2}" fill="none" stroke="var(--accent)" stroke-width="2"/>`;
+  s+=`<line x1="${X(n).toFixed(1)}" y1="${padT}" x2="${X(n).toFixed(1)}" y2="${padT+ih}" stroke="var(--faint)" stroke-dasharray="3 3"/>`;
+  s+=`<circle cx="${X(n).toFixed(1)}" cy="${yB(-100/n).toFixed(1)}" r="3.5" fill="var(--series)"/>`;
+  s+=`<circle cx="${X(n).toFixed(1)}" cy="${yB(100*(c4(n)-1)).toFixed(1)}" r="3.5" fill="var(--accent)"/>`;
+  s+=`<text x="${padL}" y="${H-6}" font-family="var(--mono)" font-size="10" fill="var(--faint)">n=5</text><text x="${W-padR}" y="${H-6}" text-anchor="end" font-family="var(--mono)" font-size="10" fill="var(--faint)">n=120</text>`;
+  $('biasSvg').innerHTML=s;
+  /* MSE chart: y in [0,0.55] units of sigma^4 */
+  const yM=v=>padT+(1-v/0.55)*ih;
+  let t='';
+  [[0,'0'],[0.25,'.25'],[0.5,'.50']].forEach(([g,l])=>{t+=`<line x1="${padL}" y1="${yM(g).toFixed(1)}" x2="${W-padR}" y2="${yM(g).toFixed(1)}" stroke="var(--hair)"/>`;t+=`<text x="${padL-5}" y="${(yM(g)+3.5).toFixed(1)}" text-anchor="end" font-family="var(--mono)" font-size="9.5" fill="var(--faint)">${l}</text>`;});
+  const curves=[[k=>mseK(k,k-1),'var(--miss)'],[k=>mseK(k,k),'var(--series)'],[k=>mseK(k,k+1),'var(--ok)']];
+  curves.forEach(([f,col])=>{let p='';for(let k=5;k<=120;k++)p+=`${X(k).toFixed(1)},${yM(f(k)).toFixed(1)} `;t+=`<polyline points="${p}" fill="none" stroke="${col}" stroke-width="2"/>`;});
+  t+=`<line x1="${X(n).toFixed(1)}" y1="${padT}" x2="${X(n).toFixed(1)}" y2="${padT+ih}" stroke="var(--faint)" stroke-dasharray="3 3"/>`;
+  curves.forEach(([f,col])=>{t+=`<circle cx="${X(n).toFixed(1)}" cy="${yM(f(n)).toFixed(1)}" r="3.5" fill="${col}"/>`;});
+  t+=`<text x="${padL}" y="${H-6}" font-family="var(--mono)" font-size="10" fill="var(--faint)">n=5</text><text x="${W-padR}" y="${H-6}" text-anchor="end" font-family="var(--mono)" font-size="10" fill="var(--faint)">n=120</text>`;
+  $('mseSvg').innerHTML=t;
+  const cc=c4(n),gain=100*(1-mseK(n,n+1)/mseK(n,n-1));
+  $('shadeV').textContent='−'+(100/n).toFixed(1)+'%';
+  $('c4Out').textContent=cc.toFixed(4);
+  $('shaveS').textContent='−'+(100*(1-cc)).toFixed(2)+'%';
+  $('mseGain').textContent='−'+gain.toFixed(1)+'%';
+  $('note2').textContent=`At n = ${n}${n===20?' (one trading month)':''}: dividing by n shades variance ${(100/n).toFixed(1)}% low, and even the unbiased-variance route underquotes σ by ${(100*(1-cc)).toFixed(2)}% (c₄ = ${cc.toFixed(4)}) — on a true ${(SIG*ANN).toFixed(2)}% annualized index vol that is ${(SIG*ANN*(1-cc)).toFixed(2)} vol points, every window. Meanwhile the MSE panel keeps one ordering at every n: ÷(n+1) < ÷n < ÷(n−1), the winner carrying ${gain.toFixed(1)}% less MSE than the unbiased choice.`;
+}
+$('n2').addEventListener('input',update2);
 
+/* ---------- retrieval ---------- */
 const QS={
-  q1:{opts:["overestimates σ²","underestimates σ²","is exactly unbiased","has larger variance than S²₍ₙ₋₁₎"],a:1,
-    fb:"Deviations are measured from x̄, which is pulled toward the sample, so the squared spread comes out too small — the MLE sits at (n−1)/n·σ², below the truth."},
-  q2:{opts:["there are n−1 distinct data points","one degree of freedom is spent estimating x̄, so deviations from it understate the true spread","it lowers the estimator's variance","it is only a convention with no real justification"],a:1,
-    fb:"Computing x̄ imposes one constraint (Σ(xᵢ−x̄)=0), leaving n−1 free deviations. Dividing by n−1 exactly returns the freedom used, giving E[S²₍ₙ₋₁₎]=σ²."},
-  q3:{opts:["k = n−1 (the unbiased choice)","k = n (the MLE)","k = n+1","the unbiased estimator minimises MSE by definition"],a:2,
-    fb:"MSE = variance + bias². Optimising the divisor gives k=n+1 for normal data. Unbiased ≠ minimum-MSE — in fact ÷(n−1) has the worst MSE of the three, as the panel shows."}
+  q1:{opts:["a single 20-day window produces a number different from σ²","its dispersion fails to shrink as the window grows","the average of its output over the sampling distribution misses the target: E[σ̂²] ≠ σ²","it was computed from fewer than 30 observations"],a:2,
+    fb:"Bias is a property of the recipe, not of one draw: it is the systematic gap E[σ̂²] − σ² between the centre of the sampling distribution and the truth. A one-off miss is noise (variance), shrinking dispersion is consistency, and 30 is folklore."},
+  q2:{opts:["returns are non-Gaussian, and n−1 corrects for fat tails","computing r̄ spends one degree of freedom — the residuals obey Σ(rᵢ−r̄) = 0 — and E[Σ(rᵢ−r̄)²] = (n−1)σ² exactly","dividing by a smaller number reduces the estimator's variance","it is a software convention with no mathematical content"],a:1,
+    fb:"r̄ is fitted to the window, so deviations from it are systematically too small — exactly one observation's worth of variance disappears, E[Σ(rᵢ−r̄)²] = (n−1)σ². Dividing by n−1 returns precisely the freedom spent. It actually increases variance, and needs no distributional assumption."},
+  q3:{opts:["√ is concave, so E[√s²] < √E[s²] = σ (Jensen); for Gaussian returns the shortfall is exactly the factor c₄(n)","the divisor should have been n−2 for standard deviations","s inherits the (n−1)/n bias of the MLE variance","it doesn't — s is unbiased for σ whenever s² is unbiased for σ²"],a:0,
+    fb:"Unbiasedness does not survive nonlinear transforms. s² scatters around σ², and pushing that scatter through the concave square root drags the mean down: E[s] = c₄(n)σ < σ. No divisor fixes it — only the normality-specific rescale s/c₄(n) does."},
+  q4:{opts:["k = n−1 — unbiased means minimum-MSE by definition","k = n — the MLE is always MSE-optimal","k = n+1","k = n−2"],a:2,
+    fb:"Minimising [2(n−1) + (n−1−k)²]/k² over k gives k = n+1: a little extra downward bias buys more than its cost in variance. The full ordering is MSE(÷(n+1)) < MSE(÷n) < MSE(÷(n−1)) — the unbiased divisor finishes last."},
+  q5:{opts:["switch the divisor to n — the MLE is more efficient","divide s by c₄(20) ≈ 0.9869 before annualizing","annualize with √260 instead of √252","nothing — with the n−1 divisor the quote is already unbiased"],a:1,
+    fb:"The shortfall is Jensen's, on σ itself: E[s] = c₄(n)σ. Under Gaussian returns s/c₄(n) is exactly unbiased for σ, and the fix passes straight through the multiplicative √252 annualization. Switching to ÷n deepens the shave; the day-count doesn't touch bias at all."},
+  q6:{opts:["nothing — with 20 points the two divisors are statistically indistinguishable","−1.3% on average — the c₄ effect","+5% on average","−5%: σ̂²ₙ = (n−1)/n · s², and (n−1)/n = 0.95 at n = 20"],a:3,
+    fb:"The two estimators share the numerator, so their ratio is deterministic: (n−1)/n = 0.95 at n = 20 — a 5% variance shading (≈ 2.5% on vol, since √0.95 ≈ 0.975). The 1.3% c₄ effect is a separate bias, on σ rather than σ², and comes on top."}
 };
-const sel={q1:null,q2:null,q3:null};let revealed=false;
-Object.keys(QS).forEach(id=>{
-  const holder=document.querySelector('#'+id+' .opts');
-  QS[id].opts.forEach((txt,i)=>{
-    const b=document.createElement('button');b.className='opt';b.textContent=String.fromCharCode(65+i)+'.  '+txt;
-    b.onclick=()=>{if(revealed)return;sel[id]=i;[...holder.children].forEach((c,ci)=>c.classList.toggle('sel',ci===i));document.getElementById('hint').style.display='none';};
-    holder.appendChild(b);
-  });
-});
-document.getElementById('check').onclick=async()=>{
-  if(revealed)return;
-  if(sel.q1===null||sel.q2===null||sel.q3===null){document.getElementById('hint').style.display='inline';return;}
+const sel={q1:null,q2:null,q3:null,q4:null,q5:null,q6:null};let revealed=false;
+Object.keys(QS).forEach(id=>{const holder=document.querySelector('#'+id+' .opts');QS[id].opts.forEach((txt,i)=>{const b=document.createElement('button');b.className='opt';b.textContent=String.fromCharCode(65+i)+'.  '+txt;b.onclick=()=>{if(revealed)return;sel[id]=i;[...holder.children].forEach((c,ci)=>c.classList.toggle('sel',ci===i));$('hint').style.display='none';};holder.appendChild(b);});});
+$('check').onclick=async()=>{
+  if(revealed)return;if(Object.values(sel).some(v=>v===null)){$('hint').style.display='inline';return;}
   revealed=true;let score=0;
-  Object.keys(QS).forEach(id=>{
-    const a=QS[id].a,holder=document.querySelector('#'+id+' .opts'),fb=document.querySelector('#'+id+' .fb');
-    [...holder.children].forEach((c,ci)=>{c.style.cursor='default';c.classList.remove('sel');if(ci===a)c.classList.add('correct');else if(ci===sel[id])c.classList.add('wrong');});
-    if(sel[id]===a)score++;fb.textContent=QS[id].fb;fb.classList.add('show');
-  });
-  const btn=document.getElementById('check');btn.style.opacity='0.5';btn.textContent='Checked · '+score+'/3';
-  document.getElementById('done').classList.add('show');
-  try{await window.storage.set('mfs:lesson02',JSON.stringify({done:true,retrieval:score+'/3',ts:Date.now()}),false);}catch(e){}
+  Object.keys(QS).forEach(id=>{const a=QS[id].a,holder=document.querySelector('#'+id+' .opts'),fb=document.querySelector('#'+id+' .fb');[...holder.children].forEach((c,ci)=>{c.style.cursor='default';c.classList.remove('sel');if(ci===a)c.classList.add('correct');else if(ci===sel[id])c.classList.add('wrong');});if(sel[id]===a)score++;fb.textContent=QS[id].fb;fb.classList.add('show');});
+  $('check').style.opacity='0.5';$('check').textContent='Checked';
+  $('scoreOut').textContent=score+' / 6';$('done').classList.add('show');
+  try{await window.storage.set('mfs:lesson02',JSON.stringify({done:true,retrieval:score+'/6',ts:Date.now()}),false);}catch(e){}
 };
-
-function boot(){renderMath();drawSamples(400);}
+function boot(){renderMath();update1();update2();}
 if(window.katex)boot();else window.addEventListener('load',boot);
-(async()=>{try{const r=await window.storage.get('mfs:lesson02',false);if(r&&r.value){const v=JSON.parse(r.value);if(v.done){const c=document.getElementById('chip');c.classList.add('show');c.textContent='completed · '+v.retrieval;}}}catch(e){}})();
+(async()=>{try{const r=await window.storage.get('mfs:lesson02',false);if(r&&r.value){const v=JSON.parse(r.value);if(v.done){const c=$('chip');c.classList.add('show');c.textContent='completed · '+v.retrieval;}}}catch(e){}})();
 </script>
 </body>
 </html>
