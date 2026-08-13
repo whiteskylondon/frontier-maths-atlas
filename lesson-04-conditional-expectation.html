@@ -8,29 +8,17 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
 <style>
   :root{
-    --paper:#FAFAF6; --ink:#1A1C22; --muted:#63676E; --faint:#9A9EA4;
-    --hair:#E4E3DB; --hair2:#D4D3CA; --panel:#FFFFFF;
-    --accent:#24507A; --accent-bg:#EAF0F6; --series:#B07A2E;
-    --miss:#B23A3A; --ok:#2F6B4F; --ok-bg:#E9F1EC;
-    --vol:#8A5A2B; --vol-bg:#F6EFE6;
-    --serif:Iowan Old Style,Palatino,"Palatino Linotype",Georgia,serif;
-    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    --paper:#FAFAF6;--ink:#1A1C22;--muted:#63676E;--faint:#9A9EA4;--hair:#E4E3DB;--hair2:#D4D3CA;--panel:#FFFFFF;
+    --accent:#24507A;--accent-bg:#EAF0F6;--series:#B07A2E;--miss:#B23A3A;--ok:#2F6B4F;--ok-bg:#E9F1EC;
+    --vol:#8A5A2B;--vol-bg:#F6EFE6;--serif:Iowan Old Style,Palatino,Georgia,serif;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
   }
-  @media (prefers-color-scheme: dark){
-    :root{
-      --paper:#15161A; --ink:#E9E8E2; --muted:#A2A6AC; --faint:#71757B;
-      --hair:#2A2C31; --hair2:#3A3C42; --panel:#1B1D22;
-      --accent:#7FB0E0; --accent-bg:#1E2A38; --series:#D9A85E;
-      --miss:#E07A7A; --ok:#7FC49F; --ok-bg:#1C2A22;
-      --vol:#D9A066; --vol-bg:#2A2115;
-    }
-  }
+  @media (prefers-color-scheme:dark){:root{--paper:#15161A;--ink:#E9E8E2;--muted:#A2A6AC;--faint:#71757B;--hair:#2A2C31;--hair2:#3A3C42;--panel:#1B1D22;--accent:#7FB0E0;--accent-bg:#1E2A38;--series:#D9A85E;--miss:#E07A7A;--ok:#7FC49F;--ok-bg:#1C2A22;--vol:#D9A066;--vol-bg:#2A2115;}}
   *{box-sizing:border-box}
   body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.62;-webkit-font-smoothing:antialiased}
-  .wrap{max-width:740px;margin:0 auto;padding:32px 24px 60px}
+  .wrap{max-width:750px;margin:0 auto;padding:32px 24px 60px}
   .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 6px}
-  h1{font-family:var(--serif);font-weight:600;font-size:28px;line-height:1.2;margin:0 0 6px;letter-spacing:-.01em}
+  h1{font-family:var(--serif);font-weight:600;font-size:27px;line-height:1.22;margin:0 0 6px;letter-spacing:-.01em}
   .chip{display:none;font-family:var(--mono);font-size:11px;letter-spacing:.05em;color:var(--ok);border:1px solid var(--ok);border-radius:20px;padding:3px 10px;vertical-align:middle;margin-left:10px}
   .chip.show{display:inline-block}
   .sub{color:var(--muted);font-size:15px;margin:0 0 18px}
@@ -40,45 +28,45 @@
   .levels .pill b{color:var(--accent);font-weight:700;letter-spacing:.03em}
   p.lead{font-size:16px;margin:0 0 22px}
   p.lead b{font-weight:600}
-  .sec{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:34px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--hair)}
+  .sec{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:36px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--hair)}
   .mblock{margin:16px 0;overflow-x:auto}
   .glo{list-style:none;padding:0;margin:14px 0 0}
   .glo li{display:flex;gap:14px;padding:9px 0;border-top:1px solid var(--hair);align-items:baseline}
   .glo li:first-child{border-top:none}
-  .glo .sym{flex:0 0 132px;text-align:right;padding-top:2px}
+  .glo .sym{flex:0 0 132px;text-align:right;padding-top:2px;font-size:14px}
   .glo .def{font-size:14.5px}
   .glo .def .n{color:var(--muted)}
   .step{font-size:14.5px;color:var(--muted);margin:10px 0}
+  .step b{color:var(--ink)}
   .panel{background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:20px;margin:14px 0}
   .seg{display:inline-flex;border:1px solid var(--hair2);border-radius:9px;overflow:hidden;margin:0 0 14px}
   .seg button{font-family:var(--sans);font-size:13.5px;padding:8px 14px;border:none;background:var(--panel);color:var(--muted);cursor:pointer;border-right:1px solid var(--hair2)}
   .seg button:last-child{border-right:none}
   .seg button.on{background:var(--accent);color:#fff}
-  .ctrls{display:flex;flex-wrap:wrap;gap:18px 28px;align-items:flex-end;margin:0 0 12px}
-  .field{display:flex;flex-direction:column;gap:6px;min-width:150px;flex:1}
+  .ctrls{display:flex;flex-wrap:wrap;gap:16px 26px;align-items:flex-end;margin:16px 0 6px}
+  .field{display:flex;flex-direction:column;gap:6px;min-width:210px;flex:1}
   .field label{font-size:12px;color:var(--muted);font-family:var(--mono);letter-spacing:.03em;display:flex;justify-content:space-between}
   .field label b{color:var(--ink);font-weight:600}
   input[type=range]{width:100%;accent-color:var(--accent);height:20px}
-  .btns{display:flex;flex-wrap:wrap;gap:8px;margin:2px 0 12px}
-  button.act{font-family:var(--sans);font-size:14px;padding:8px 14px;border-radius:8px;border:1px solid var(--hair2);background:var(--panel);color:var(--ink);cursor:pointer}
+  .btns{display:flex;flex-wrap:wrap;gap:8px;margin:2px 0 10px}
+  button.act{font-family:var(--sans);font-size:13.5px;padding:7px 13px;border-radius:8px;border:1px solid var(--hair2);background:var(--panel);color:var(--ink);cursor:pointer}
   button.act:hover{border-color:var(--accent);color:var(--accent)}
   svg{max-width:100%;height:auto;display:block}
   .tally{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 2px}
-  .stat{flex:1;min-width:110px;background:var(--paper);border-radius:9px;padding:9px 12px}
+  .stat{flex:1;min-width:120px;background:var(--paper);border-radius:9px;padding:9px 12px}
   .stat .k{font-size:11px;font-family:var(--mono);letter-spacing:.04em;color:var(--muted);text-transform:uppercase}
-  .stat .v{font-size:20px;font-weight:600;font-family:var(--mono);margin-top:2px}
-  .stat .v.warn{color:var(--series)} .stat .v.good{color:var(--ok)}
-  .callout{font-size:14px;color:var(--muted);border-left:2px solid var(--accent);padding:2px 0 2px 14px;margin:16px 0 2px}
+  .stat .v{font-size:19px;font-weight:600;font-family:var(--mono);margin-top:2px}
+  .stat .v.a{color:var(--accent)}.stat .v.g{color:var(--ok)}.stat .v.s{color:var(--series)}
+  .callout{font-size:14px;color:var(--muted);border-left:2px solid var(--accent);padding:2px 0 2px 14px;margin:16px 0 2px;min-height:1.4em}
   .theorem{background:var(--accent-bg);border-radius:12px;padding:18px 20px;margin:16px 0}
   .theorem .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
-  .theorem p{font-family:var(--serif);font-size:16.5px;line-height:1.55;margin:0}
+  .theorem p{font-family:var(--serif);font-size:16px;line-height:1.55;margin:0}
   .twist{border:1px dashed var(--hair2);border-radius:12px;padding:16px 18px;margin:16px 0;background:var(--panel)}
   .twist .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
   .twist p{margin:0;font-size:14.6px}
   .vol{background:var(--vol-bg);border:1px solid var(--vol);border-radius:12px;padding:18px 20px;margin:16px 0}
   .vol .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:var(--vol);margin:0 0 8px}
-  .vol p{margin:0 0 10px;font-size:14.8px}
-  .vol p:last-child{margin-bottom:0}
+  .vol p{margin:0 0 10px;font-size:14.8px}.vol p:last-child{margin-bottom:0}
   .vol code{font-family:var(--mono);font-size:13px;background:rgba(138,90,43,.12);padding:1px 5px;border-radius:4px}
   .q{border:1px solid var(--hair);border-radius:12px;padding:16px 18px;margin:12px 0;background:var(--panel)}
   .q .stem{font-size:15px;font-weight:500;margin:0 0 12px}
@@ -88,196 +76,264 @@
   .opt.sel{border-color:var(--accent);background:var(--accent-bg)}
   .opt.correct{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
   .opt.wrong{background:#F7ECEC;border-color:var(--miss);color:var(--miss)}
-  @media (prefers-color-scheme: dark){ .opt.wrong{background:#2E1E1E} }
+  @media (prefers-color-scheme:dark){.opt.wrong{background:#2E1E1E}}
   .fb{font-size:13.5px;color:var(--muted);margin:10px 0 0;line-height:1.5;display:none}
   .fb.show{display:block}
-  .checkRow{display:flex;align-items:center;gap:14px;margin:16px 0 0;flex-wrap:wrap}
+  .checkRow{display:flex;align-items:center;gap:14px;margin:18px 0 0;flex-wrap:wrap}
   .hint{font-size:13px;color:var(--miss);display:none}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-family:var(--sans);font-size:14px;padding:8px 14px;border-radius:8px;border:1px solid var(--accent);cursor:pointer}
+  .scoreOut{font-family:var(--mono);font-size:14px;font-weight:600}
   .done{display:none;align-items:center;gap:10px;background:var(--ok-bg);color:var(--ok);border-radius:10px;padding:12px 16px;font-size:14px;margin:14px 0 0}
   .done.show{display:flex}
+  .num{font-family:var(--mono)}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <p class="eyebrow">Lesson 04 · Estimation &amp; inference</p>
+  <p class="eyebrow">Lesson 04 · Wing 0 — statistical &amp; linear-algebra foundations</p>
   <h1>Conditional expectation as a projection<span class="chip" id="chip"></span></h1>
   <p class="sub">The best predictor of Y from X, and why that sentence is geometry.</p>
   <div class="levels">
     <span class="lk">Level</span>
     <span class="pill"><b>US</b> Advanced undergrad → graduate</span>
-    <span class="pill"><b>FR</b> Master M1–M2 · ENSAE 2A–3A</span>
+    <span class="pill"><b>FR</b> M1–M2 · ENSAE 2A–3A</span>
   </div>
 
-  <p class="lead">Ask for the function of X that predicts Y with the smallest mean squared error. The answer is <b>E[Y|X]</b> — and the reason is a picture: think of random variables as vectors, MSE as squared distance, and "functions of X" as a flat subspace. The best predictor is then just the <b>closest point in that subspace</b> — the orthogonal projection of Y onto it. Everything below is that one idea, made literal.</p>
+  <p class="lead">You run a single-stock book. Each day it returns <b>Y</b>; each day the index future returns <b>X</b>. You may short some amount of the future against the book, and the classic answer — the <b>minimum-variance hedge ratio</b> — is a single number, Cov(Y,X)/Var(X). This lesson is about what that number really is, and what it silently assumes. The <b>best guess</b> of Y once you have seen X is called the <b>conditional expectation</b>, written E[Y|X]. It is best in a geometric sense: treat random variables as vectors, mean-squared error as squared distance, and "everything you could build from X" as a subspace — then the best hedge is simply the <b>closest point in that subspace</b>, the orthogonal projection of Y onto it. A hedge ratio, a regression beta, a factor loading: each is the shadow of Y on some space of predictors. The only question is how big a space you let the shadow fall on.</p>
 
-  <div class="sec">The claim, and the geometry</div>
-  <div class="mblock math" data-tex="g^{\star}(X)=\mathbb{E}[Y\mid X]=\arg\min_{g}\ \mathbb{E}\big[(Y-g(X))^{2}\big]" data-display="1"></div>
-  <p class="step">Give the space of random variables an inner product and the words "length", "angle", "distance" all acquire meaning:</p>
-  <div class="mblock math" data-tex="\langle U,V\rangle=\mathbb{E}[UV]\qquad \|U\|^{2}=\mathbb{E}[U^{2}]\qquad \operatorname{dist}(Y,g)^{2}=\mathbb{E}[(Y-g)^{2}]=\text{MSE}" data-display="1"></div>
-  <p class="step">The defining property — the residual is orthogonal to <i>every</i> function of X (there's no predictable structure left to use):</p>
-  <div class="mblock math" data-tex="\mathbb{E}\big[\,(Y-\mathbb{E}[Y\mid X])\,h(X)\,\big]=0\qquad\text{for every }h" data-display="1"></div>
+  <div class="sec">The words, before any symbols</div>
   <ul class="glo">
-    <li><span class="sym math" data-tex="\mathbb{E}[Y\mid X]"></span><span class="def">the <b>conditional expectation</b> — itself a random variable, a function of X. <span class="n">The projection of Y onto the subspace of all functions of X.</span></span></li>
-    <li><span class="sym math" data-tex="\langle U,V\rangle=\mathbb{E}[UV]"></span><span class="def">the <b>inner product</b>. <span class="n">Uncorrelated (mean-zero) variables are orthogonal; MSE is squared distance under it.</span></span></li>
-    <li><span class="sym math" data-tex="Y-\mathbb{E}[Y\mid X]"></span><span class="def">the <b>residual</b> — the part of Y unpredictable from X. <span class="n">Orthogonal to the whole subspace, by construction.</span></span></li>
-    <li><span class="sym math" data-tex="h(X)"></span><span class="def">any predictor built from X. <span class="n">Constants, lines, curves — the richer the family, the bigger the subspace.</span></span></li>
+    <li><span class="sym"><b>best guess</b></span><span class="def">E[Y|X] is the average of Y over just the days when X took today's value: feed in the index move, read out the book's expected move. It is not one number but a <b>function of X</b> — a curve. <span class="n">"Uses only the information in X" is the plain reading of "σ(X)-measurable" in the theorem box below.</span></span></li>
+    <li><span class="sym"><b>hedge ratio</b></span><span class="def">the h in Y − (a + hX): how many units of index future you short per unit of book. A hedge that is a straight line in X. <span class="n">The desk's h★ = Cov(Y,X)/Var(X) will fall out of the geometry, not out of a regression package.</span></span></li>
+    <li><span class="sym"><b>projection</b></span><span class="def">the closest point to Y inside a chosen family of predictors — closest in mean-squared error, which is literally squared distance once you define length by E[U²]. <span class="n">Constants ⊂ straight lines ⊂ all functions of X: three nested families, three projections.</span></span></li>
+    <li><span class="sym"><b>residual</b></span><span class="def">ε = Y − (your predictor): the slippage the hedge leaves behind — the hedged PnL. Its variance is the number a hedging desk minimises. <span class="n">Under the best hedge, the residual is the part of Y that no function of X can touch.</span></span></li>
+    <li><span class="sym"><b>orthogonal</b></span><span class="def">two random variables with E[UV] = 0 — "uncorrelated leftovers". The optimal residual is orthogonal to <b>every</b> candidate predictor: nothing usable remains. <span class="n">This one identity is the working definition of "best" in all of what follows.</span></span></li>
   </ul>
 
-  <div class="sec">Why the projection wins — one line of Pythagoras</div>
-  <p class="step">Take any predictor g(X) and insert ± E[Y|X]. The cross term dies by orthogonality, leaving a sum of squares:</p>
-  <div class="mblock math" data-tex="\mathbb{E}[(Y-g)^{2}]=\underbrace{\mathbb{E}[(Y-\mathbb{E}[Y\mid X])^{2}]}_{\text{fixed floor}}+\underbrace{\mathbb{E}[(\mathbb{E}[Y\mid X]-g)^{2}]}_{\ge 0}" data-display="1"></div>
-  <p class="step">The second term is smallest — zero — exactly when g = E[Y|X]. Same algebra gives the <b>law of total variance</b>, which is Pythagoras with Y decomposed into signal + noise:</p>
-  <div class="mblock math" data-tex="\operatorname{Var}(Y)=\underbrace{\operatorname{Var}\big(\mathbb{E}[Y\mid X]\big)}_{\text{explained}}+\underbrace{\mathbb{E}\big[\operatorname{Var}(Y\mid X)\big]}_{\text{unexplained}}" data-display="1"></div>
+  <div class="sec">The best guess, made formal</div>
+  <p class="step">Everything happens in one geometry: the inner product ⟨U,V⟩ = E[UV] makes mean-squared error a squared distance, and the conditional expectation is defined as the minimiser over <b>all</b> functions of X:</p>
+  <div class="mblock math" data-tex="\mathbb{E}[Y\mid X]\;=\;\underset{Z=g(X)}{\operatorname{arg\,min}}\;\;\mathbb{E}\big[(Y-Z)^{2}\big],\qquad \langle U,V\rangle=\mathbb{E}[UV]" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="\mathbb{E}[Y\mid X]"></span><span class="def">the <b>conditional expectation</b> — a random variable, itself a function of X. <span class="n">The projection of Y onto L²(σ(X)), the space of square-integrable functions of X.</span></span></li>
+    <li><span class="sym math" data-tex="Z=g(X)"></span><span class="def">any candidate predictor built from X alone — line, curve, threshold rule, anything. <span class="n">Measurability is the fence: Z may not peek at information outside X.</span></span></li>
+    <li><span class="sym math" data-tex="\mathbb{E}[(Y-Z)^2]"></span><span class="def">the mean-squared error — <b>hedge slippage variance</b> in this lesson's units. <span class="n">Squared distance ‖Y−Z‖² under the inner product; minimising it is finding the closest point.</span></span></li>
+  </ul>
+  <p class="step">What certifies the winner is the <b>orthogonality property</b>: the residual of E[Y|X] is uncorrelated with every function of X — there is no predictable structure left for any hedge to use. Averaging both guesses gives the <b>tower property</b>:</p>
+  <div class="mblock math" data-tex="\mathbb{E}\big[(Y-\mathbb{E}[Y\mid X])\,g(X)\big]=0\ \ \text{for all bounded }g,\qquad \mathbb{E}\big[\mathbb{E}[Y\mid X]\big]=\mathbb{E}[Y]" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="Y-\mathbb{E}[Y\mid X]"></span><span class="def">the optimal <b>residual</b> — perpendicular to the whole subspace at once. <span class="n">Orthogonality to every g(X) is stronger than corr(ε,X)=0, and is exactly what the diagnostics below test bar by bar.</span></span></li>
+    <li><span class="sym math" data-tex="g(X)"></span><span class="def">an arbitrary test function of the conditioning variable. <span class="n">Taking g ∈ {1, X, X², 1(X&lt;0)} gives a practical residual test battery.</span></span></li>
+    <li><span class="sym math" data-tex="\mathbb{E}[\mathbb{E}[Y\mid X]]=\mathbb{E}[Y]"></span><span class="def">the <b>tower property</b>: refine your guess with information, then average — you recover the plain average. <span class="n">Set g = 1 in orthogonality. Iterated expectations is bookkeeping, not magic.</span></span></li>
+  </ul>
+  <p class="step">Pythagoras for this projection is the <b>law of total variance</b> — split Y into signal (the projection) plus noise (the residual), and squared lengths add:</p>
+  <div class="mblock math" data-tex="\operatorname{Var}(Y)=\underbrace{\operatorname{Var}\big(\mathbb{E}[Y\mid X]\big)}_{\text{hedgeable}}\;+\;\underbrace{\mathbb{E}\big[\operatorname{Var}(Y\mid X)\big]}_{\text{the floor}}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="\operatorname{Var}(\mathbb{E}[Y\mid X])"></span><span class="def">variance of the signal — the part of the book's risk that <b>some</b> function of X could remove. <span class="n">The "explained" leg of the right triangle.</span></span></li>
+    <li><span class="sym math" data-tex="\mathbb{E}[\operatorname{Var}(Y\mid X)]"></span><span class="def">average leftover variance — the <b>slippage floor</b> no hedge built from X can go below. <span class="n">Idiosyncratic risk, in desk language; the noise σ² of the simulated world below.</span></span></li>
+  </ul>
 
-  <div class="sec">See it — project onto bigger and bigger subspaces</div>
+  <div class="sec">The smaller subspace — the best straight line</div>
+  <p class="step">A futures hedge cannot trade a curve: it is one ratio, a point in the two-dimensional subspace span{1, X}. Projecting Y onto that smaller plane instead of the full space gives the <b>best linear predictor</b> — and the normal equations (residual ⊥ 1, residual ⊥ X) solve it in closed form:</p>
+  <div class="mblock math" data-tex="h^{\star}=\frac{\operatorname{Cov}(Y,X)}{\operatorname{Var}(X)},\qquad a^{\star}=\mathbb{E}[Y]-h^{\star}\,\mathbb{E}[X]" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="h^{\star}"></span><span class="def">the <b>minimum-variance hedge ratio</b> — the projection coefficient of Y on X. <span class="n">In sample: Σ(xᵢ−x̄)(yᵢ−ȳ) / Σ(xᵢ−x̄)². Divide by n or n−1 (Lesson 2's story) — it cancels in the ratio.</span></span></li>
+    <li><span class="sym math" data-tex="\operatorname{span}\{1,X\}"></span><span class="def">the plane of affine hedges a + hX. <span class="n">Its residual is orthogonal to 1 and X <i>only</i> — to nothing else. That gap is this lesson's plot.</span></span></li>
+    <li><span class="sym math" data-tex="a^{\star}"></span><span class="def">the intercept — centres the hedge so the residual has mean zero. <span class="n">Orthogonality to the constant function 1.</span></span></li>
+  </ul>
+  <p class="step">Because the subspaces nest — constants ⊂ span{1,X} ⊂ all functions of X — the slippage variances can only fall as the family grows. The whole lesson is the size of the last drop.</p>
+
+  <div class="sec">Interactive — hedge the book: three predictors, one scatter</div>
+  <p class="step">A seeded world of <span class="num">400</span> trading days, returns in %. Ordinary days the index draws from N(+0.22, 0.80²); one day in ten comes from a <b>crash regime</b>, N(−2.2, 0.9²). The book's true conditional mean is deliberately nonlinear — upside beta <span class="num">0.9</span>, downside beta <span class="num">1.4</span>, plus crash curvature <span class="num">−0.35x²</span> below zero — with <span class="num">0.40</span>% of idiosyncratic noise on top. Your sliders set a straight-line hedge; the blue dashes are the normal-equations optimum (h★ = <span class="num" id="hstarTxt">—</span>, a★ = <span class="num" id="astarTxt">—</span> in this sample); the green curve is E[Y|X] itself.</p>
   <div class="panel">
-    <div class="seg" id="seg">
-      <button data-m="0" class="on">Constant ȳ</button>
-      <button data-m="1">Linear (OLS)</button>
-      <button data-m="2">E[Y|X]</button>
-    </div>
     <div class="ctrls">
-      <div class="field"><label>noise σ <b id="tauOut">1.1</b></label><input type="range" id="tau" min="0.2" max="3" value="1.1" step="0.1" /></div>
+      <div class="field"><label>your intercept a (%) <b id="aOut">0.00</b></label><input type="range" id="aSl" min="-1" max="1" value="0" step="0.01" /></div>
+      <div class="field"><label>your hedge ratio h <b id="hOut">1.00</b></label><input type="range" id="hSl" min="0" max="2" value="1" step="0.01" /></div>
     </div>
     <div class="btns">
-      <button class="act" id="new">New sample</button>
-      <button class="act" id="reset">Reset</button>
+      <button class="act" id="snap">Snap to h★ (best line)</button>
+      <button class="act" id="naive">Reset to naive 1-for-1</button>
     </div>
-    <svg id="plot" viewBox="0 0 680 380" role="img" aria-label="Scatter of Y against X with the chosen predictor and residuals"></svg>
+    <svg id="plot" viewBox="0 0 680 400" role="img" aria-label="Scatter of book return against index return with three hedges overlaid"></svg>
     <div class="tally">
-      <div class="stat"><div class="k">MSE</div><div class="v" id="mse">—</div></div>
-      <div class="stat"><div class="k">R² (variance explained)</div><div class="v" id="r2">—</div></div>
-      <div class="stat"><div class="k">corr(resid, X)</div><div class="v" id="cx">—</div></div>
-      <div class="stat"><div class="k">corr(resid, X²)</div><div class="v" id="cx2">—</div></div>
+      <div class="stat"><div class="k">unhedged var(Y)</div><div class="v" id="varY">—</div></div>
+      <div class="stat"><div class="k">your line · slippage</div><div class="v s" id="mseU">—</div></div>
+      <div class="stat"><div class="k">best line h★ · slippage</div><div class="v a" id="mseL">—</div></div>
+      <div class="stat"><div class="k">E[Y|X] · slippage</div><div class="v g" id="mseC">—</div></div>
     </div>
-    <p class="callout" id="note"></p>
+    <p class="callout" id="note1"></p>
   </div>
 
+  <p class="step">So far "conditional expectation" has meant "the MSE-optimal function of X". The honest definition runs the other way — Kolmogorov defines the object first, by measurability and matching integrals, and optimality becomes a theorem. Intuition: E[Y|X] is the unique X-readable variable that agrees with Y on average over <i>every</i> event that X can distinguish.</p>
   <div class="theorem">
     <p class="lbl">The precise statement</p>
-    <p>E[Y|X] is the orthogonal projection of Y onto L²(σ(X)), the space of square-integrable functions of X. It is the unique minimiser of E[(Y−g(X))²]; its residual is orthogonal to every function of X; and Var(Y) = Var(E[Y|X]) + E[Var(Y|X)] is the Pythagorean identity for that projection.</p>
+    <p>Let Y be integrable. The conditional expectation E[Y|X] is the almost-surely unique σ(X)-measurable, integrable random variable Z with E[Z·1_A] = E[Y·1_A] for every event A ∈ σ(X). If Y ∈ L², then E[Y|X] is the orthogonal projection of Y onto the closed subspace L²(σ(X)): it uniquely minimises E[(Y−Z)²] over σ(X)-measurable Z, and its residual satisfies E[(Y−E[Y|X])g(X)] = 0 for every bounded measurable g. Taking g ≡ 1 gives the tower property E[E[Y|X]] = E[Y]. Projecting instead onto the subspace span{1, X} yields the best linear predictor a★ + h★X with h★ = Cov(Y,X)/Var(X); the two projections coincide iff E[Y|X] is affine in X — in particular whenever (X,Y) is jointly Gaussian.</p>
+  </div>
+
+  <div class="sec">Interactive — where the slippage hides: moment diagnostics</div>
+  <p class="step">Test the residual ε against four functions of X. The bars are sample moments E[ε·g(X)]; the shaded band is ±2 standard errors — inside it, a bar is indistinguishable from sampling noise. For the best straight line, ε ⊥ 1 and ε ⊥ X <b>exactly</b> (normal equations) — but nothing forces the X² or 1(X&lt;0) bars to zero. For E[Y|X], orthogonality to <i>all</i> functions of X flattens the whole battery.</p>
+  <div class="panel">
+    <div class="seg" id="seg2">
+      <button data-m="0" class="on">best straight line (h★)</button>
+      <button data-m="1">conditional mean E[Y|X]</button>
+    </div>
+    <svg id="bars" viewBox="0 0 680 290" role="img" aria-label="Residual moment bars against four test functions with sampling-noise band"></svg>
+    <p class="callout" id="note2"></p>
   </div>
 
   <div class="twist">
-    <p class="lbl">The twist — OLS is a smaller projection, and loss chooses the target</p>
-    <p>Least-squares regression projects only onto <b>span{1, X}</b> — straight lines. It equals E[Y|X] only when the conditional mean truly is linear; otherwise OLS is the best <i>linear</i> approximation and can hide real structure (watch corr(resid, X²) stay large in Linear mode — the line removed the trend but not the curve). And the target itself depends on the loss: minimising squared error gives the conditional <b>mean</b>, but minimising absolute error E|Y−g(X)| gives the conditional <b>median</b>, and a tilted absolute loss gives conditional <b>quantiles</b> — the whole of quantile regression. "Best predictor" is only defined once you fix what you're paying for errors.</p>
+    <p class="lbl">The twist — regression is only conditional expectation if the world is linear</p>
+    <p>Under joint Gaussianity, E[Y|X] is exactly a★ + h★X: the static futures hedge is the best hedge <i>of any kind</i>, and the Cov/Var ratio is the whole story. The moment returns grow asymmetric betas — and equity returns do — the two projections split, and the gap lands in specific moments: the linear residual stays uncorrelated with X while correlating with X², which is a <b>short-gamma position you never chose</b> — the book bleeds precisely when the index moves big. The tower property is the cruel part: E[ε] = 0 means the leak costs nothing <i>on average</i>, so a PnL mean tells you nothing is wrong — the bleed sits in the conditional tail and shows up in a crash, all at once. It is Lesson 1's marginal-versus-conditional distinction wearing a risk report: marginally flat, conditionally toxic.</p>
   </div>
 
   <div class="vol">
     <p class="lbl">Why this matters · volarixs</p>
-    <p>This is the operation under your cross-sectional machinery, not an analogy. A factor model <i>is</i> a projection: regressing returns on factor exposures projects Y onto the factor subspace, and your <b>alpha is the residual</b> — orthogonal to the factors by construction. <code>R² = Var(E[Y|X])/Var(Y)</code> is exactly "how much does this signal explain", read straight off the Pythagorean split.</p>
-    <p>Neutralising a signal against sector or size is this same move: project onto the nuisance subspace and keep the orthogonal residual. And the twist is a standing hazard for you — a signal can look predictive under a linear fit while E[Y|X] is genuinely nonlinear (saturation, regime-dependence). That's your regime cross-matrix in this language: the shape of E[Y|X] changing across conditioning states is the thing a single linear projection cannot see.</p>
+    <p>Every pairwise beta or correlation stored in a <code>Cross-Matrix</code> cell is exactly this construction: the L² projection of one asset's return on another, h★ = Cov/Var cell by cell. The whole matrix is a table of best-<i>linear</i>-predictor coefficients — and it inherits the blind spot on display above: a cell sees X, never X², so cross-asset convexity (asymmetric betas, crash co-movement) is invisible to it by construction.</p>
+    <p>The regime HMM is the other half of the lesson running in production: <code>E[return | regime]</code> weighted by filtered regime probabilities <b>is</b> the tower property — conditional means averaged over the conditioning partition recover the unconditional forecast. And the moment-battery above is the honest audit for any hedge the platform proposes: check ε against functions of X beyond X itself before calling a book flat.</p>
   </div>
 
   <div class="sec">Check yourself</div>
-  <div class="q" id="q1"><p class="stem">Among all functions g(X), the minimiser of E[(Y−g(X))²] is:</p><div class="opts"></div><p class="fb"></p></div>
-  <div class="q" id="q2"><p class="stem">Ordinary least-squares regression of Y on X gives:</p><div class="opts"></div><p class="fb"></p></div>
-  <div class="q" id="q3"><p class="stem">The identity Var(Y) = Var(E[Y|X]) + E[Var(Y|X)] is:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q1"><p class="stem">Precisely, E[Y|X] is:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q2"><p class="stem">The property that certifies E[Y|X] as the best predictor is:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q3"><p class="stem">Your desk computes expected PnL conditional on each volatility regime, then averages those means using the regime probabilities. The tower property guarantees:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q4"><p class="stem">The best linear predictor a★ + h★X coincides with E[Y|X] exactly when:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q5"><p class="stem">The minimum-variance hedge ratio h★ = Cov(Y,X)/Var(X) is best understood as:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q6"><p class="stem">You hedge the book with the sample-optimal h★. The hedged PnL has correlation ≈ 0 with X, but E[ε·X²] is clearly negative. The right diagnosis:</p><div class="opts"></div><p class="fb"></p></div>
 
   <div class="checkRow">
-    <button class="act" id="check" style="background:var(--accent);border-color:var(--accent);color:#fff">Check answers</button>
-    <span class="hint" id="hint">Select an answer for all three first.</span>
+    <button class="primary" id="check">Check answers</button>
+    <span class="scoreOut" id="scoreOut"></span>
+    <span class="hint" id="hint">Answer all six first.</span>
   </div>
-  <div class="done" id="done">Phase 1 complete. Four projections down: interval, bias, likelihood, and the conditional mean itself.</div>
+  <div class="done" id="done">Projection laid down. Next: Lesson 05 — least squares in matrix form: the projection, computed.</div>
 </div>
 
 <script>
 /* storage shim: window.storage (Claude artifacts) or localStorage (web) */
 if(!window.storage){window.storage={async get(k){const v=localStorage.getItem(k);if(v==null)throw new Error('missing');return{key:k,value:v}},async set(k,v){localStorage.setItem(k,v);return{key:k,value:v}},async delete(k){localStorage.removeItem(k);return{key:k,deleted:true}},async list(p){const ks=[];for(let i=0;i<localStorage.length;i++){const kk=localStorage.key(i);if(!p||kk.startsWith(p))ks.push(kk)}return{keys:ks}}};}
-function renderMath(){
-  document.querySelectorAll('.math').forEach(el=>{
-    const tex=el.getAttribute('data-tex'); if(!tex||el.dataset.done)return;
-    try{ if(window.katex){katex.render(tex,el,{displayMode:el.dataset.display==='1',throwOnError:false});el.dataset.done='1';} else {el.textContent=tex;} }
-    catch(e){ el.textContent=tex; }
-  });
-}
-const N=140, XR=[-3.3,3.3];
-const X=[],Y=[]; let mode=0, yLo=0, yHi=1;
-const mTrue=x=>0.45*x+0.35*x*x;
-const tauVal=()=>parseFloat(document.getElementById('tau').value);
-function randn(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
-function gen(){
-  X.length=0;Y.length=0;const tau=tauVal();
-  for(let i=0;i<N;i++){const x=-3+6*Math.random();X.push(x);Y.push(mTrue(x)+tau*randn());}
-  let lo=Infinity,hi=-Infinity;for(const y of Y){if(y<lo)lo=y;if(y>hi)hi=y;}
-  const pad=(hi-lo)*0.1;yLo=lo-pad;yHi=hi+pad;
-}
-function mean(a){let s=0;for(const v of a)s+=v;return s/a.length;}
-function corr(a,b){const ma=mean(a),mb=mean(b);let sab=0,sa=0,sb=0;for(let i=0;i<a.length;i++){const da=a[i]-ma,db=b[i]-mb;sab+=da*db;sa+=da*da;sb+=db*db;}return sab/Math.sqrt(sa*sb||1);}
-function ols(){const mx=mean(X),my=mean(Y);let cov=0,vx=0;for(let i=0;i<N;i++){cov+=(X[i]-mx)*(Y[i]-my);vx+=(X[i]-mx)**2;}const b=cov/vx;return{a:my-b*mx,b};}
-function pred(x,o){ if(mode===0)return mean(Y); if(mode===1)return o.a+o.b*x; return mTrue(x); }
-function render(){
-  const o=ols();
-  const PW=680,PH=380,padL=44,padR=16,padT=16,padB=34,iw=PW-padL-padR,ih=PH-padT-padB,y0=padT+ih;
-  const sx=x=>padL+((x-XR[0])/(XR[1]-XR[0]))*iw, sy=y=>padT+(1-(y-yLo)/(yHi-yLo))*ih;
-  let s='';
-  s+=`<line x1="${padL}" y1="${y0}" x2="${PW-padR}" y2="${y0}" stroke="var(--hair2)" stroke-width="1"/>`;
-  if(0>=yLo&&0<=yHi){s+=`<line x1="${sx(0)}" y1="${padT}" x2="${sx(0)}" y2="${y0}" stroke="var(--hair)" stroke-width="1"/>`;}
-  [-3,0,3].forEach(v=>{s+=`<text x="${sx(v)}" y="${y0+18}" text-anchor="middle" font-family="var(--mono)" font-size="11" fill="var(--faint)">${v}</text>`;});
-  // residuals
-  const resid=[],X2=[];
-  for(let i=0;i<N;i++){const p=pred(X[i],o);resid.push(Y[i]-p);X2.push(X[i]*X[i]);
-    s+=`<line x1="${sx(X[i]).toFixed(1)}" y1="${sy(Y[i]).toFixed(1)}" x2="${sx(X[i]).toFixed(1)}" y2="${sy(p).toFixed(1)}" stroke="var(--series)" stroke-width="1" opacity="0.30"/>`;}
-  // points
-  for(let i=0;i<N;i++){s+=`<circle cx="${sx(X[i]).toFixed(1)}" cy="${sy(Y[i]).toFixed(1)}" r="2.6" fill="var(--ink)" opacity="0.60"/>`;}
-  // predictor
-  if(mode===0){const m=mean(Y);s+=`<line x1="${sx(XR[0])}" y1="${sy(m)}" x2="${sx(XR[1])}" y2="${sy(m)}" stroke="var(--accent)" stroke-width="2.4"/>`;}
-  else if(mode===1){s+=`<line x1="${sx(XR[0])}" y1="${sy(o.a+o.b*XR[0])}" x2="${sx(XR[1])}" y2="${sy(o.a+o.b*XR[1])}" stroke="var(--accent)" stroke-width="2.4"/>`;}
-  else{let p='';for(let i=0;i<=90;i++){const x=XR[0]+(i/90)*(XR[1]-XR[0]);p+=(i?'L':'M')+sx(x).toFixed(1)+' '+sy(mTrue(x)).toFixed(1)+' ';}s+=`<path d="${p}" fill="none" stroke="var(--accent)" stroke-width="2.4"/>`;}
-  document.getElementById('plot').innerHTML=s;
-  // stats
-  const mse=mean(resid.map(r=>r*r)), vary=mean(Y.map(y=>(y-mean(Y))**2));
-  const r2=Math.max(0,1-mse/vary), cx=corr(resid,X), cx2=corr(resid,X2);
-  document.getElementById('mse').textContent=mse.toFixed(2);
-  document.getElementById('r2').textContent=(r2*100).toFixed(0)+'%';
-  const near=v=>Math.abs(v)<0.06;
-  const cxEl=document.getElementById('cx'),cx2El=document.getElementById('cx2');
-  cxEl.textContent=cx.toFixed(2); cx2El.textContent=cx2.toFixed(2);
-  cxEl.className='v '+(near(cx)?'good':'warn'); cx2El.className='v '+(near(cx2)?'good':'warn');
-  const notes=[
-    "Constant ȳ — projection onto just the constants. Residuals still slope with X (corr≠0): a single number throws away everything X tells you. Highest MSE.",
-    "OLS — projection onto span{1, X}, the best straight line. corr(resid, X) collapses to ≈0, but corr(resid, X²) stays large: the line removed the trend, not the curvature. Not yet E[Y|X].",
-    "E[Y|X] — projection onto ALL functions of X. Both correlations ≈0: nothing predictable remains, MSE has hit its noise floor, and Var(Y) splits cleanly into explained + noise. This is the best predictor."
-  ];
-  document.getElementById('note').textContent=notes[mode];
-}
-function boot(){renderMath();gen();render();}
-document.querySelectorAll('#seg button').forEach(b=>b.onclick=()=>{mode=+b.dataset.m;document.querySelectorAll('#seg button').forEach(x=>x.classList.toggle('on',x===b));render();});
-document.getElementById('tau').addEventListener('input',e=>{document.getElementById('tauOut').textContent=e.target.value;});
-document.getElementById('tau').addEventListener('change',()=>{gen();render();});
-document.getElementById('new').onclick=()=>{gen();render();};
-document.getElementById('reset').onclick=()=>{document.getElementById('tau').value='1.1';document.getElementById('tauOut').textContent='1.1';mode=0;document.querySelectorAll('#seg button').forEach(x=>x.classList.toggle('on',x.dataset.m==='0'));gen();render();};
+function renderMath(){document.querySelectorAll('.math').forEach(el=>{const tex=el.getAttribute('data-tex');if(!tex||el.dataset.done)return;try{if(window.katex){katex.render(tex,el,{displayMode:el.dataset.display==='1',throwOnError:false});el.dataset.done='1';}else el.textContent=tex;}catch(e){el.textContent=tex;}});}
+function mulberry32(seed){let a=seed>>>0;return function(){a|=0;a=(a+0x6D2B79F5)|0;let t=Math.imul(a^(a>>>15),1|a);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296;}}
+function randn(rng){let u=0,v=0;while(!u)u=rng();while(!v)v=rng();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
 
+/* ---------- the seeded world (returns in %) ---------- */
+const SEED=104,N=400,PC=0.10,MUC=-2.2,SDC=0.9,MUN=0.22,SDN=0.80,SIGE=0.40,BU=0.9,BD=1.4,CD=-0.35;
+const mTrue=x=> x>=0 ? BU*x : BD*x + CD*x*x;
+const X=new Float64Array(N),Y=new Float64Array(N);
+(function(){
+  const rng=mulberry32(SEED);
+  for(let i=0;i<N;i++){
+    const u=rng();
+    const x=(u<PC)?(MUC+SDC*randn(rng)):(MUN+SDN*randn(rng));
+    const e=SIGE*randn(rng);
+    X[i]=x;Y[i]=mTrue(x)+e;
+  }
+})();
+const mean=a=>{let s=0;for(const v of a)s+=v;return s/a.length;};
+const xb=mean(X),yb=mean(Y);
+let Sxx=0,Sxy=0;for(let i=0;i<N;i++){Sxx+=(X[i]-xb)*(X[i]-xb);Sxy+=(X[i]-xb)*(Y[i]-yb);}
+const HSTAR=Sxy/Sxx, ASTAR=yb-HSTAR*xb;
+let varY=0;for(let i=0;i<N;i++)varY+=(Y[i]-yb)*(Y[i]-yb);varY/=N;
+function mseOf(f){let s=0;for(let i=0;i<N;i++){const r=Y[i]-f(X[i]);s+=r*r;}return s/N;}
+const MSE_L=mseOf(x=>ASTAR+HSTAR*x), MSE_C=mseOf(mTrue);
+const G=[x=>1,x=>x,x=>x*x,x=>x<0?1:0], GLAB=['g = 1','g = X','g = X²','g = 1(X<0)'];
+function moments(f){return G.map(g=>{let s=0;for(let i=0;i<N;i++)s+=(Y[i]-f(X[i]))*g(X[i]);const mu=s/N;let v=0;for(let i=0;i<N;i++){const d=(Y[i]-f(X[i]))*g(X[i])-mu;v+=d*d;}const se=Math.sqrt(v/N)/Math.sqrt(N);return{mu,se};});}
+const MOM_L=moments(x=>ASTAR+HSTAR*x), MOM_C=moments(mTrue);
+const red=ms=>100*(1-ms/varY);
+
+/* ---------- interactive 1: scatter + three hedges ---------- */
+let xLo=Infinity,xHi=-Infinity,yLo=Infinity,yHi=-Infinity;
+for(let i=0;i<N;i++){if(X[i]<xLo)xLo=X[i];if(X[i]>xHi)xHi=X[i];if(Y[i]<yLo)yLo=Y[i];if(Y[i]>yHi)yHi=Y[i];}
+xLo-=0.35;xHi+=0.35;const yp=(yHi-yLo)*0.07;yLo-=yp;yHi+=yp;
+function renderScatter(){
+  const a=parseFloat(document.getElementById('aSl').value),h=parseFloat(document.getElementById('hSl').value);
+  document.getElementById('aOut').textContent=a.toFixed(2);document.getElementById('hOut').textContent=h.toFixed(2);
+  const PW=680,PH=400,padL=46,padR=14,padT=30,padB=36,iw=PW-padL-padR,ih=PH-padT-padB;
+  const sx=x=>padL+((x-xLo)/(xHi-xLo))*iw, sy=y=>padT+(1-(y-yLo)/(yHi-yLo))*ih;
+  let s='';
+  s+=`<line x1="${padL}" y1="${sy(0).toFixed(1)}" x2="${PW-padR}" y2="${sy(0).toFixed(1)}" stroke="var(--hair)"/>`;
+  s+=`<line x1="${sx(0).toFixed(1)}" y1="${padT}" x2="${sx(0).toFixed(1)}" y2="${PH-padB}" stroke="var(--hair)"/>`;
+  [-4,-2,0,2].forEach(v=>{if(v>xLo&&v<xHi)s+=`<text x="${sx(v).toFixed(1)}" y="${PH-14}" text-anchor="middle" font-family="var(--mono)" font-size="11" fill="var(--faint)">${v}%</text>`;});
+  [-8,-4,0,4].forEach(v=>{if(v>yLo&&v<yHi)s+=`<text x="${padL-8}" y="${(sy(v)+4).toFixed(1)}" text-anchor="end" font-family="var(--mono)" font-size="11" fill="var(--faint)">${v}</text>`;});
+  for(let i=0;i<N;i++)s+=`<circle cx="${sx(X[i]).toFixed(1)}" cy="${sy(Y[i]).toFixed(1)}" r="2.4" fill="var(--ink)" opacity="0.45"/>`;
+  s+=`<line x1="${sx(xLo)}" y1="${sy(a+h*xLo).toFixed(1)}" x2="${sx(xHi)}" y2="${sy(a+h*xHi).toFixed(1)}" stroke="var(--series)" stroke-width="2.4"/>`;
+  s+=`<line x1="${sx(xLo)}" y1="${sy(ASTAR+HSTAR*xLo).toFixed(1)}" x2="${sx(xHi)}" y2="${sy(ASTAR+HSTAR*xHi).toFixed(1)}" stroke="var(--accent)" stroke-width="2.4" stroke-dasharray="7 5"/>`;
+  let p='';for(let i=0;i<=100;i++){const x=xLo+(i/100)*(xHi-xLo);p+=(i?'L':'M')+sx(x).toFixed(1)+' '+sy(mTrue(x)).toFixed(1)+' ';}
+  s+=`<path d="${p}" fill="none" stroke="var(--ok)" stroke-width="2.4"/>`;
+  const leg=[['var(--series)','your line'],['var(--accent)','best line h★'],['var(--ok)','E[Y|X]']];
+  leg.forEach((L,i)=>{const lx=padL+8+i*150;s+=`<line x1="${lx}" y1="16" x2="${lx+26}" y2="16" stroke="${L[0]}" stroke-width="2.6"/><text x="${lx+32}" y="20" font-family="var(--mono)" font-size="11.5" fill="var(--muted)">${L[1]}</text>`;});
+  document.getElementById('plot').innerHTML=s;
+  const mseU=mseOf(x=>a+h*x);
+  document.getElementById('varY').textContent=varY.toFixed(2)+' %²';
+  document.getElementById('mseU').textContent=mseU.toFixed(3);
+  document.getElementById('mseL').textContent=MSE_L.toFixed(3);
+  document.getElementById('mseC').textContent=MSE_C.toFixed(3);
+  const ru=red(mseU),rl=red(MSE_L),rc=red(MSE_C);
+  const gap=rc-rl;
+  document.getElementById('note1').textContent = (mseU-MSE_L<0.002)
+    ? `You found the projection: your line is the normal-equations optimum (h★=${HSTAR.toFixed(2)}), killing ${rl.toFixed(1)}% of the book's variance. But the green curve still does better — ${rc.toFixed(1)}% — because E[Y|X] lives in a bigger subspace. That ${gap.toFixed(1)}pp gap is structure no straight line can carry.`
+    : `Your line (a=${a.toFixed(2)}, h=${h.toFixed(2)}) leaves ${mseU.toFixed(3)} %² of slippage — ${ru.toFixed(1)}% of the unhedged variance removed. The best straight line removes ${rl.toFixed(1)}%, and E[Y|X] removes ${rc.toFixed(1)}%. Slippage can only fall as the subspace grows: yours ≥ ${MSE_L.toFixed(3)} ≥ ${MSE_C.toFixed(3)}.`;
+}
+document.getElementById('aSl').addEventListener('input',renderScatter);
+document.getElementById('hSl').addEventListener('input',renderScatter);
+document.getElementById('snap').onclick=()=>{document.getElementById('aSl').value=ASTAR.toFixed(2);document.getElementById('hSl').value=HSTAR.toFixed(2);renderScatter();};
+document.getElementById('naive').onclick=()=>{document.getElementById('aSl').value='0';document.getElementById('hSl').value='1';renderScatter();};
+
+/* ---------- interactive 2: residual moment battery ---------- */
+let mode2=0;
+function renderBars(){
+  const M=mode2===0?MOM_L:MOM_C;
+  const PW=680,PH=290,y0=150,half=104,gw=PW/4;
+  let s=`<line x1="0" y1="${y0}" x2="${PW}" y2="${y0}" stroke="var(--hair2)"/>`;
+  M.forEach((m,i)=>{
+    const other=(mode2===0?MOM_C:MOM_L)[i];
+    const S=1.15*Math.max(Math.abs(m.mu),Math.abs(other.mu),2.2*m.se,2.2*other.se,1e-9);
+    const cx=gw*i+gw/2, bw=44, bandH=(2*m.se/S)*half, bh=(Math.abs(m.mu)/S)*half;
+    const out=Math.abs(m.mu)>2*m.se;
+    s+=`<rect x="${(cx-bw*1.05).toFixed(1)}" y="${(y0-bandH).toFixed(1)}" width="${(bw*2.1).toFixed(1)}" height="${(2*bandH).toFixed(1)}" fill="var(--accent-bg)" opacity="0.85"/>`;
+    s+=`<rect x="${(cx-bw/2).toFixed(1)}" y="${(m.mu>=0?y0-bh:y0).toFixed(1)}" width="${bw}" height="${Math.max(bh,0.75).toFixed(1)}" fill="${out?'var(--miss)':'var(--ok)'}" opacity="0.9"/>`;
+    const ty=m.mu>=0?Math.max(y0-bh-8,14):Math.min(y0+bh+15,PH-38);
+    s+=`<text x="${cx}" y="${ty.toFixed(1)}" text-anchor="middle" font-family="var(--mono)" font-size="12" fill="var(--ink)">${(m.mu>=0?'+':'')+m.mu.toFixed(3)}</text>`;
+    s+=`<text x="${cx}" y="${PH-26}" text-anchor="middle" font-family="var(--mono)" font-size="12" fill="var(--muted)">${GLAB[i]}</text>`;
+    s+=`<text x="${cx}" y="${PH-10}" text-anchor="middle" font-family="var(--mono)" font-size="10.5" fill="var(--faint)">t = ${(m.mu/m.se).toFixed(1)}</text>`;
+  });
+  document.getElementById('bars').innerHTML=s;
+  const tmax=Math.max(...MOM_C.map(m=>Math.abs(m.mu/m.se)));
+  document.getElementById('note2').textContent = mode2===0
+    ? `The 1 and X bars are zero to machine precision — the normal equations force them. But E[ε·X²] = ${MOM_L[2].mu.toFixed(3)} (t = ${(MOM_L[2].mu/MOM_L[2].se).toFixed(1)}): large moves hurt in both directions — missed convexity, a short-gamma book. And E[ε·1(X<0)] = ${(MOM_L[3].mu>=0?'+':'')+MOM_L[3].mu.toFixed(3)} (t = ${(MOM_L[3].mu/MOM_L[3].se).toFixed(1)}): the single crash-inflated ratio h★ = ${HSTAR.toFixed(2)} even misprices the ordinary down day. Orthogonal to X is not orthogonal to functions of X.`
+    : `All four bars sit inside the ±2·SE band (largest |t| = ${tmax.toFixed(1)}): the residual of E[Y|X] is orthogonal to every function of X, so every test function comes back as sampling noise. That flatness — against the whole battery, not just X — is the definition of conditional expectation.`;
+}
+document.querySelectorAll('#seg2 button').forEach(b=>b.onclick=()=>{mode2=+b.dataset.m;document.querySelectorAll('#seg2 button').forEach(x=>x.classList.toggle('on',x===b));renderBars();});
+
+/* ---------- retrieval ---------- */
 const QS={
-  q1:{opts:["The linear regression of Y on X","E[Y|X], the conditional expectation","The overall sample mean of Y","The conditional median of Y given X"],a:1,
-    fb:"E[Y|X] is the orthogonal projection of Y onto all functions of X, so it is the unique minimiser of mean squared error. (The conditional median minimises absolute error instead.)"},
-  q2:{opts:["E[Y|X] exactly, for any data","The best *linear* predictor — projection onto span{1,X} — equal to E[Y|X] only if the conditional mean is linear","The conditional median of Y","An unbiased estimate of Var(Y)"],a:1,
-    fb:"OLS projects onto straight lines only. When E[Y|X] is nonlinear, OLS is merely its best linear approximation — as the lingering corr(resid, X²) in Linear mode shows."},
-  q3:{opts:["A coincidence special to the normal distribution","The Pythagorean theorem in L²: explained variance plus unexplained variance","True only when X and Y are independent","Just the definition of covariance"],a:1,
-    fb:"It is Pythagoras for the projection: Y = E[Y|X] + residual with the two orthogonal, so their squared lengths (variances) add. It holds for any Y with finite variance."}
+  q1:{opts:["A single number: the average of Y over all days in the sample.","A random variable that is a function of X — read today's X, output the best mean-square guess of Y.","A function of Y that returns the most likely value of X.","The slope of the regression line of Y on X."],a:1,
+    fb:"E[Y|X] is itself random — it moves with X. It is the σ(X)-measurable variable closest to Y in mean square: a whole curve of best guesses, one per value of X. (The single number is E[Y]; the slope is only the linear projection's coefficient.)"},
+  q2:{opts:["Its residual is orthogonal to every (bounded) function of X: E[(Y−E[Y|X])g(X)] = 0 for all g.","Its residual is fully independent of X.","Its residual has zero variance.","It is a linear function of X."],a:0,
+    fb:"Orthogonality to the entire subspace of functions of X is what makes it the projection — no leftover structure any hedge could exploit. Independence is strictly stronger and not implied (the residual's variance may still move with X); zero variance would mean Y was a function of X."},
+  q3:{opts:["The regime-conditional means must all be equal.","Conditioning on more information always lowers the expected PnL.","The probability-weighted average of the conditional means equals the unconditional expected PnL, exactly.","That identity holds only if PnL is Gaussian within each regime."],a:2,
+    fb:"Tower property: E[E[Y|regime]] = E[Y] — refine, then average, and you recover the plain mean. It is distribution-free bookkeeping. That is also its danger: a hedge can bleed conditionally in one regime and show a perfectly clean average."},
+  q4:{opts:["Whenever X and Y are uncorrelated.","Whenever the sample is large enough for the law of large numbers.","Whenever Y has finite variance.","When E[Y|X] is affine in X — in particular under joint Gaussianity of (X,Y)."],a:3,
+    fb:"The two projections agree exactly when the bigger projection already lies in the smaller subspace, i.e. the true conditional mean is a straight line. Joint Gaussianity guarantees it — which is why the static Cov/Var hedge is silently a Gaussian assumption. No amount of data fixes a wrong subspace."},
+  q5:{opts:["The ratio of the two assets' volatilities.","The coefficient of the orthogonal projection of Y onto span{1, X} — the best straight-line hedge, which is the best hedge overall only if E[Y|X] is linear.","The probability that Y and X move in the same direction.","An unbiased estimate of E[Y|X]."],a:1,
+    fb:"h★ = Cov(Y,X)/Var(X) solves the normal equations for the two-dimensional subspace span{1,X}. It is a projection coefficient — optimal among lines, and exactly optimal only when the conditional mean is itself a line. (σ_Y/σ_X is the ratio only when correlation is ±1.)"},
+  q6:{opts:["The hedge is fine — zero correlation with X means no index exposure remains.","Increase h★ until E[ε·X²] is zero too.","The book has convexity to the index that no linear hedge can carry — an implicit short-gamma position; it will bleed on large moves and needs a nonlinear overlay (e.g. index options).","The residual is heteroskedastic, so h★ is a biased estimate and must be re-estimated."],a:2,
+    fb:"E[ε·X²] < 0 with ε ⊥ X is the signature of missed convexity: the residual loses on big moves in either direction. No value of h fixes it — changing h only re-tilts the linear part, and ε ⊥ X already holds. You must enlarge the subspace: add instruments whose payoff is nonlinear in X. (Heteroskedasticity does not bias h★.)"}
 };
-const sel={q1:null,q2:null,q3:null};let revealed=false;
-Object.keys(QS).forEach(id=>{
-  const holder=document.querySelector('#'+id+' .opts');
-  QS[id].opts.forEach((txt,i)=>{
-    const b=document.createElement('button');b.className='opt';b.textContent=String.fromCharCode(65+i)+'.  '+txt;
-    b.onclick=()=>{if(revealed)return;sel[id]=i;[...holder.children].forEach((c,ci)=>c.classList.toggle('sel',ci===i));document.getElementById('hint').style.display='none';};
-    holder.appendChild(b);
-  });
-});
+const sel={q1:null,q2:null,q3:null,q4:null,q5:null,q6:null};let revealed=false;
+Object.keys(QS).forEach(id=>{const holder=document.querySelector('#'+id+' .opts');QS[id].opts.forEach((txt,i)=>{const b=document.createElement('button');b.className='opt';b.textContent=String.fromCharCode(65+i)+'.  '+txt;b.onclick=()=>{if(revealed)return;sel[id]=i;[...holder.children].forEach((c,ci)=>c.classList.toggle('sel',ci===i));document.getElementById('hint').style.display='none';};holder.appendChild(b);});});
 document.getElementById('check').onclick=async()=>{
-  if(revealed)return;
-  if(sel.q1===null||sel.q2===null||sel.q3===null){document.getElementById('hint').style.display='inline';return;}
+  if(revealed)return;if(Object.values(sel).some(v=>v===null)){document.getElementById('hint').style.display='inline';return;}
   revealed=true;let score=0;
-  Object.keys(QS).forEach(id=>{
-    const a=QS[id].a,holder=document.querySelector('#'+id+' .opts'),fb=document.querySelector('#'+id+' .fb');
-    [...holder.children].forEach((c,ci)=>{c.style.cursor='default';c.classList.remove('sel');if(ci===a)c.classList.add('correct');else if(ci===sel[id])c.classList.add('wrong');});
-    if(sel[id]===a)score++;fb.textContent=QS[id].fb;fb.classList.add('show');
-  });
-  const btn=document.getElementById('check');btn.style.opacity='0.5';btn.textContent='Checked · '+score+'/3';
-  document.getElementById('done').classList.add('show');
-  try{await window.storage.set('mfs:lesson04',JSON.stringify({done:true,retrieval:score+'/3',ts:Date.now()}),false);}catch(e){}
+  Object.keys(QS).forEach(id=>{const a=QS[id].a,holder=document.querySelector('#'+id+' .opts'),fb=document.querySelector('#'+id+' .fb');[...holder.children].forEach((c,ci)=>{c.style.cursor='default';c.classList.remove('sel');if(ci===a)c.classList.add('correct');else if(ci===sel[id])c.classList.add('wrong');});if(sel[id]===a)score++;fb.textContent=QS[id].fb;fb.classList.add('show');});
+  document.getElementById('check').style.opacity='0.5';document.getElementById('check').textContent='Checked';
+  document.getElementById('scoreOut').textContent=score+' / 6';document.getElementById('done').classList.add('show');
+  try{await window.storage.set('mfs:lesson04',JSON.stringify({done:true,retrieval:score+'/6',ts:Date.now()}),false);}catch(e){}
 };
+function boot(){
+  renderMath();
+  document.getElementById('hstarTxt').textContent=HSTAR.toFixed(2);
+  document.getElementById('astarTxt').textContent=ASTAR.toFixed(2);
+  renderScatter();renderBars();
+}
 if(window.katex)boot();else window.addEventListener('load',boot);
 (async()=>{try{const r=await window.storage.get('mfs:lesson04',false);if(r&&r.value){const v=JSON.parse(r.value);if(v.done){const c=document.getElementById('chip');c.classList.add('show');c.textContent='completed · '+v.retrieval;}}}catch(e){}})();
 </script>
