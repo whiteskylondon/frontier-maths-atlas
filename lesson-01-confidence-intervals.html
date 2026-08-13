@@ -8,36 +8,18 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
 <style>
   :root{
-    --paper:#FAFAF6; --ink:#1A1C22; --muted:#63676E; --faint:#9A9EA4;
-    --hair:#E4E3DB; --hair2:#D4D3CA; --panel:#FFFFFF;
-    --accent:#24507A; --accent-bg:#EAF0F6;
-    --miss:#B23A3A; --cover:#3C5A78;
-    --ok:#2F6B4F; --ok-bg:#E9F1EC;
-    --vol:#8A5A2B; --vol-bg:#F6EFE6;
-    --serif:Iowan Old Style,Palatino,"Palatino Linotype",Georgia,serif;
-    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    --paper:#FAFAF6;--ink:#1A1C22;--muted:#63676E;--faint:#9A9EA4;--hair:#E4E3DB;--hair2:#D4D3CA;--panel:#FFFFFF;
+    --accent:#24507A;--accent-bg:#EAF0F6;--series:#B07A2E;--miss:#B23A3A;--ok:#2F6B4F;--ok-bg:#E9F1EC;
+    --vol:#8A5A2B;--vol-bg:#F6EFE6;--serif:Iowan Old Style,Palatino,Georgia,serif;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
   }
-  @media (prefers-color-scheme: dark){
-    :root{
-      --paper:#15161A; --ink:#E9E8E2; --muted:#A2A6AC; --faint:#71757B;
-      --hair:#2A2C31; --hair2:#3A3C42; --panel:#1B1D22;
-      --accent:#7FB0E0; --accent-bg:#1E2A38;
-      --miss:#E07A7A; --cover:#8FB2D4;
-      --ok:#7FC49F; --ok-bg:#1C2A22;
-      --vol:#D9A066; --vol-bg:#2A2115;
-    }
-  }
+  @media (prefers-color-scheme:dark){:root{--paper:#15161A;--ink:#E9E8E2;--muted:#A2A6AC;--faint:#71757B;--hair:#2A2C31;--hair2:#3A3C42;--panel:#1B1D22;--accent:#7FB0E0;--accent-bg:#1E2A38;--series:#D9A85E;--miss:#E07A7A;--ok:#7FC49F;--ok-bg:#1C2A22;--vol:#D9A066;--vol-bg:#2A2115;}}
   *{box-sizing:border-box}
-  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);
-    line-height:1.62;-webkit-font-smoothing:antialiased}
-  .wrap{max-width:740px;margin:0 auto;padding:32px 24px 60px}
-  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;
-    text-transform:uppercase;color:var(--accent);margin:0 0 6px}
-  h1{font-family:var(--serif);font-weight:600;font-size:30px;line-height:1.2;
-    margin:0 0 6px;letter-spacing:-.01em}
-  .chip{display:none;font-family:var(--mono);font-size:11px;letter-spacing:.05em;color:var(--ok);
-    border:1px solid var(--ok);border-radius:20px;padding:3px 10px;vertical-align:middle;margin-left:10px}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.62;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:750px;margin:0 auto;padding:32px 24px 60px}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 6px}
+  h1{font-family:var(--serif);font-weight:600;font-size:27px;line-height:1.22;margin:0 0 6px;letter-spacing:-.01em}
+  .chip{display:none;font-family:var(--mono);font-size:11px;letter-spacing:.05em;color:var(--ok);border:1px solid var(--ok);border-radius:20px;padding:3px 10px;vertical-align:middle;margin-left:10px}
   .chip.show{display:inline-block}
   .sub{color:var(--muted);font-size:15px;margin:0 0 18px}
   .levels{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 26px}
@@ -46,108 +28,112 @@
   .levels .pill b{color:var(--accent);font-weight:700;letter-spacing:.03em}
   p.lead{font-size:16px;margin:0 0 22px}
   p.lead b{font-weight:600}
-  .sec{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;
-    color:var(--faint);margin:34px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--hair)}
+  .sec{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:36px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--hair)}
   .mblock{margin:16px 0;overflow-x:auto}
   .glo{list-style:none;padding:0;margin:14px 0 0}
   .glo li{display:flex;gap:14px;padding:9px 0;border-top:1px solid var(--hair);align-items:baseline}
   .glo li:first-child{border-top:none}
-  .glo .sym{flex:0 0 84px;text-align:right;padding-top:2px}
-  .glo .def{font-size:14.5px;color:var(--ink)}
+  .glo .sym{flex:0 0 92px;text-align:right;padding-top:2px}
+  .glo .def{font-size:14.5px}
   .glo .def .n{color:var(--muted)}
   .step{font-size:14.5px;color:var(--muted);margin:10px 0}
   .panel{background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:20px;margin:14px 0}
-  .curveWrap{display:flex;flex-direction:column;align-items:center}
-  .curveCap{font-size:13px;color:var(--muted);margin:6px 0 0;text-align:center}
-  .ctrls{display:flex;flex-wrap:wrap;gap:18px 28px;align-items:flex-end;margin:0 0 16px}
-  .field{display:flex;flex-direction:column;gap:6px;min-width:150px;flex:1}
-  .field label{font-size:12px;color:var(--muted);font-family:var(--mono);letter-spacing:.03em;
-    display:flex;justify-content:space-between}
+  .ctrls{display:flex;flex-wrap:wrap;gap:16px 26px;align-items:flex-end;margin:0 0 14px}
+  .field{display:flex;flex-direction:column;gap:6px;min-width:220px;flex:1}
+  .field label{font-size:12px;color:var(--muted);font-family:var(--mono);letter-spacing:.03em;display:flex;justify-content:space-between}
   .field label b{color:var(--ink);font-weight:600}
   input[type=range]{width:100%;accent-color:var(--accent);height:20px}
-  select{font-family:var(--mono);font-size:14px;padding:7px 8px;border:1px solid var(--hair2);
-    border-radius:7px;background:var(--panel);color:var(--ink)}
+  select{font-family:var(--mono);font-size:14px;padding:7px 8px;border:1px solid var(--hair2);border-radius:7px;background:var(--panel);color:var(--ink)}
   .btns{display:flex;flex-wrap:wrap;gap:8px;margin:2px 0 14px}
-  button.act{font-family:var(--sans);font-size:14px;padding:8px 14px;border-radius:8px;
-    border:1px solid var(--hair2);background:var(--panel);color:var(--ink);cursor:pointer}
+  button.act{font-family:var(--sans);font-size:14px;padding:8px 14px;border-radius:8px;border:1px solid var(--hair2);background:var(--panel);color:var(--ink);cursor:pointer}
   button.act:hover{border-color:var(--accent);color:var(--accent)}
-  button.act.primary{background:var(--accent);border-color:var(--accent);color:#fff}
-  button.act.primary:hover{color:#fff;opacity:.92}
   svg{max-width:100%;height:auto;display:block}
   .tally{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 2px}
   .stat{flex:1;min-width:120px;background:var(--paper);border-radius:9px;padding:9px 12px}
-  .stat .k{font-size:11px;font-family:var(--mono);letter-spacing:.05em;color:var(--muted);text-transform:uppercase}
-  .stat .v{font-size:22px;font-weight:600;font-family:var(--mono);margin-top:2px}
-  .callout{font-size:14px;color:var(--muted);border-left:2px solid var(--accent);padding:2px 0 2px 14px;margin:16px 0 2px}
+  .stat .k{font-size:11px;font-family:var(--mono);letter-spacing:.04em;color:var(--muted);text-transform:uppercase}
+  .stat .v{font-size:19px;font-weight:600;font-family:var(--mono);margin-top:2px}
+  .stat .v.a{color:var(--accent)}.stat .v.g{color:var(--ok)}.stat .v.s{color:var(--series)}
+  .callout{font-size:14px;color:var(--muted);border-left:2px solid var(--accent);padding:2px 0 2px 14px;margin:16px 0 2px;min-height:1.4em}
   .theorem{background:var(--accent-bg);border-radius:12px;padding:18px 20px;margin:16px 0}
   .theorem .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
-  .theorem p{font-family:var(--serif);font-size:16.5px;line-height:1.55;margin:0}
+  .theorem p{font-family:var(--serif);font-size:16px;line-height:1.55;margin:0}
+  .twist{border:1px dashed var(--hair2);border-radius:12px;padding:16px 18px;margin:16px 0;background:var(--panel)}
+  .twist .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+  .twist p{margin:0;font-size:14.6px}
   .vol{background:var(--vol-bg);border:1px solid var(--vol);border-radius:12px;padding:18px 20px;margin:16px 0}
   .vol .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:var(--vol);margin:0 0 8px}
-  .vol p{margin:0 0 10px;font-size:14.8px}
-  .vol p:last-child{margin-bottom:0}
+  .vol p{margin:0 0 10px;font-size:14.8px}.vol p:last-child{margin-bottom:0}
   .vol code{font-family:var(--mono);font-size:13px;background:rgba(138,90,43,.12);padding:1px 5px;border-radius:4px}
   .q{border:1px solid var(--hair);border-radius:12px;padding:16px 18px;margin:12px 0;background:var(--panel)}
   .q .stem{font-size:15px;font-weight:500;margin:0 0 12px}
-  .opt{display:block;width:100%;text-align:left;font-size:14px;padding:10px 12px;margin:0 0 8px;
-    border:1px solid var(--hair2);border-radius:8px;background:transparent;color:var(--ink);cursor:pointer;line-height:1.45}
+  .opt{display:block;width:100%;text-align:left;font-size:14px;padding:10px 12px;margin:0 0 8px;border:1px solid var(--hair2);border-radius:8px;background:transparent;color:var(--ink);cursor:pointer;line-height:1.45}
   .opt:last-child{margin-bottom:0}
   .opt:hover{border-color:var(--accent)}
   .opt.sel{border-color:var(--accent);background:var(--accent-bg)}
   .opt.correct{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
   .opt.wrong{background:#F7ECEC;border-color:var(--miss);color:var(--miss)}
-  @media (prefers-color-scheme: dark){ .opt.wrong{background:#2E1E1E} }
+  @media (prefers-color-scheme:dark){.opt.wrong{background:#2E1E1E}}
   .fb{font-size:13.5px;color:var(--muted);margin:10px 0 0;line-height:1.5;display:none}
   .fb.show{display:block}
-  .checkRow{display:flex;align-items:center;gap:14px;margin:16px 0 0;flex-wrap:wrap}
-  .hint{font-size:13px;color:var(--miss)}
-  .done{display:none;align-items:center;gap:10px;background:var(--ok-bg);color:var(--ok);
-    border-radius:10px;padding:12px 16px;font-size:14px;margin:14px 0 0}
+  .checkRow{display:flex;align-items:center;gap:14px;margin:18px 0 0;flex-wrap:wrap}
+  .hint{font-size:13px;color:var(--miss);display:none}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-family:var(--sans);font-size:14px;padding:8px 14px;border-radius:8px;border:1px solid var(--accent);cursor:pointer}
+  .scoreOut{font-family:var(--mono);font-size:14px;font-weight:600}
+  .done{display:none;align-items:center;gap:10px;background:var(--ok-bg);color:var(--ok);border-radius:10px;padding:12px 16px;font-size:14px;margin:14px 0 0}
   .done.show{display:flex}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <p class="eyebrow">Lesson 01 · Estimation &amp; inference</p>
+  <p class="eyebrow">Lesson 01 · Wing 0 — statistical &amp; linear-algebra foundations</p>
   <h1>What a confidence interval actually claims<span class="chip" id="chip"></span></h1>
-  <p class="sub">The parameter is fixed. The interval is what's random. Watch — and derive — the difference.</p>
+  <p class="sub">The edge is fixed. The interval is random. And one year of backtest usually cannot tell a real +5 bp edge from zero.</p>
   <div class="levels">
     <span class="lk">Level</span>
     <span class="pill"><b>US</b> Undergraduate (intro→intermediate)</span>
     <span class="pill"><b>FR</b> Licence L2–L3</span>
   </div>
 
-  <p class="lead">We know a truth the analyst doesn't: the population mean is <b>μ = 50</b>, with known <b>σ = 12</b>. Each sample of size <i>n</i> yields one interval. Any single interval either covers μ or it doesn't — no probability survives the computation. The confidence level lives entirely in the <i>procedure</i>.</p>
+  <p class="lead">We are going to run inference on a trading strategy's <b>edge</b> — its average daily profit. To learn what a confidence interval really promises, we cheat: we build the world ourselves. In our simulated market the strategy's true edge is <b>μ = +5 bp per day</b> and the day-to-day noise around it is <b>σ = 100 bp</b>, known exactly. Each "backtest" samples <i>n</i> days from that world and turns them into one interval for the edge. Watch the language: the edge is a fixed number that never moves; the <b>interval</b> is the random object. So whatever "95% confidence" means, it must be a grade for the interval-making <i>procedure</i>, never for any single computed answer.</p>
+
+  <div class="sec">The words, in plain English</div>
+  <p class="step"><b>Basis point (bp).</b> One hundredth of one percent. An edge of +5 bp/day sums to 5 × 252 = 1260 bp ≈ 12.6% over a trading year, an annualized Sharpe ratio near 0.8 — a genuinely good strategy. But the daily noise, σ = 100 bp, is 20× the daily signal.</p>
+  <p class="step"><b>Backtest, sample mean.</b> Run the strategy over n historical days and average the daily PnLs. That average, x̄, is the <i>measured</i> edge — an estimate. A different window of days gives a different x̄: the estimate is the thing that varies.</p>
+  <p class="step"><b>Standard error.</b> How much x̄ typically wobbles from backtest to backtest: σ/√n. More days shrink it — but only at the √n rate.</p>
+  <p class="step"><b>Confidence interval, coverage.</b> A recipe that converts one backtest into a range, "x̄ ± some slack", engineered so that across many repetitions a known fraction of the ranges — say 95% — trap the true edge. That long-run success rate is called <b>coverage</b>, and it grades the recipe, not any one range.</p>
+  <p class="step"><b>Critical value.</b> The slack, counted in standard errors: 1.96 of them buys 95% coverage. Where 1.96 comes from is the derivation below — no theorem needed yet, just those five words.</p>
 
   <div class="sec">The formula</div>
-  <div class="mblock math" data-tex="\left[\;\bar{x} \;-\; z_{\alpha/2}\,\dfrac{\sigma}{\sqrt{n}}\;,\quad \bar{x} \;+\; z_{\alpha/2}\,\dfrac{\sigma}{\sqrt{n}}\;\right]" data-display="1"></div>
+  <div class="mblock math" data-tex="\left[\;\bar{x} \;-\; z_{\alpha/2}\,\dfrac{\sigma}{\sqrt{n}}\;,\quad \bar{x} \;+\; z_{\alpha/2}\,\dfrac{\sigma}{\sqrt{n}}\;\right]\qquad\text{(bp per day)}" data-display="1"></div>
   <ul class="glo">
-    <li><span class="sym math" data-tex="\bar{x}=\frac1n\sum_i x_i"></span><span class="def">the <b>sample mean</b>, our point estimate of μ. <span class="n">It is random — a fresh sample moves it. This is the only quantity in the formula that changes from draw to draw.</span></span></li>
-    <li><span class="sym math" data-tex="\sigma"></span><span class="def">the <b>population standard deviation</b>, here assumed known. <span class="n">In practice you estimate it, which swaps the normal for a t-distribution — question 3 below.</span></span></li>
-    <li><span class="sym math" data-tex="\dfrac{\sigma}{\sqrt{n}}"></span><span class="def">the <b>standard error</b> — the SD of the sampling distribution of x̄. <span class="n">Precision improves only as √n, so halving the interval takes 4× the data.</span></span></li>
-    <li><span class="sym math" data-tex="z_{\alpha/2}"></span><span class="def">the <b>critical value</b> from the standard normal. <span class="n">95% → 1.96, 99% → 2.576. It sets how many standard errors wide the interval is.</span></span></li>
-    <li><span class="sym math" data-tex="1-\alpha"></span><span class="def">the <b>confidence level</b> — the long-run fraction of intervals that cover μ. <span class="n">Not the probability for any one interval.</span></span></li>
+    <li><span class="sym math" data-tex="\bar{x}=\frac1n\sum_i x_i"></span><span class="def">the <b>sample mean</b> of the n daily PnLs — the measured edge. <span class="n">The only random quantity in the formula: a fresh backtest window moves it.</span></span></li>
+    <li><span class="sym math" data-tex="\mu"></span><span class="def">the <b>true edge</b>, fixed and unknown (here +5 bp, because we built the world). <span class="n">The interval hunts it; it never moves.</span></span></li>
+    <li><span class="sym math" data-tex="\sigma"></span><span class="def">the <b>daily volatility</b> of strategy PnL, assumed known: 100 bp. <span class="n">Estimating it instead swaps the normal for Student's t — question 3 below, and Lesson 2's n−1 story.</span></span></li>
+    <li><span class="sym math" data-tex="\dfrac{\sigma}{\sqrt{n}}"></span><span class="def">the <b>standard error</b> — the SD of x̄ across backtests. <span class="n">Precision improves only as √n: halving the interval costs 4× the days.</span></span></li>
+    <li><span class="sym math" data-tex="z_{\alpha/2}"></span><span class="def">the <b>critical value</b> of the standard normal: 95% → 1.96, 99% → 2.576. <span class="n">How many standard errors of slack the level demands.</span></span></li>
+    <li><span class="sym math" data-tex="1-\alpha"></span><span class="def">the <b>confidence level</b> — the long-run fraction of intervals that cover μ. <span class="n">Not the probability that this particular interval succeeded.</span></span></li>
   </ul>
 
   <div class="sec">Where the 1−α comes from</div>
-  <p class="step">Because the mean of a normal sample is itself normal:</p>
-  <div class="mblock math" data-tex="\bar{x}\ \sim\ \mathcal{N}\!\left(\mu,\ \frac{\sigma^{2}}{n}\right)\qquad\Longrightarrow\qquad Z=\frac{\bar{x}-\mu}{\sigma/\sqrt{n}}\ \sim\ \mathcal{N}(0,1)" data-display="1"></div>
-  <p class="step">By definition of the critical value, the standard normal puts mass 1−α in the central band:</p>
-  <div class="mblock math" data-tex="\mathbb{P}\!\left(-z_{\alpha/2}\ \le\ Z\ \le\ z_{\alpha/2}\right)=1-\alpha" data-display="1"></div>
-  <p class="step">Substitute Z and rearrange the inequality to isolate μ — note the move: μ stays fixed while the <i>endpoints</i> carry all the randomness:</p>
-  <div class="mblock math" data-tex="\mathbb{P}\!\left(\bar{x}-z_{\alpha/2}\tfrac{\sigma}{\sqrt{n}}\ \le\ \mu\ \le\ \bar{x}+z_{\alpha/2}\tfrac{\sigma}{\sqrt{n}}\right)=1-\alpha" data-display="1"></div>
-
-  <div class="panel curveWrap">
-    <svg id="curve" viewBox="0 0 520 170" role="img" aria-label="Standard normal density with the central 1 minus alpha region shaded"></svg>
-    <p class="curveCap" id="curveCap"></p>
+  <p class="step">The mean of n normal days is itself normal, so standardizing it produces a <b>pivot</b> — a quantity whose distribution is completely known even though μ is not:</p>
+  <div class="mblock math" data-tex="\bar{x}\ \sim\ \mathcal{N}\!\left(\mu,\ \tfrac{\sigma^{2}}{n}\right)\qquad\Longrightarrow\qquad Z=\frac{\bar{x}-\mu}{\sigma/\sqrt{n}}\ \sim\ \mathcal{N}(0,1)" data-display="1"></div>
+  <p class="step">The standard normal puts probability 1−α in its central band. Substitute Z and rearrange the inequalities to isolate μ — the key move: μ stays fixed while the <i>endpoints</i> absorb all the randomness:</p>
+  <div class="mblock math" data-tex="\mathbb{P}\!\left(-z_{\alpha/2}\le Z\le z_{\alpha/2}\right)=1-\alpha\;\;\Longleftrightarrow\;\;\mathbb{P}\!\left(\bar{x}-z_{\alpha/2}\tfrac{\sigma}{\sqrt{n}}\ \le\ \mu\ \le\ \bar{x}+z_{\alpha/2}\tfrac{\sigma}{\sqrt{n}}\right)=1-\alpha" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="Z"></span><span class="def">the <b>pivot</b>. <span class="n">Its N(0,1) law involves no unknowns — that is what lets a fixed probability statement be rearranged around μ.</span></span></li>
+    <li><span class="sym math" data-tex="\alpha"></span><span class="def">the <b>miss budget</b>, split evenly between the two tails. <span class="n">95% level ⇒ α = 5%, i.e. 2.5% of misses on each side.</span></span></li>
+  </ul>
+  <div class="panel">
+    <svg id="curve" viewBox="0 0 520 170" role="img" aria-label="Standard normal density with the central 1 minus alpha band shaded"></svg>
+    <p class="callout" id="curveNote"></p>
   </div>
 
-  <div class="sec">See it — the procedure in the long run</div>
+  <div class="sec">See it — one year of backtests at a time</div>
   <div class="panel">
     <div class="ctrls">
       <div class="field">
-        <label>sample size <i>n</i> <b id="nOut">30</b></label>
-        <input type="range" id="n" min="5" max="200" value="30" step="1" />
+        <label>backtest length n (days) <b id="nOut">250</b></label>
+        <input type="range" id="n" min="20" max="2000" value="250" step="1" />
       </div>
       <div class="field" style="max-width:170px;flex:0 0 170px">
         <label for="conf">confidence level</label>
@@ -159,159 +145,180 @@
       </div>
     </div>
     <div class="btns">
-      <button class="act" id="one">Draw one</button>
+      <button class="act" id="one">Run one backtest</button>
       <button class="act primary" id="hundred">Run 100</button>
       <button class="act" id="reset">Reset</button>
     </div>
-    <svg id="plot" viewBox="0 0 680 400" role="img" aria-label="Confidence intervals plotted against the fixed true mean"></svg>
+    <svg id="plot" viewBox="0 0 680 400" role="img" aria-label="Confidence intervals in basis points plotted against the fixed true edge and against zero"></svg>
     <div class="tally">
       <div class="stat"><div class="k">nominal</div><div class="v" id="nom">95%</div></div>
       <div class="stat"><div class="k">covered / total</div><div class="v" id="ct">0 / 0</div></div>
-      <div class="stat"><div class="k">empirical coverage</div><div class="v" id="emp">—</div></div>
+      <div class="stat"><div class="k">empirical coverage</div><div class="v g" id="emp">—</div></div>
+      <div class="stat"><div class="k">contain zero</div><div class="v s" id="zt">—</div></div>
     </div>
-    <p class="callout" id="note">Change n or the confidence level and the batch is redrawn under the new settings — widths change, coverage doesn't.</p>
+    <p class="callout" id="note">Each row is one backtest: an interval x̄ ± z·σ/√n in bp. Blue rows trap the true edge (dashed blue line at +5 bp); red rows miss it. The amber line marks 0 bp — any interval crossing it cannot reject "no edge".</p>
   </div>
 
+  <div class="sec">The punchline — the edge is smaller than the error bar</div>
+  <p class="step">Put the pieces together for one trading year, n = 250 days. The standard error is 100/√250 ≈ <b id="se250"></b> bp, so the 95% half-width is 1.96 × 100/√250 ≈ <b id="hw250"></b> bp — nearly 2.5× the +5 bp edge itself. The consequence is the amber stat above: about <b id="pz250"></b>% of one-year backtests of this <i>genuinely profitable</i> strategy produce an interval containing zero. They cannot reject "no edge at all".</p>
+  <p class="step">To shrink the half-width to ±5 bp you need 1.96 · 100/√n ≤ 5, i.e. n ≥ (1.96 · 100/5)² ≈ <b id="nstar"></b> days — about <b id="nstarY"></b> years of daily history. And even that is only half a victory: an interval exactly as wide as the effect turns "reject zero" into a coin flip (slide n to <span id="nstar2"></span> and watch the contain-zero stat hover near 50%). To reject a zero edge 80% of the time takes roughly <b id="n80"></b> days ≈ <b id="n80y"></b> years. Statistical significance on small edges is bought in years, not months.</p>
+
+  <p class="step">Everything above compresses into one careful statement. Note where the probability lives — in the procedure — and the duality with hypothesis testing, which question 4 will use.</p>
   <div class="theorem">
     <p class="lbl">The precise statement</p>
-    <p>A 1−α confidence procedure produces a random interval [L(X), U(X)] with P( L(X) ≤ μ ≤ U(X) ) = 1−α, the probability taken over the sampling of the data with μ fixed. It describes the method's long-run behaviour, never a single computed interval.</p>
+    <p>Let X₁,…,Xₙ be i.i.d. N(μ, σ²) with σ known. The random interval x̄ ± z<sub>α/2</sub>·σ/√n satisfies P( L(X) ≤ μ ≤ U(X) ) = 1−α, the probability taken over the sampling of the data with μ fixed. Once the data are observed the interval is a constant set: it either contains μ or it does not, and no non-trivial probability attaches to that event. The level 1−α is the procedure's long-run coverage frequency. Moreover the interval is dual to testing: it contains exactly those values μ₀ that the two-sided level-α test of H₀: μ = μ₀ fails to reject.</p>
+  </div>
+
+  <div class="twist">
+    <p class="lbl">The twist — the i.i.d. assumption is the biggest lie in the formula</p>
+    <p>Every formula on this page assumed the n daily PnLs are independent draws. In markets that is false in a specific, dangerous direction: returns autocorrelate (trends, mean-reversion) and volatility clusters. Positive dependence means each new day carries less fresh information than the i.i.d. count pretends, and the variance of x̄ picks up all the covariance cross-terms:</p>
+    <div class="mblock math" data-tex="\mathrm{SE}_{\text{honest}}(\bar{x})\;=\;\frac{\sigma}{\sqrt{n}}\sqrt{1+2\sum_{k\ge 1}\rho_k}\,,\qquad n_{\mathrm{eff}}\;=\;\frac{n}{1+2\sum_{k\ge 1}\rho_k}" data-display="1"></div>
+    <ul class="glo">
+      <li><span class="sym math" data-tex="\rho_k"></span><span class="def">the <b>lag-k autocorrelation</b> of daily PnL. <span class="n">Zero under i.i.d.; positive in trending or vol-clustered stretches.</span></span></li>
+      <li><span class="sym math" data-tex="1+2\textstyle\sum_k\rho_k"></span><span class="def">the <b>long-run variance ratio</b>. <span class="n">&gt;1 under positive dependence — the honest SE is wider than σ/√n by its square root.</span></span></li>
+      <li><span class="sym math" data-tex="n_{\mathrm{eff}}"></span><span class="def">the <b>effective sample size</b> — what your n is honestly worth. <span class="n">A 10-year backtest of autocorrelated PnL contains fewer than 10 years of independent evidence.</span></span></li>
+    </ul>
+    <p style="margin-top:12px">Even a modest lag-1 autocorrelation ρ₁ = 0.1 (all others ≈ 0) makes the factor 1 + 2(0.1) = 1.2: the honest SE is √1.2 ≈ 1.10× wider and n_eff ≈ n/1.2 ≈ 0.83n. Keep using the i.i.d. band anyway and its true coverage is about <b id="twcov"></b>% instead of 95% — too narrow exactly in the trending, clustered stretches where a backtest is most likely to fool you.</p>
   </div>
 
   <div class="vol">
     <p class="lbl">Why this matters · volarixs</p>
-    <p>This is the parametric ancestor of the conformal guarantee you're wiring in through MAPIE. A classical CI gives <b>marginal</b> coverage for a fixed parameter μ: <code>P(μ ∈ [L,U]) = 1−α</code> over the sampling. Split conformal gives the same shape one level up, for a fresh prediction: <code>P(Y ∈ Ĉ(X)) ≥ 1−α</code>, marginal over the exchangeable data — but distribution-free and with no "σ known" assumption.</p>
-    <p>Same logic in both: the guarantee is <b>over the draw, not conditional on the specific point</b> — which is exactly the marginal-vs-conditional distinction you already nailed on the placement quiz. The CI assumes normality and known σ to get an exact 1−α; conformal drops both and pays with ≥ instead of =. Seeing them as one claim at two rigour levels is the transferable idea.</p>
+    <p>A classical CI is the parametric ancestor of the split-conformal guarantee wired in through <code>MAPIE</code>. The CI promises <b>marginal</b> coverage for a fixed parameter: <code>P(μ ∈ [L,U]) = 1−α</code> over the sampling. Split conformal makes the same shape of claim one level up, for a fresh prediction: <code>P(Y ∈ Ĉ(X)) ≥ 1−α</code>, marginal over the exchangeable data — distribution-free, no normality, no known σ, paying only with ≥ in place of =.</p>
+    <p>The transferable logic: the guarantee lives <b>over the draw, never conditional on the one interval in front of you</b>. And today's twist transfers too — serial dependence is precisely what breaks exchangeability, which is why conformal coverage is worth monitoring per regime (the regime-HMM's cut of the data) rather than trusted as one global number.</p>
   </div>
 
   <div class="sec">Check yourself</div>
-  <div class="q" id="q1"><p class="stem">You run the procedure once and obtain [46.1, 53.9]. Which statement is correct?</p><div class="opts"></div><p class="fb"></p></div>
-  <div class="q" id="q2"><p class="stem">Same data, but you raise the confidence level from 95% to 99%. The interval becomes:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q1"><p class="stem">One backtest produces the 95% interval [−1.2, +9.6] bp for the edge. Which reading is correct?</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q2"><p class="stem">Same backtest, but you raise the confidence level from 95% to 99%. The interval becomes:</p><div class="opts"></div><p class="fb"></p></div>
   <div class="q" id="q3"><p class="stem">In practice σ is unknown, so you plug in the sample SD s. The correct interval then uses:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q4"><p class="stem">A one-year backtest gives a 95% CI for the edge of [−2.1, +11.9] bp. At the 5% level, what do you conclude about the null "the true edge is zero"?</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q5"><p class="stem">After one year of live trading (≈252 days) your 95% interval on the edge is ±10 bp. Roughly how much live history do you need to reach ±5 bp?</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q6"><p class="stem">Daily strategy PnLs are positively autocorrelated (ρ₁ &gt; 0). A 95% CI built from the i.i.d. formula σ/√n is:</p><div class="opts"></div><p class="fb"></p></div>
 
   <div class="checkRow">
-    <button class="act primary" id="check">Check answers</button>
-    <span class="hint" id="hint" style="display:none">Select an answer for all three first.</span>
+    <button class="primary" id="check">Check answers</button>
+    <span class="scoreOut" id="scoreOut"></span>
+    <span class="hint" id="hint">Answer all six first.</span>
   </div>
-  <div class="done" id="done">Lesson complete — saved. Next up: estimators, bias, and the n vs n−1 story.</div>
+  <div class="done" id="done">Coverage understood — progress saved. Next: Lesson 02 — estimators, bias, and the n−1 story.</div>
 </div>
 
 <script>
 /* storage shim: window.storage (Claude artifacts) or localStorage (web) */
 if(!window.storage){window.storage={async get(k){const v=localStorage.getItem(k);if(v==null)throw new Error('missing');return{key:k,value:v}},async set(k,v){localStorage.setItem(k,v);return{key:k,value:v}},async delete(k){localStorage.removeItem(k);return{key:k,deleted:true}},async list(p){const ks=[];for(let i=0;i<localStorage.length;i++){const kk=localStorage.key(i);if(!p||kk.startsWith(p))ks.push(kk)}return{keys:ks}}};}
-/* ---------- math typesetting (resilient) ---------- */
-function renderMath(){
-  document.querySelectorAll('.math').forEach(el=>{
-    const tex=el.getAttribute('data-tex'); if(!tex||el.dataset.done)return;
-    try{ if(window.katex){ katex.render(tex,el,{displayMode:el.dataset.display==='1',throwOnError:false}); el.dataset.done='1'; }
-         else { el.textContent=tex; } }
-    catch(e){ el.textContent=tex; }
-  });
+function renderMath(){document.querySelectorAll('.math').forEach(el=>{const tex=el.getAttribute('data-tex');if(!tex||el.dataset.done)return;try{if(window.katex){katex.render(tex,el,{displayMode:el.dataset.display==='1',throwOnError:false});el.dataset.done='1';}else el.textContent=tex;}catch(e){el.textContent=tex;}});}
+
+/* ---------- deterministic randomness: seeded LCG only, seed 101 ---------- */
+function mulberry32(seed){let a=seed>>>0;return function(){a|=0;a=(a+0x6D2B79F5)|0;let t=Math.imul(a^(a>>>15),1|a);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296;}}
+function randn(rng){let u=0,v=0;while(!u)u=rng();while(!v)v=rng();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+const SEED=101,MU=5,SIGMA=100;
+let RNG=mulberry32(SEED);
+
+/* ---------- normal CDF (Abramowitz–Stegun 26.2.17, |err| < 7.5e-8) ---------- */
+function Phi(x){const s=x<0?-1:1,ax=Math.abs(x),t=1/(1+0.2316419*ax),d=Math.exp(-ax*ax/2)/Math.sqrt(2*Math.PI),p=d*t*(0.319381530+t*(-0.356563782+t*(1.781477937+t*(-1.821255978+t*1.330274429))));return s>0?1-p:p;}
+
+/* ---------- runtime-computed numbers quoted in the prose ---------- */
+function fillNumbers(){
+  const se250=SIGMA/Math.sqrt(250),h250=1.96*se250;
+  const nstar=Math.ceil(Math.pow(1.96*SIGMA/MU,2)),n80=Math.ceil(Math.pow((1.96+0.8416)*SIGMA/MU,2));
+  const pz=Phi((h250-MU)/se250)-Phi((-h250-MU)/se250);
+  const set=(id,v)=>{document.getElementById(id).textContent=v;};
+  set('se250',se250.toFixed(1));set('hw250','±'+h250.toFixed(1));set('pz250',Math.round(100*pz));
+  set('nstar',String(nstar));set('nstar2',String(nstar));set('nstarY',(nstar/252).toFixed(1));
+  set('n80',String(n80));set('n80y',(n80/252).toFixed(1));
+  set('twcov',(100*(2*Phi(1.96/Math.sqrt(1.2))-1)).toFixed(1));
 }
 
-/* ---------- sampling-distribution curve ---------- */
-function renderCurve(z, levelPct){
-  const W=520,H=170,padL=20,padR=20,padT=14,padB=30, iw=W-padL-padR, ih=H-padT-padB;
-  const xmin=-3.6,xmax=3.6, base=H-padB;
-  const X=x=>padL+((x-xmin)/(xmax-xmin))*iw;
-  const g=x=>Math.exp(-x*x/2), peak=g(0);
-  const Y=y=>padT+(1-y/peak)*ih;
-  const pts=[]; for(let i=0;i<=160;i++){const x=xmin+(i/160)*(xmax-xmin);pts.push([X(x),Y(g(x))]);}
-  const line=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
-  // shaded central band [-z, z]
-  const bp=[]; for(let i=0;i<=120;i++){const x=-z+(i/120)*(2*z);bp.push([X(x),Y(g(x))]);}
-  const area='M'+X(-z).toFixed(1)+' '+base+' '+bp.map(p=>'L'+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ')+' L'+X(z).toFixed(1)+' '+base+' Z';
-  let s='';
-  s+=`<line x1="${padL}" y1="${base}" x2="${W-padR}" y2="${base}" stroke="var(--hair2)" stroke-width="1"/>`;
-  s+=`<path d="${area}" fill="var(--accent)" opacity="0.16"/>`;
-  s+=`<path d="${line}" fill="none" stroke="var(--accent)" stroke-width="1.8"/>`;
-  [[-z,'−z'],[z,'+z']].forEach(([x,lab])=>{
-    s+=`<line x1="${X(x)}" y1="${Y(g(x))}" x2="${X(x)}" y2="${base}" stroke="var(--accent)" stroke-width="1" stroke-dasharray="3 3"/>`;
-    s+=`<text x="${X(x)}" y="${base+18}" text-anchor="middle" font-family="var(--mono)" font-size="11" fill="var(--muted)">${lab} = ${(x<0?'−':'')}${Math.abs(x).toFixed(2)}</text>`;
-  });
-  s+=`<text x="${X(0)}" y="${Y(peak)+ -6+16}" text-anchor="middle" font-family="var(--mono)" font-size="12" fill="var(--accent)">area = ${levelPct}</text>`;
-  document.getElementById('curve').innerHTML=s;
-  document.getElementById('curveCap').textContent=`The shaded central band of the standard normal holds probability ${levelPct}. Its edges are ±z; that z is the multiplier in the formula. Raise the level → the band (and the interval) must widen.`;
-}
-
-/* ---------- coverage simulator ---------- */
-const S={intervals:[],covered:0};
-const MU=50,SIGMA=12,PW=680,PH=400,PADL=44,PADR=20,PADT=18,PADB=34;
-const innerW=PW-PADL-PADR, innerH=PH-PADT-PADB;
-const LEVELS={'1.6449':'90%','1.9600':'95%','2.5758':'99%'};
+/* ---------- interactive 1: the central band of the standard normal ---------- */
 const z=()=>parseFloat(document.getElementById('conf').value);
 const nVal=()=>parseInt(document.getElementById('n').value,10);
-function randn(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
-function drawSamples(k){
-  const n=nVal(),zz=z(),se=SIGMA/Math.sqrt(n),h=zz*se;
-  for(let i=0;i<k;i++){let s=0;for(let j=0;j<n;j++)s+=MU+SIGMA*randn();const xbar=s/n,cov=Math.abs(xbar-MU)<=h;S.intervals.push({xbar,h,cov});if(cov)S.covered++;}
-  if(S.intervals.length>300){const over=S.intervals.length-300;for(let i=0;i<over;i++)if(S.intervals[i].cov)S.covered--;S.intervals.splice(0,over);}
-  renderPlot();
-}
-function renderPlot(){
-  const zz=z(),n=nVal(),se=SIGMA/Math.sqrt(n),R=(zz+3.7)*se,lo=MU-R,hi=MU+R;
-  const X=v=>PADL+((v-lo)/(hi-lo))*innerW, count=S.intervals.length, rowH=count?Math.min(7,innerH/count):7, y0=PH-PADB;
+const lvlLabel=()=>document.getElementById('conf').selectedOptions[0].textContent;
+function renderCurve(){
+  const zz=z(),lvl=lvlLabel(),W=520,H=170,padL=20,padR=20,padT=14,padB=30,iw=W-padL-padR,ih=H-padT-padB;
+  const xmin=-3.6,xmax=3.6,base=H-padB,X=x=>padL+((x-xmin)/(xmax-xmin))*iw;
+  const g=x=>Math.exp(-x*x/2),peak=g(0),Y=y=>padT+(1-y/peak)*ih;
+  const pts=[];for(let i=0;i<=160;i++){const x=xmin+(i/160)*(xmax-xmin);pts.push([X(x),Y(g(x))]);}
+  const line=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+  const bp=[];for(let i=0;i<=120;i++){const x=-zz+(i/120)*(2*zz);bp.push([X(x),Y(g(x))]);}
+  const area='M'+X(-zz).toFixed(1)+' '+base+' '+bp.map(p=>'L'+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ')+' L'+X(zz).toFixed(1)+' '+base+' Z';
   let s='';
-  s+=`<line x1="${PADL}" y1="${y0}" x2="${PW-PADR}" y2="${y0}" stroke="var(--hair2)" stroke-width="1"/>`;
-  [lo,MU,hi].forEach(v=>{s+=`<line x1="${X(v)}" y1="${y0}" x2="${X(v)}" y2="${y0+5}" stroke="var(--hair2)" stroke-width="1"/><text x="${X(v)}" y="${y0+18}" text-anchor="middle" font-family="var(--mono)" font-size="11" fill="var(--faint)">${v.toFixed(1)}</text>`;});
-  s+=`<line x1="${X(MU)}" y1="${PADT-4}" x2="${X(MU)}" y2="${y0}" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="4 4"/><text x="${X(MU)}" y="${PADT-6}" text-anchor="middle" font-family="var(--mono)" font-size="11" fill="var(--accent)">μ = 50</text>`;
+  s+=`<line x1="${padL}" y1="${base}" x2="${W-padR}" y2="${base}" stroke="var(--hair2)"/>`;
+  s+=`<path d="${area}" fill="var(--accent)" opacity="0.16"/><path d="${line}" fill="none" stroke="var(--accent)" stroke-width="1.8"/>`;
+  [[-zz,'−z'],[zz,'+z']].forEach(([x,lab])=>{s+=`<line x1="${X(x).toFixed(1)}" y1="${Y(g(x)).toFixed(1)}" x2="${X(x).toFixed(1)}" y2="${base}" stroke="var(--accent)" stroke-dasharray="3 3"/><text x="${X(x).toFixed(1)}" y="${base+18}" text-anchor="middle" font-family="var(--mono)" font-size="11" fill="var(--muted)">${lab} = ${(x<0?'−':'')+Math.abs(x).toFixed(2)}</text>`;});
+  s+=`<text x="${X(0)}" y="${(Y(peak)+12).toFixed(1)}" text-anchor="middle" font-family="var(--mono)" font-size="12" fill="var(--accent)">area = ${lvl}</text>`;
+  s+=`<text x="${X(-3.15).toFixed(1)}" y="${base-8}" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--faint)">α/2</text><text x="${X(3.15).toFixed(1)}" y="${base-8}" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--faint)">α/2</text>`;
+  document.getElementById('curve').innerHTML=s;
+  document.getElementById('curveNote').textContent=`The shaded central band holds probability ${lvl}; its edges sit at ±z = ±${zz.toFixed(2)}. That z multiplies the standard error σ/√n to give the half-width in bp. Pick a higher level in the simulator below and this band — and every interval — must widen.`;
+}
+
+/* ---------- interactive 2: the coverage simulator, in bp around μ = +5 ---------- */
+const S={intervals:[]};
+const PW=680,PH=400,PADL=44,PADR=20,PADT=18,PADB=34,innerW=PW-PADL-PADR,innerH=PH-PADT-PADB;
+function drawSamples(k){
+  const n=nVal(),zz=z(),h=zz*SIGMA/Math.sqrt(n);
+  for(let i=0;i<k;i++){let s=0;for(let j=0;j<n;j++)s+=MU+SIGMA*randn(RNG);S.intervals.push({xbar:s/n,h});}
+  if(S.intervals.length>300)S.intervals.splice(0,S.intervals.length-300);
+  render();
+}
+function render(){
+  const zz=z(),n=nVal(),se=SIGMA/Math.sqrt(n),h=zz*se,R=(zz+3.7)*se,lo=MU-R,hi=MU+R,lvl=lvlLabel();
+  const X=v=>PADL+((v-lo)/(hi-lo))*innerW,count=S.intervals.length,rowH=count?Math.min(7,innerH/count):7,y0=PH-PADB;
+  let covd=0,zct=0;
+  S.intervals.forEach(iv=>{if(Math.abs(iv.xbar-MU)<=iv.h)covd++;if(iv.xbar-iv.h<=0&&iv.xbar+iv.h>=0)zct++;});
+  let s='';
+  s+=`<line x1="${PADL}" y1="${y0}" x2="${PW-PADR}" y2="${y0}" stroke="var(--hair2)"/>`;
+  [lo,hi].forEach(v=>{s+=`<line x1="${X(v).toFixed(1)}" y1="${y0}" x2="${X(v).toFixed(1)}" y2="${y0+5}" stroke="var(--hair2)"/><text x="${X(v).toFixed(1)}" y="${y0+18}" text-anchor="middle" font-family="var(--mono)" font-size="11" fill="var(--faint)">${v.toFixed(0)} bp</text>`;});
+  s+=`<line x1="${X(0).toFixed(1)}" y1="${PADT-4}" x2="${X(0).toFixed(1)}" y2="${y0}" stroke="var(--series)" stroke-width="1.3" stroke-dasharray="2 4"/><text x="${X(0).toFixed(1)}" y="${PADT-6}" text-anchor="end" font-family="var(--mono)" font-size="11" fill="var(--series)">0 bp&#8201;</text>`;
+  s+=`<line x1="${X(MU).toFixed(1)}" y1="${PADT-4}" x2="${X(MU).toFixed(1)}" y2="${y0}" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="4 4"/><text x="${X(MU).toFixed(1)}" y="${PADT-6}" text-anchor="start" font-family="var(--mono)" font-size="11" fill="var(--accent)">&#8201;μ = +5 bp</text>`;
   S.intervals.forEach((iv,idx)=>{
-    const y=PADT+idx*rowH+rowH/2,x1=X(iv.xbar-iv.h),x2=X(iv.xbar+iv.h),xc=X(iv.xbar),col=iv.cov?'var(--cover)':'var(--miss)',w=iv.cov?1.4:2,op=count>120?0.85:1;
-    s+=`<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="${col}" stroke-width="${w}" opacity="${op}"/>`;
-    if(rowH>=4)s+=`<circle cx="${xc}" cy="${y}" r="${Math.min(1.6,rowH/3)}" fill="${col}" opacity="${op}"/>`;
+    const y=PADT+idx*rowH+rowH/2,cov=Math.abs(iv.xbar-MU)<=iv.h,col=cov?'var(--accent)':'var(--miss)',w=cov?1.4:2,op=count>120?0.85:1;
+    s+=`<line x1="${X(iv.xbar-iv.h).toFixed(1)}" y1="${y.toFixed(1)}" x2="${X(iv.xbar+iv.h).toFixed(1)}" y2="${y.toFixed(1)}" stroke="${col}" stroke-width="${w}" opacity="${op}"/>`;
+    if(rowH>=4)s+=`<circle cx="${X(iv.xbar).toFixed(1)}" cy="${y.toFixed(1)}" r="${Math.min(1.6,rowH/3)}" fill="${col}" opacity="${op}"/>`;
   });
   document.getElementById('plot').innerHTML=s;
-  document.getElementById('nom').textContent=LEVELS[z().toString()]||'95%';
-  document.getElementById('ct').textContent=`${S.covered} / ${count}`;
-  document.getElementById('emp').textContent=count?(100*S.covered/count).toFixed(1)+'%':'—';
-  if(count>=20){document.getElementById('note').textContent=`Empirical coverage sits near the nominal ${document.getElementById('nom').textContent}. Change n and it stays there while the widths change; change the level and both the widths and the band above move together. The level is a property of the procedure, not of any one interval.`;}
+  document.getElementById('nom').textContent=lvl;
+  document.getElementById('ct').textContent=covd+' / '+count;
+  document.getElementById('emp').textContent=count?(100*covd/count).toFixed(1)+'%':'—';
+  document.getElementById('zt').textContent=count?(100*zct/count).toFixed(0)+'%':'—';
+  if(count>0){document.getElementById('note').textContent=`n = ${n} days at ${lvl}: half-width z·σ/√n = ±${h.toFixed(1)} bp around each backtest's x̄. Empirical coverage ${(100*covd/count).toFixed(1)}% against nominal ${lvl}; ${(100*zct/count).toFixed(0)}% of intervals cross 0 bp`+(h>MU?` — the noise band is wider than the +5 bp edge, so those backtests cannot tell this profitable strategy from a worthless one.`:` — the half-width now sits at or below the edge itself; from here, extra days convert the coin flip into real power against zero.`);}
+  else{document.getElementById('note').textContent=`Each row is one backtest: an interval x̄ ± z·σ/√n in bp. Blue rows trap the true edge (dashed blue line at +5 bp); red rows miss it. The amber line marks 0 bp — any interval crossing it cannot reject "no edge".`;}
 }
-function resetSim(){S.intervals=[];S.covered=0;renderPlot();document.getElementById('note').textContent='Change n or the confidence level and the batch is redrawn under the new settings — widths change, coverage doesn\u2019t.';}
-function syncCurve(){renderCurve(z(), LEVELS[z().toString()]||'95%');}
-
+function freshBatch(){RNG=mulberry32(SEED);S.intervals=[];drawSamples(100);}
 document.getElementById('n').addEventListener('input',e=>{document.getElementById('nOut').textContent=e.target.value;});
-document.getElementById('n').addEventListener('change',()=>{const had=S.intervals.length;S.intervals=[];S.covered=0;drawSamples(had>0?Math.min(had,100)||100:100);});
-document.getElementById('conf').addEventListener('change',()=>{const had=S.intervals.length;S.intervals=[];S.covered=0;syncCurve();drawSamples(had>0?Math.min(had,100)||100:100);});
+document.getElementById('n').addEventListener('change',freshBatch);
+document.getElementById('conf').addEventListener('change',()=>{renderCurve();freshBatch();});
 document.getElementById('one').onclick=()=>drawSamples(1);
 document.getElementById('hundred').onclick=()=>drawSamples(100);
-document.getElementById('reset').onclick=resetSim;
+document.getElementById('reset').onclick=()=>{RNG=mulberry32(SEED);S.intervals=[];render();};
 
 /* ---------- retrieval (deferred validation) ---------- */
 const QS={
-  q1:{opts:["There is a 95% probability the true mean lies in [46.1, 53.9].","If the whole procedure were repeated many times, about 95% of the intervals produced would contain the true mean.","95% of future observations will fall inside [46.1, 53.9].","The true mean is definitely close to 50."],a:1,
-    fb:"Once computed, the interval either covers μ or it doesn't — the randomness was in the sampling, so 95% is a property of the method. Option 3 is a prediction interval, a different object."},
-  q2:{opts:["Narrower","Wider","Unchanged","Shifted left"],a:1,
-    fb:"Higher confidence needs a larger multiplier (z: 1.96 → 2.576), so the half-width z·σ/√n grows. More coverage bought with less precision — the band in the curve above widens too."},
-  q3:{opts:["The same z critical value","A t-distribution value t_{α/2, n−1}, giving a slightly wider interval","No change at all","A chi-square critical value"],a:1,
-    fb:"Estimating σ injects extra uncertainty, so the pivot follows Student's t with n−1 degrees of freedom — heavier tails, so a wider interval. As n grows, t → z and the difference vanishes."}
+  q1:{opts:["There is a 95% probability that the true edge lies in [−1.2, +9.6] bp.","If the whole backtest-and-interval procedure were repeated on fresh data many times, about 95% of the intervals produced would contain the true edge.","95% of future daily PnLs will fall inside [−1.2, +9.6] bp.","The true edge is definitely close to the midpoint, +4.2 bp."],a:1,
+    fb:"Once computed, the interval either contains the true edge or it doesn't — the randomness lived in the sampling of the n days, not in μ. The 95% grades the procedure across repetitions. Option C describes a prediction interval for a single day's PnL — a different, far wider object."},
+  q2:{opts:["Narrower — higher confidence means more precision.","Unchanged — the data are the same.","Wider — the multiplier grows from 1.96 to 2.576, trading precision for coverage.","Shifted toward zero."],a:2,
+    fb:"Higher confidence demands a larger critical value (z: 1.96 → 2.576), so the half-width z·σ/√n grows by about 31%. More coverage is always bought with less precision — the central band in the curve panel widens the same way."},
+  q3:{opts:["A chi-square critical value.","The same z — nothing changes.","The z formula with s dropped in and the level quietly lowered.","A Student-t critical value t(α/2, n−1), giving a slightly wider interval."],a:3,
+    fb:"Estimating σ from the same data injects extra uncertainty: the pivot (x̄−μ)/(s/√n) follows Student's t with n−1 degrees of freedom — heavier tails, wider interval. The n−1 is the correction Lesson 2 derives; as n grows, t → z and the difference vanishes."},
+  q4:{opts:["Cannot reject it — the interval contains 0, and a 95% CI contains exactly the nulls a 5% two-sided test cannot reject.","Reject it — the midpoint +4.9 bp is positive.","Reject it — the interval contains the true edge of +5 bp.","Accept that the edge is exactly zero."],a:0,
+    fb:"This is the duality in the theorem box: the CI is the set of nulls the test fails to reject, and 0 sits inside [−2.1, +11.9]. In our simulated world the true edge is a healthy +5 bp and this backtest still can't see it — the punchline of the whole lesson. (D is wrong too: failing to reject is not accepting.)"},
+  q5:{opts:["About 16 more months.","Roughly four years total — halving the width needs 4× the days, since width ∝ 1/√n.","Two years total — double precision, double data.","About sixteen years total."],a:1,
+    fb:"Width ∝ σ/√n, so halving it requires quadrupling n: about 4 × 252 ≈ 1008 trading days. The √n law is brutal for small edges — precision is bought quadratically, which is why the punchline numbers above run in years."},
+  q6:{opts:["Too wide — autocorrelation adds information.","Correct on average — dependence doesn't affect the mean.","Unaffected, as long as σ is known.","Too narrow — the honest SE is σ/√n · √(1+2Σρₖ) > σ/√n, so real coverage falls below 95%."],a:3,
+    fb:"Positive ρₖ add positive covariance terms to Var(x̄): the effective sample size n/(1+2Σρₖ) is smaller than n, the honest band is wider, and the i.i.d. interval under-covers — precisely in the trending, vol-clustered stretches where backtests most need honesty. That's the twist."}
 };
-const sel={q1:null,q2:null,q3:null};
-let revealed=false;
-Object.keys(QS).forEach(id=>{
-  const holder=document.querySelector('#'+id+' .opts');
-  QS[id].opts.forEach((txt,i)=>{
-    const b=document.createElement('button');b.className='opt';b.textContent=String.fromCharCode(65+i)+'.  '+txt;
-    b.onclick=()=>{ if(revealed)return; sel[id]=i; [...holder.children].forEach((c,ci)=>c.classList.toggle('sel',ci===i)); document.getElementById('hint').style.display='none'; };
-    holder.appendChild(b);
-  });
-});
+const sel={q1:null,q2:null,q3:null,q4:null,q5:null,q6:null};let revealed=false;
+Object.keys(QS).forEach(id=>{const holder=document.querySelector('#'+id+' .opts');QS[id].opts.forEach((txt,i)=>{const b=document.createElement('button');b.className='opt';b.textContent=String.fromCharCode(65+i)+'.  '+txt;b.onclick=()=>{if(revealed)return;sel[id]=i;[...holder.children].forEach((c,ci)=>c.classList.toggle('sel',ci===i));document.getElementById('hint').style.display='none';};holder.appendChild(b);});});
 document.getElementById('check').onclick=async()=>{
-  if(revealed)return;
-  if(sel.q1===null||sel.q2===null||sel.q3===null){document.getElementById('hint').style.display='inline';return;}
-  revealed=true; let score=0;
-  Object.keys(QS).forEach(id=>{
-    const a=QS[id].a,holder=document.querySelector('#'+id+' .opts'),fb=document.querySelector('#'+id+' .fb');
-    [...holder.children].forEach((c,ci)=>{c.style.cursor='default';c.classList.remove('sel');if(ci===a)c.classList.add('correct');else if(ci===sel[id])c.classList.add('wrong');});
-    if(sel[id]===a)score++; fb.textContent=QS[id].fb; fb.classList.add('show');
-  });
-  document.getElementById('check').style.opacity='0.5';document.getElementById('check').textContent='Checked · '+score+'/3';
-  document.getElementById('done').classList.add('show');
-  try{ await window.storage.set('mfs:lesson01',JSON.stringify({done:true,retrieval:score+'/3',ts:Date.now()}),false); }catch(e){}
+  if(revealed)return;if(Object.values(sel).some(v=>v===null)){document.getElementById('hint').style.display='inline';return;}
+  revealed=true;let score=0;
+  Object.keys(QS).forEach(id=>{const a=QS[id].a,holder=document.querySelector('#'+id+' .opts'),fb=document.querySelector('#'+id+' .fb');[...holder.children].forEach((c,ci)=>{c.style.cursor='default';c.classList.remove('sel');if(ci===a)c.classList.add('correct');else if(ci===sel[id])c.classList.add('wrong');});if(sel[id]===a)score++;fb.textContent=QS[id].fb;fb.classList.add('show');});
+  document.getElementById('check').style.opacity='0.5';document.getElementById('check').textContent='Checked';
+  document.getElementById('scoreOut').textContent=score+' / 6';document.getElementById('done').classList.add('show');
+  try{await window.storage.set('mfs:lesson01',JSON.stringify({done:true,retrieval:score+'/6',ts:Date.now()}),false);}catch(e){}
 };
-
-/* ---------- init ---------- */
-function boot(){ renderMath(); syncCurve(); drawSamples(100); }
-if(window.katex) boot(); else window.addEventListener('load',boot);
-(async()=>{ try{ const r=await window.storage.get('mfs:lesson01',false); if(r&&r.value){const v=JSON.parse(r.value); if(v.done){const c=document.getElementById('chip');c.classList.add('show');c.textContent='completed · '+v.retrieval;}} }catch(e){} })();
+function boot(){renderMath();fillNumbers();renderCurve();freshBatch();}
+if(window.katex)boot();else window.addEventListener('load',boot);
+(async()=>{try{const r=await window.storage.get('mfs:lesson01',false);if(r&&r.value){const v=JSON.parse(r.value);if(v.done){const c=document.getElementById('chip');c.classList.add('show');c.textContent='completed · '+v.retrieval;}}}catch(e){}})();
 </script>
 </body>
 </html>
