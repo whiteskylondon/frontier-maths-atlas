@@ -7,55 +7,58 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
 <style>
-  :root{--paper:#FAFAF6;--ink:#1A1C22;--muted:#63676E;--faint:#9A9EA4;--hair:#E4E3DB;--hair2:#D4D3CA;--panel:#FFFFFF;--accent:#24507A;--accent-bg:#EAF0F6;--series:#B07A2E;--miss:#B23A3A;--ok:#2F6B4F;--ok-bg:#E9F1EC;--p:#24507A;--q:#B07A2E;--vol:#8A5A2B;--vol-bg:#F6EFE6;--serif:Iowan Old Style,Palatino,Georgia,serif;--sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;}
-  @media (prefers-color-scheme:dark){:root{--paper:#15161A;--ink:#E9E8E2;--muted:#A2A6AC;--faint:#71757B;--hair:#2A2C31;--hair2:#3A3C42;--panel:#1B1D22;--accent:#7FB0E0;--accent-bg:#1E2A38;--series:#D9A85E;--miss:#E07A7A;--ok:#7FC49F;--ok-bg:#1C2A22;--p:#7FB0E0;--q:#D9A85E;--vol:#D9A066;--vol-bg:#2A2115;}}
+  :root{
+    --paper:#FAFAF6;--ink:#1A1C22;--muted:#63676E;--faint:#9A9EA4;--hair:#E4E3DB;--hair2:#D4D3CA;--panel:#FFFFFF;
+    --accent:#24507A;--accent-bg:#EAF0F6;--series:#B07A2E;--miss:#B23A3A;--ok:#2F6B4F;--ok-bg:#E9F1EC;
+    --vol:#8A5A2B;--vol-bg:#F6EFE6;--serif:Iowan Old Style,Palatino,Georgia,serif;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme:dark){:root{--paper:#15161A;--ink:#E9E8E2;--muted:#A2A6AC;--faint:#71757B;--hair:#2A2C31;--hair2:#3A3C42;--panel:#1B1D22;--accent:#7FB0E0;--accent-bg:#1E2A38;--series:#D9A85E;--miss:#E07A7A;--ok:#7FC49F;--ok-bg:#1C2A22;--vol:#D9A066;--vol-bg:#2A2115;}}
   *{box-sizing:border-box}
   body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.62;-webkit-font-smoothing:antialiased}
   .wrap{max-width:750px;margin:0 auto;padding:32px 24px 60px}
   .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 6px}
   h1{font-family:var(--serif);font-weight:600;font-size:27px;line-height:1.22;margin:0 0 6px;letter-spacing:-.01em}
-  .chip{display:none;font-family:var(--mono);font-size:11px;color:var(--ok);border:1px solid var(--ok);border-radius:20px;padding:3px 10px;vertical-align:middle;margin-left:10px}
+  .chip{display:none;font-family:var(--mono);font-size:11px;letter-spacing:.05em;color:var(--ok);border:1px solid var(--ok);border-radius:20px;padding:3px 10px;vertical-align:middle;margin-left:10px}
   .chip.show{display:inline-block}
   .sub{color:var(--muted);font-size:15px;margin:0 0 18px}
   .levels{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 26px}
   .levels .lk{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
   .levels .pill{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-family:var(--mono);color:var(--muted);background:var(--panel);border:1px solid var(--hair2);border-radius:20px;padding:4px 11px}
-  .levels .pill b{color:var(--accent);font-weight:700}
-  p.lead{font-size:16px;margin:0 0 22px}p.lead b{font-weight:600}
+  .levels .pill b{color:var(--accent);font-weight:700;letter-spacing:.03em}
+  p.lead{font-size:16px;margin:0 0 22px}
+  p.lead b{font-weight:600}
   .sec{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:36px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--hair)}
   .mblock{margin:16px 0;overflow-x:auto}
   .glo{list-style:none;padding:0;margin:14px 0 0}
   .glo li{display:flex;gap:14px;padding:9px 0;border-top:1px solid var(--hair);align-items:baseline}
   .glo li:first-child{border-top:none}
-  .glo .sym{flex:0 0 118px;text-align:right;padding-top:2px}
-  .glo .def{font-size:14.5px}.glo .def .n{color:var(--muted)}
+  .glo .sym{flex:0 0 108px;text-align:right;padding-top:2px}
+  .glo .sym b{font-weight:600}
+  .glo .def{font-size:14.5px}
+  .glo .def .n{color:var(--muted)}
   .step{font-size:14.5px;color:var(--muted);margin:10px 0}
   .panel{background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:20px;margin:14px 0}
-  .toggle{display:flex;flex-wrap:wrap;gap:16px;margin:0 0 12px;font-family:var(--mono);font-size:12.5px;align-items:center}
-  .toggle .grp{display:inline-flex;border:1px solid var(--hair2);border-radius:8px;overflow:hidden}
-  .toggle .grp button{border:none;border-right:1px solid var(--hair2);background:var(--panel);color:var(--muted);padding:6px 11px;cursor:pointer;font-family:var(--mono);font-size:12.5px}
-  .toggle .grp button:last-child{border-right:none}.toggle .grp button.on{background:var(--accent);color:#fff}
-  .oneh{display:none;gap:6px;flex-wrap:wrap}
-  .oneh.show{display:flex}
-  .oneh button{border:1px solid var(--hair2);border-radius:6px;background:var(--panel);color:var(--muted);padding:5px 9px;cursor:pointer;font-family:var(--mono);font-size:11.5px}
-  .oneh button.on{background:var(--p);color:#fff;border-color:var(--p)}
+  .rowlab{font-family:var(--mono);font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin:14px 0 0}
+  .ctrls{display:flex;flex-wrap:wrap;gap:12px 22px;align-items:flex-end;margin:8px 0 6px}
+  .field{display:flex;flex-direction:column;gap:6px;min-width:150px;flex:1}
+  .field label{font-size:12px;color:var(--muted);font-family:var(--mono);letter-spacing:.03em;display:flex;justify-content:space-between}
+  .field label b{color:var(--ink);font-weight:600}
+  input[type=range]{width:100%;accent-color:var(--accent);height:20px}
   svg{max-width:100%;height:auto;display:block}
-  .qsliders{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:12px 0 4px}
-  .qsliders .qs{display:flex;flex-direction:column;align-items:center;gap:4px}
-  .qsliders .qs span{font-family:var(--mono);font-size:10.5px;color:var(--muted)}
-  .qsliders input[type=range]{writing-mode:vertical-lr;direction:rtl;width:20px;height:70px;accent-color:var(--q)}
-  .legend{display:flex;flex-wrap:wrap;gap:16px;margin:6px 0 2px;font-size:12.5px;color:var(--muted);font-family:var(--mono)}
+  .legend{display:flex;flex-wrap:wrap;gap:16px;margin:4px 0 6px;font-size:12.5px;color:var(--muted);font-family:var(--mono)}
   .legend span{display:inline-flex;align-items:center;gap:6px}
   .dotc{width:10px;height:10px;border-radius:3px;display:inline-block}
-  .tally{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0 2px}
+  .tally{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 2px}
   .stat{flex:1;min-width:130px;background:var(--paper);border-radius:9px;padding:9px 12px}
-  .stat .k{font-size:11px;font-family:var(--mono);color:var(--muted);text-transform:uppercase}
+  .stat .k{font-size:11px;font-family:var(--mono);letter-spacing:.04em;color:var(--muted);text-transform:uppercase}
   .stat .v{font-size:17px;font-weight:600;font-family:var(--mono);margin-top:2px}
-  .stat .v.p{color:var(--p)}.stat .v.q{color:var(--q)}.stat .v.k{color:var(--miss)}
-  .btnrow{display:flex;gap:8px;margin:10px 0 0;flex-wrap:wrap}
+  .stat .v.a{color:var(--accent)}.stat .v.g{color:var(--ok)}.stat .v.m{color:var(--miss)}.stat .v.s{color:var(--series)}
+  .stat .v.sm{font-size:13px;line-height:1.5;word-break:break-all}
+  .btnrow{display:flex;gap:8px;margin:12px 0 0;flex-wrap:wrap}
   button.act{font-family:var(--sans);font-size:13.5px;padding:7px 12px;border-radius:8px;border:1px solid var(--hair2);background:var(--panel);color:var(--ink);cursor:pointer}
   button.act:hover{border-color:var(--accent);color:var(--accent)}
-  .callout{font-size:14px;color:var(--muted);border-left:2px solid var(--accent);padding:2px 0 2px 14px;margin:14px 0 2px;min-height:1.4em}
+  .callout{font-size:14px;color:var(--muted);border-left:2px solid var(--accent);padding:2px 0 2px 14px;margin:16px 0 2px;min-height:1.4em}
   .theorem{background:var(--accent-bg);border-radius:12px;padding:18px 20px;margin:16px 0}
   .theorem .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
   .theorem p{font-family:var(--serif);font-size:16px;line-height:1.55;margin:0}
@@ -69,12 +72,14 @@
   .q{border:1px solid var(--hair);border-radius:12px;padding:16px 18px;margin:12px 0;background:var(--panel)}
   .q .stem{font-size:15px;font-weight:500;margin:0 0 12px}
   .opt{display:block;width:100%;text-align:left;font-size:14px;padding:10px 12px;margin:0 0 8px;border:1px solid var(--hair2);border-radius:8px;background:transparent;color:var(--ink);cursor:pointer;line-height:1.45}
-  .opt:last-child{margin-bottom:0}.opt:hover{border-color:var(--accent)}
+  .opt:last-child{margin-bottom:0}
+  .opt:hover{border-color:var(--accent)}
   .opt.sel{border-color:var(--accent);background:var(--accent-bg)}
   .opt.correct{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
   .opt.wrong{background:#F7ECEC;border-color:var(--miss);color:var(--miss)}
   @media (prefers-color-scheme:dark){.opt.wrong{background:#2E1E1E}}
-  .fb{font-size:13.5px;color:var(--muted);margin:10px 0 0;line-height:1.5;display:none}.fb.show{display:block}
+  .fb{font-size:13.5px;color:var(--muted);margin:10px 0 0;line-height:1.5;display:none}
+  .fb.show{display:block}
   .checkRow{display:flex;align-items:center;gap:14px;margin:18px 0 0;flex-wrap:wrap}
   .hint{font-size:13px;color:var(--miss);display:none}
   button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-family:var(--sans);font-size:14px;padding:8px 14px;border-radius:8px;border:1px solid var(--accent);cursor:pointer}
@@ -87,158 +92,317 @@
 <div class="wrap">
   <p class="eyebrow">Lesson 15 · Wing III — probability &amp; information</p>
   <h1>Entropy, cross-entropy &amp; KL<span class="chip" id="chip"></span></h1>
-  <p class="sub">Why almost every training loss is, underneath, a negative log-likelihood.</p>
-  <div class="levels"><span class="lk">Level</span><span class="pill"><b>US</b> Advanced undergrad → graduate</span><span class="pill"><b>FR</b> Master M1–M2 · ENSAE 2A–3A</span></div>
-
-  <p class="lead">Information theory gives three quantities that run through all of modern ML. <b>Entropy</b> measures how uncertain a distribution is. <b>Cross-entropy</b> measures the cost of using a <i>model</i> distribution q to describe the <i>true</i> one p. And their difference, the <b>KL divergence</b>, is the penalty you pay for being wrong — always non-negative, zero only when the model is exact. Training a classifier by minimizing cross-entropy turns out to be identical to maximum likelihood, which is why "the loss is a negative log-likelihood" is not a slogan but a theorem.</p>
-
-  <div class="sec">Three quantities</div>
-  <div class="mblock math" data-tex="H(p)=-\sum_i p_i\ln p_i\qquad H(p,q)=-\sum_i p_i\ln q_i\qquad D_{\mathrm{KL}}(p\Vert q)=\sum_i p_i\ln\frac{p_i}{q_i}" data-display="1"></div>
-  <p class="step">They lock together in one identity — cross-entropy is the irreducible uncertainty of p plus the avoidable penalty for modelling it with q:</p>
-  <div class="mblock math" data-tex="H(p,q)=H(p)+D_{\mathrm{KL}}(p\Vert q),\qquad D_{\mathrm{KL}}(p\Vert q)\ge 0,\ \ =0\iff q=p" data-display="1"></div>
-  <ul class="glo">
-    <li><span class="sym math" data-tex="H(p)"></span><span class="def"><b>entropy</b> — uncertainty in p. <span class="n">Maximal when all outcomes are equally likely; zero when one is certain. In nats (bits × ln 2).</span></span></li>
-    <li><span class="sym math" data-tex="H(p,q)"></span><span class="def"><b>cross-entropy</b> — cost of coding p with q's code. <span class="n">The classification loss; minimized (at H(p)) exactly when q = p.</span></span></li>
-    <li><span class="sym math" data-tex="D_{\mathrm{KL}}"></span><span class="def"><b>KL divergence</b> — information lost using q for p. <span class="n">≥ 0, asymmetric, zero iff identical. The model's excess surprise.</span></span></li>
-  </ul>
-
-  <div class="sec">See it — model q against realized p</div>
-  <div class="panel">
-    <div class="toggle">
-      <span>p is:</span>
-      <div class="grp" id="pmode"><button data-m="dist" class="on">a distribution</button><button data-m="one">one realized outcome</button></div>
-      <div class="oneh" id="oneh"></div>
-    </div>
-    <svg id="bars" viewBox="0 0 680 260" role="img" aria-label="Bar chart of true distribution p and model distribution q over market states"></svg>
-    <div class="legend"><span><i class="dotc" style="background:var(--p)"></i>p (realized / true)</span><span><i class="dotc" style="background:var(--q)"></i>q (model)</span></div>
-    <div class="qsliders" id="qsliders"></div>
-    <div class="tally">
-      <div class="stat"><div class="k">entropy H(p)</div><div class="v p" id="Hp">—</div></div>
-      <div class="stat"><div class="k" id="ceLbl">cross-entropy H(p,q)</div><div class="v q" id="Hpq">—</div></div>
-      <div class="stat"><div class="k">KL(p‖q)</div><div class="v k" id="KL">—</div></div>
-    </div>
-    <div class="btnrow"><button class="act" id="matchp">Set q = p</button><button class="act" id="unif">Set q uniform</button></div>
-    <p class="callout" id="cnote"></p>
+  <p class="sub">Your loss is the world's entropy plus a KL penalty — and only the KL part is your fault.</p>
+  <div class="levels">
+    <span class="lk">Level</span>
+    <span class="pill"><b>US</b> Advanced undergrad → graduate</span>
+    <span class="pill"><b>FR</b> M1–M2 · ENSAE 2A–3A</span>
   </div>
 
-  <div class="sec">Why it's a negative log-likelihood</div>
-  <p class="step">Set p to a single realized outcome (a one-hot) above, and cross-entropy collapses to <b>−ln q(that outcome)</b> — the log-loss of that single prediction, which is exactly the negative log-likelihood the model assigns to what happened. Averaging over a dataset, minimizing cross-entropy is maximizing likelihood:</p>
-  <div class="mblock math" data-tex="\underbrace{-\tfrac1N\textstyle\sum_n \ln q_\theta(y_n)}_{\text{cross-entropy loss}}=-\tfrac1N\ln\!\prod_n q_\theta(y_n)=\underbrace{-\tfrac1N\log\mathcal L(\theta)}_{\text{negative log-likelihood}}" data-display="1"></div>
-  <p class="step">The same logic makes <b>MSE a negative log-likelihood too</b> — under a Gaussian noise model, −ln p(y|ŷ) = (y−ŷ)²/2σ² + const. Every standard loss is an NLL under some assumed noise distribution; that's why they yield calibrated probabilities and connect straight back to Lesson 3's MLE.</p>
+  <p class="lead">Every training loss you will ever stare at — a classifier's, an LLM's, a directional model's — is built from one primitive: the <b>surprise</b> −ln p of what actually happened. Average it under the truth and you get <b>entropy</b>, the world's irreducible uncertainty. Average the surprise of <i>your</i> prices under the world's draws and you get <b>cross-entropy</b>, the loss you actually pay. Their gap is the <b>KL divergence</b> — the part of the bill that is your fault. This lesson carries Wing III's two locked finance examples: the entropy of a <b>regime-probability vector</b> (how confused is my regime read, in bits?) and the <b>log-loss of a directional forecast</b> (the honest scoreboard for up/down calls). The punchline is one identity, H(p,q) = H(p) + KL(p‖q), and one incentive theorem: under log-loss, honesty is the unique optimum.</p>
+
+  <div class="sec">The vocabulary, in plain words</div>
+  <ul class="glo">
+    <li><span class="sym"><b>surprise</b></span><span class="def">the number −ln p(x): how startled you are when x happens, given you priced it at p(x). An event priced at 1 carries no surprise; a 1-in-a-million event carries a lot. <span class="n">The log is forced on you: it is the only choice that makes surprises of independent events add.</span></span></li>
+    <li><span class="sym"><b>entropy H(p)</b></span><span class="def">the <i>expected</i> surprise when the prices are right — the uncertainty of the source itself. Zero when one outcome is certain, maximal when all are equally live. <span class="n">The floor: no forecaster, however good, averages below it.</span></span></li>
+    <li><span class="sym"><b>cross-entropy H(p,q)</b></span><span class="def">the expected surprise when reality draws from p but <i>you priced q</i>. This is what "the loss" measures in almost every model you train. <span class="n">Always ≥ H(p); equal exactly when your prices are the truth.</span></span></li>
+    <li><span class="sym"><b>KL divergence</b></span><span class="def">the gap H(p,q) − H(p): the surcharge for pricing q when the truth is p. Non-negative, zero only if q = p. <span class="n">Not a distance — it is asymmetric and fails the triangle inequality, and the direction you pick has semantics.</span></span></li>
+    <li><span class="sym"><b>nats vs bits</b></span><span class="def">the same quantity in different log bases: natural log gives nats, log₂ gives bits; divide nats by ln 2 ≈ 0.693 to convert. <span class="n">A fair coin is 1 bit = 0.693 nats per flip; three equally live regimes are log₂3 ≈ 1.585 bits.</span></span></li>
+    <li><span class="sym"><b>proper scoring rule</b></span><span class="def">a grading scheme for probability forecasts under which your <i>expected</i> score is best when you report what you actually believe. <b>Strictly</b> proper: best <i>uniquely</i> at your true belief. <span class="n">Log-loss is strictly proper — the theorem that makes it the honest scoreboard.</span></span></li>
+  </ul>
+
+  <div class="sec">Surprise, and its average</div>
+  <p class="step">Rare events carry more information than common ones — a limit-down day tells you more than an ordinary Tuesday. The clean way to quantify that is −ln p(x): decreasing in p, zero at certainty, additive across independent events (probabilities multiply, logs add). Entropy is nothing more than this surprise averaged under the distribution's own prices:</p>
+  <div class="mblock math" data-tex="\text{surprise}(x)=-\ln p(x)\qquad\quad H(p)=\mathbb{E}_{X\sim p}\big[-\ln p(X)\big]=-\sum_{i=1}^{K}p_i\ln p_i\qquad\quad H_{\text{bits}}=\frac{H(p)}{\ln 2}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="-\ln p(x)"></span><span class="def">the surprise of outcome x under prices p. <span class="n">p = 1 → 0 surprise; p → 0 → ∞. Hold that infinity: it returns with teeth below.</span></span></li>
+    <li><span class="sym math" data-tex="H(p)"></span><span class="def"><b>entropy</b> — expected surprise, the source's own uncertainty. <span class="n">A property of the world, not of any model. Convention 0·ln 0 = 0: impossible outcomes contribute nothing.</span></span></li>
+    <li><span class="sym math" data-tex="0\le H\le \ln K"></span><span class="def">the bounds on K outcomes. <span class="n">0 at certainty; the ceiling ln K nats = log₂K bits at uniform — a consequence of Jensen's inequality, Lesson 14's convexity cashed in.</span></span></li>
+    <li><span class="sym math" data-tex="H_{\text{bits}}"></span><span class="def">the same number in bits. <span class="n">For a 3-regime vector the ceiling is log₂3 ≈ 1.585 bits — the gauge in the interactive below tops out exactly there.</span></span></li>
+  </ul>
+
+  <div class="sec">See it — the regime dial</div>
+  <p class="step">p is your read on tomorrow's regime — calm / stressed / crisis; q is what the market's pricing implies. Both slider triples auto-renormalize to sum to 1. Watch three things: the gauge (H(p) in bits against its log₂3 ceiling), the two KLs side by side (they differ — the divergence has a direction), and the identity readout, where H(p,q) and H(p) + KL(p‖q) are computed <i>separately</i> and agree to machine precision. Then push q's crisis weight to zero while p keeps some.</p>
+  <div class="panel">
+    <svg id="dial" viewBox="0 0 680 270" role="img" aria-label="Grouped bars of regime probabilities p and q, with an entropy gauge in bits against the log2 of 3 ceiling"></svg>
+    <div class="legend"><span><i class="dotc" style="background:var(--accent)"></i>p — your regime read</span><span><i class="dotc" style="background:var(--series)"></i>q — market-implied pricing</span></div>
+    <p class="rowlab">your read p (auto-renormalized)</p>
+    <div class="ctrls">
+      <div class="field"><label>p · calm <b id="pL0">—</b></label><input type="range" id="pS0" min="0" max="100" value="70" step="1" /></div>
+      <div class="field"><label>p · stressed <b id="pL1">—</b></label><input type="range" id="pS1" min="0" max="100" value="25" step="1" /></div>
+      <div class="field"><label>p · crisis <b id="pL2">—</b></label><input type="range" id="pS2" min="0" max="100" value="5" step="1" /></div>
+    </div>
+    <p class="rowlab">the market's implied q (auto-renormalized)</p>
+    <div class="ctrls">
+      <div class="field"><label>q · calm <b id="qL0">—</b></label><input type="range" id="qS0" min="0" max="100" value="85" step="1" /></div>
+      <div class="field"><label>q · stressed <b id="qL1">—</b></label><input type="range" id="qS1" min="0" max="100" value="13" step="1" /></div>
+      <div class="field"><label>q · crisis <b id="qL2">—</b></label><input type="range" id="qS2" min="0" max="100" value="2" step="1" /></div>
+    </div>
+    <div class="tally">
+      <div class="stat"><div class="k">entropy H(p)</div><div class="v a" id="HpB">—</div></div>
+      <div class="stat"><div class="k">KL(p‖q)</div><div class="v m" id="KLpq">—</div></div>
+      <div class="stat"><div class="k">KL(q‖p)</div><div class="v s" id="KLqp">—</div></div>
+    </div>
+    <div class="tally">
+      <div class="stat" style="min-width:100%"><div class="k">identity check · H(p,q) = H(p) + KL(p‖q), both sides computed independently</div><div class="v sm g" id="idChk">—</div></div>
+    </div>
+    <div class="btnrow">
+      <button class="act" id="bQP">set q = p</button>
+      <button class="act" id="bPU">p → uniform (ceiling)</button>
+      <button class="act" id="bQZ">q prices crisis at 0</button>
+      <button class="act" id="bRS">reset</button>
+    </div>
+    <p class="callout" id="c1"></p>
+  </div>
+
+  <div class="sec">Cross-entropy, and the master identity</div>
+  <p class="step">Now let the world draw from p while <i>you</i> priced q. Your average surprise is the cross-entropy; the excess over the world's own entropy is the KL divergence. The identity between them is one line of algebra — add and subtract ln pᵢ inside the sum:</p>
+  <div class="mblock math" data-tex="H(p,q)=\mathbb{E}_{X\sim p}\big[-\ln q(X)\big]=-\sum_i p_i\ln q_i\qquad\quad D_{\mathrm{KL}}(p\Vert q)=\sum_i p_i\ln\frac{p_i}{q_i}" data-display="1"></div>
+  <div class="mblock math" data-tex="H(p,q)\;=\;\underbrace{H(p)}_{\text{the world's entropy}}\;+\;\underbrace{D_{\mathrm{KL}}(p\Vert q)}_{\text{your penalty}}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="H(p,q)"></span><span class="def"><b>cross-entropy</b> — surprise of your prices q, averaged under the truth p. <span class="n">The expectation is under p: reality deals the cards, you priced them. Note H(p,p) = H(p).</span></span></li>
+    <li><span class="sym math" data-tex="D_{\mathrm{KL}}(p\Vert q)"></span><span class="def"><b>KL divergence</b> from q to p — the avoidable part of the loss. <span class="n">Everything a better model could recover; H(p) is what no model can.</span></span></li>
+    <li><span class="sym math" data-tex="p_i\ln\tfrac{p_i}{q_i}"></span><span class="def">one term of the penalty: positive where you underpriced (qᵢ smaller than pᵢ), negative where you overpriced. <span class="n">The positives always win on average — that is Gibbs' inequality, next.</span></span></li>
+  </ul>
+  <p class="step">Why can the penalty never be negative? Because −ln is strictly convex, and Jensen's inequality (Lesson 14: a convex function of an average never exceeds the average of the function) applies in one line:</p>
+  <div class="mblock math" data-tex="D_{\mathrm{KL}}(p\Vert q)=\mathbb{E}_p\!\left[-\ln\frac{q(X)}{p(X)}\right]\;\ge\;-\ln\,\mathbb{E}_p\!\left[\frac{q(X)}{p(X)}\right]=-\ln\!\!\sum_{i:\,p_i>0}\!\!q_i\;\ge\;-\ln 1=0" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="\mathbb{E}_p[q/p]"></span><span class="def">equals Σ qᵢ over the outcomes p can produce — at most 1. <span class="n">So −ln of it is ≥ 0. Nothing but convexity and "probabilities sum to one".</span></span></li>
+    <li><span class="sym math" data-tex="=0"></span><span class="def">equality forces q/p constant (strict convexity) and Σqᵢ = 1 — i.e. q = p exactly. <span class="n">The penalty vanishes only for the truth. Read twice, this same line is also the honesty theorem below.</span></span></li>
+  </ul>
 
   <div class="theorem">
     <p class="lbl">The precise statement</p>
-    <p>For distributions p, q on a finite set, H(p,q) = H(p) + D_KL(p‖q), and by Gibbs' inequality D_KL(p‖q) ≥ 0 with equality iff p = q — so cross-entropy is minimized over q exactly at q = p, where it equals H(p). Minimizing the empirical cross-entropy between the data distribution and a parametric model q_θ is equivalent to maximum-likelihood estimation of θ, i.e. minimizing D_KL(p_data‖q_θ). Under a Gaussian observation model the per-example NLL is (y−ŷ)²/(2σ²) + const, recovering squared-error loss; under a categorical model it is −ln q_θ(y), the log-loss.</p>
+    <p>Let p, q be probability vectors on a finite alphabet, with the convention 0·ln 0 = 0. (i) <i>Chain identity:</i> H(p,q) = H(p) + D<sub>KL</sub>(p‖q). (ii) <i>Gibbs' inequality:</i> D<sub>KL</sub>(p‖q) = 𝔼<sub>p</sub>[−ln(q/p)] ≥ −ln 𝔼<sub>p</sub>[q/p] = −ln Σ<sub>i: pᵢ&gt;0</sub> qᵢ ≥ 0, by Jensen applied to the strictly convex t ↦ −ln t; equality holds iff q = p. (iii) <i>Strict propriety of log-loss:</i> for fixed p, the expected loss q ↦ 𝔼<sub>p</sub>[−ln q(X)] = H(p) + D<sub>KL</sub>(p‖q) is uniquely minimized at q = p, where it equals H(p). Statement (iii) is statement (ii) read as an incentive: the penalty is non-negative and vanishes only for the truth, so truthful reporting is the unique optimum. D<sub>KL</sub> is not a metric: it is asymmetric and violates the triangle inequality.</p>
+  </div>
+
+  <div class="sec">The loss is a negative log-likelihood</div>
+  <p class="step">Lesson 3 chose parameters by maximizing Σᵢ ln f(xᵢ; θ). Modern ML minimizes an average of −ln qθ(xᵢ). These are the same act — and the bridge is two lines: group the sum by outcome value, and the empirical frequencies p̂ₙ appear on their own:</p>
+  <div class="mblock math" data-tex="\frac{1}{n}\sum_{i=1}^{n}\big[-\ln q(x_i)\big]\;=\;-\sum_{x}\hat p_n(x)\,\ln q(x)\;=\;H(\hat p_n,\,q)\;=\;\underbrace{H(\hat p_n)}_{\theta\text{-free floor}}+\underbrace{D_{\mathrm{KL}}(\hat p_n\Vert q)}_{\text{what training shrinks}}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="\hat p_n(x)"></span><span class="def">the <b>empirical distribution</b>: the fraction of the sample equal to x. <span class="n">The grouping step: n copies of −ln q(x), one per observation of x, average to p̂ₙ(x)·(−ln q(x)).</span></span></li>
+    <li><span class="sym math" data-tex="H(\hat p_n,q)"></span><span class="def">the training loss <i>is</i> a cross-entropy — between the data's empirical distribution and your model. <span class="n">Minimizing it ≡ maximizing likelihood (Lesson 3) ≡ minimizing the forward KL(p̂ₙ‖qθ), since the H(p̂ₙ) floor does not involve θ.</span></span></li>
+  </ul>
+  <p class="step">Specialize to the simplest forecast there is: a constant probability p̂ that tomorrow's session closes up. If a fraction f of the n days realized up, the average log-loss and its minimizer have closed forms:</p>
+  <div class="mblock math" data-tex="L(\hat p)=-\big[f\ln\hat p+(1-f)\ln(1-\hat p)\big]\qquad L'(\hat p)=-\frac{f}{\hat p}+\frac{1-f}{1-\hat p}=0\iff \hat p=f\qquad L(f)=H(f)" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="f"></span><span class="def">the realized up-frequency of the sample — the empirical distribution of a binary outcome in one number. <span class="n">The strictly convex L has its unique stationary point at p̂ = f: report the frequency, nothing else.</span></span></li>
+    <li><span class="sym math" data-tex="H(f)"></span><span class="def">the <b>binary entropy</b> −f ln f − (1−f) ln(1−f): the floor value of the loss. <span class="n">Everything above it is D<sub>KL</sub>(Bern(f)‖Bern(p̂)) — your fault, not the market's.</span></span></li>
+  </ul>
+
+  <div class="sec">See it — the honest forecaster</div>
+  <p class="step">A seeded stream of 500 up/down trading days (true up-probability 0.55 — the generator knows it, the forecaster never does). You commit to one constant forecast p̂ for the whole year. The curve is your average log-loss L(p̂); the gold pin marks its minimum at p̂* = f, the realized frequency; the green dashes mark the floor H(f). Park your pin anywhere and read the price of dishonesty — then draw another year and watch the minimum track the new f.</p>
+  <div class="panel">
+    <svg id="fc" viewBox="0 0 680 300" role="img" aria-label="Average log-loss of a constant probability forecast as a function of the forecast, with floor at the binary entropy and minimum at the realized frequency"></svg>
+    <div class="ctrls">
+      <div class="field" style="min-width:260px"><label>your constant forecast p̂ <b id="phOut">—</b></label><input type="range" id="phS" min="0.02" max="0.98" value="0.5" step="0.001" /></div>
+    </div>
+    <div class="tally">
+      <div class="stat"><div class="k" id="upsK">up days · year 1</div><div class="v" id="upsV">—</div></div>
+      <div class="stat"><div class="k">realized f</div><div class="v a" id="fV">—</div></div>
+      <div class="stat"><div class="k">best constant forecast</div><div class="v g" id="bestV">—</div></div>
+    </div>
+    <div class="tally">
+      <div class="stat"><div class="k">loss at your p̂</div><div class="v a" id="lossV">—</div></div>
+      <div class="stat"><div class="k">floor H(f)</div><div class="v g" id="floorV">—</div></div>
+      <div class="stat"><div class="k">your excess = KL(f‖p̂)</div><div class="v m" id="excV">—</div></div>
+    </div>
+    <div class="btnrow">
+      <button class="act" id="nextYr">another year ▸</button>
+      <button class="act" id="toBest">jump to p̂* = f</button>
+    </div>
+    <p class="callout" id="c2"></p>
   </div>
 
   <div class="twist">
-    <p class="lbl">The twist — KL has a direction, and it changes the answer</p>
-    <p>KL is <b>not symmetric</b>: D_KL(p‖q) ≠ D_KL(q‖p), and the two are minimized by different fits. <b>Forward</b> KL D(p‖q) — what maximum likelihood minimizes — is <i>mode-covering</i>: it punishes q for putting no mass where p has some, so q spreads to cover every outcome p can produce. <b>Reverse</b> KL D(q‖p) — what variational inference and the RLHF penalty (Lesson 35) use — is <i>mode-seeking</i>: q collapses onto one mode and ignores the rest. This is why a variational posterior looks too narrow, why a model trained by MLE hedges, and why the KL <i>direction</i> in a method is a design decision, not a detail. The deeper unification: entropy = optimal code length, cross-entropy = the code you actually paid, KL = the waste — and "minimize the loss" almost always means "minimize the KL from reality to your model," i.e. maximize likelihood. Once you see a loss as an NLL, its noise model, its calibration, and its failure modes all become legible.</p>
+    <p class="lbl">The twist — you are watching every LLM train</p>
+    <p>The honest forecaster above <i>is</i> next-token prediction in miniature: a language model is a directional forecaster whose "up/down" is a ~50,000-outcome softmax, trained on exactly this loss — the average −ln q(next token). So every LLM training curve you have ever seen is the master identity drawn against compute: H(data) + KL(data‖model), a floor that no architecture, optimizer, or budget can breach — the entropy of language itself — plus a shrinking KL, the only part gradient descent can touch (Lesson 21's scaling laws are curves of this KL falling with scale). Second barrel: KL's asymmetry is a design lever, not a defect. Minimizing the <b>forward</b> KL(data‖model) — what MLE and the pretraining loss do — is <i>mass-covering</i>: the model must keep weight on every regime the data visits, because pricing a possible one at zero costs ∞ (you built that infinity with the crisis slider). Minimizing the <b>reverse</b> KL(model‖target) is <i>mode-seeking</i>: commit to one regime, ignore the rest, pay nothing for what you never sample. Wings VI–VII run on this choice — the ELBO of Lesson 28 is a reverse-KL objective, and RLHF's KL leash (Lessons 33 &amp; 35) uses it to keep a policy pinned near its reference. Which end of the asymmetry you hold decides whether your model hedges or commits.</p>
   </div>
 
   <div class="vol">
     <p class="lbl">Why this matters · volarixs</p>
-    <p>The entropy of a <b>regime-probability vector</b> is a clean uncertainty gauge: when your HMM's filtered state probabilities are spread out, H is high and the regime is genuinely ambiguous; when one state dominates, H → 0 and you're confidently in a regime. That number can gate how aggressively a regime-conditional signal fires.</p>
-    <p>For evaluating forecasts, <b>log-loss is the honest score</b>: a directional model that put probability q on the move that actually happened contributes −ln q, and averaging it is the model's NLL — lower is better, and unlike hit-rate it rewards calibrated confidence. And when you back out a risk-neutral density from option prices, the <b>maximum-entropy</b> density consistent with the quoted strikes is the least-committal one — the Buchen–Kelly construction is literally "assume nothing beyond the constraints," which is what entropy formalizes.</p>
+    <p>Your regime HMM emits a filtered probability vector every day — and this lesson says that vector carries its own confusion meter: its <b>entropy in bits</b>. Near 0 bits the model is effectively certain of the regime; near log₂3 ≈ 1.585 bits (for three states) it knows nothing. Gating regime-conditional signals on that number — full weight when entropy is low, de-risked when it spikes — is a model-honest throttle that needs no new estimation, just a read of the vector the HMM already produces.</p>
+    <p>Two more direct uses, conservatively stated. Any directional or sign forecast the platform emits (<code>sign_stability</code>-flavored calls included) should be scored by <b>log-loss</b> rather than hit-rate: it is the strictly proper scoreboard — hedging toward 0.5 and bravado toward 1 both cost, and the average is exactly the model's NLL. And the <b>KL between today's filtered regime vector and yesterday's</b> is a natural magnitude for a regime-shift alarm: small under drift, large under a lurch — with the caveat that KL is asymmetric, so the direction (today‖yesterday vs yesterday‖today) should be chosen deliberately and then held fixed.</p>
   </div>
 
   <div class="sec">Check yourself</div>
-  <div class="q" id="q1"><p class="stem">The KL divergence D_KL(p‖q) is:</p><div class="opts"></div><p class="fb"></p></div>
-  <div class="q" id="q2"><p class="stem">Cross-entropy decomposes as:</p><div class="opts"></div><p class="fb"></p></div>
-  <div class="q" id="q3"><p class="stem">Minimizing the cross-entropy between the data and a model q_θ is equivalent to:</p><div class="opts"></div><p class="fb"></p></div>
-  <div class="q" id="q4"><p class="stem">Squared-error (MSE) loss is the negative log-likelihood under:</p><div class="opts"></div><p class="fb"></p></div>
-  <div class="q" id="q5"><p class="stem">A model assigned probability q to the market move that actually occurred. Its contribution to the loss (its NLL) is:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q1"><p class="stem">Your regime model is maximally agnostic: p = (1/3, 1/3, 1/3) over calm / stressed / crisis. Its entropy is:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q2"><p class="stem">In H(p,q) = H(p) + KL(p‖q), the part of your average loss that is "your fault" is:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q3"><p class="stem">The one-line proof that KL(p‖q) ≥ 0 applies:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q4"><p class="stem">Your p keeps 5% on crisis; the market's implied q prices crisis at exactly zero. Which statement is right?</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q5"><p class="stem">Over a year, 60% of trading days closed up. Scored by average log-loss, the best <i>constant</i> up-probability forecast was:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q6"><p class="stem">Minimizing the average loss (1/n)Σᵢ −ln qθ(xᵢ) over a dataset is exactly the same as:</p><div class="opts"></div><p class="fb"></p></div>
 
-  <div class="checkRow"><button class="primary" id="check">Check answers</button><span class="scoreOut" id="scoreOut"></span><span class="hint" id="hint">Answer all five first.</span></div>
-  <div class="done" id="done">Batch B complete — Wing II closed, Wing III opened. Next: attention & the transformer, or the rest of Wing III.</div>
+  <div class="checkRow">
+    <button class="primary" id="check">Check answers</button>
+    <span class="scoreOut" id="scoreOut"></span>
+    <span class="hint" id="hint">Answer all six first.</span>
+  </div>
+  <div class="done" id="done">Loss = entropy + KL — the ledger of every training run, now yours. Next in Wing III: the information bottleneck.</div>
 </div>
 
 <script>
 /* storage shim: window.storage (Claude artifacts) or localStorage (web) */
 if(!window.storage){window.storage={async get(k){const v=localStorage.getItem(k);if(v==null)throw new Error('missing');return{key:k,value:v}},async set(k,v){localStorage.setItem(k,v);return{key:k,value:v}},async delete(k){localStorage.removeItem(k);return{key:k,deleted:true}},async list(p){const ks=[];for(let i=0;i<localStorage.length;i++){const kk=localStorage.key(i);if(!p||kk.startsWith(p))ks.push(kk)}return{keys:ks}}};}
 function renderMath(){document.querySelectorAll('.math').forEach(el=>{const tex=el.getAttribute('data-tex');if(!tex||el.dataset.done)return;try{if(window.katex){katex.render(tex,el,{displayMode:el.dataset.display==='1',throwOnError:false});el.dataset.done='1';}else el.textContent=tex;}catch(e){el.textContent=tex;}});}
+function mulberry32(seed){let a=seed>>>0;return function(){a|=0;a=(a+0x6D2B79F5)|0;let t=Math.imul(a^(a>>>15),1|a);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296;}}
 
-const STATES=['crash','down','flat','up','rally'];
-const Pdist=[0.08,0.20,0.40,0.24,0.08];
-let pmode='dist', oneHot=2;
-let qraw=[0.12,0.22,0.30,0.26,0.10];
+/* ---------- shared information helpers (nats) ---------- */
+const LN2=Math.log(2), LOG23=Math.log(3)/LN2; /* log2(3) = 1.5849625007211562 */
+function entN(p){let h=0;for(const v of p)if(v>0)h-=v*Math.log(v);return h;}
+function xentN(p,q){let h=0;for(let i=0;i<p.length;i++)if(p[i]>0)h-=p[i]*Math.log(q[i]);return h;}
+function klN(p,q){let d=0;for(let i=0;i<p.length;i++)if(p[i]>0)d+=p[i]*Math.log(p[i]/q[i]);return d;}
+const f3=x=>isFinite(x)?x.toFixed(3):'∞';
 
-function pVec(){ if(pmode==='dist')return Pdist.slice(); const e=[0,0,0,0,0];e[oneHot]=1;return e; }
-function qVec(){ const s=qraw.reduce((a,b)=>a+b,0)||1; return qraw.map(v=>Math.max(v/s,1e-6)); }
+/* ================= Interactive 1 — the regime dial ================= */
+const REG=['calm','stressed','crisis'];
+let pw=[70,25,5], qw=[85,13,2];
+const pS=[0,1,2].map(i=>document.getElementById('pS'+i));
+const qS=[0,1,2].map(i=>document.getElementById('qS'+i));
+function norm(w){const s=w[0]+w[1]+w[2];return s>0?w.map(v=>v/s):[1/3,1/3,1/3];}
 
-function bars(){
-  const p=pVec(),q=qVec();
-  const W=680,H=260,padL=30,padR=10,padT=14,padB=34,iw=W-padL-padR,ih=H-padT-padB,gw=iw/STATES.length;
-  let s=`<line x1="${padL}" y1="${padT+ih}" x2="${W-padR}" y2="${padT+ih}" stroke="var(--hair2)"/>`;
-  STATES.forEach((st,i)=>{
-    const cx=padL+gw*(i+0.5),bw=gw*0.3;
-    const hp=p[i]*ih,hq=q[i]*ih;
-    s+=`<rect x="${(cx-bw-2).toFixed(1)}" y="${(padT+ih-hp).toFixed(1)}" width="${bw.toFixed(1)}" height="${hp.toFixed(1)}" fill="var(--p)" opacity="0.9"/>`;
-    s+=`<rect x="${(cx+2).toFixed(1)}" y="${(padT+ih-hq).toFixed(1)}" width="${bw.toFixed(1)}" height="${hq.toFixed(1)}" fill="var(--q)" opacity="0.9"/>`;
-    s+=`<text x="${cx.toFixed(1)}" y="${H-16}" text-anchor="middle" font-family="var(--mono)" font-size="11" fill="var(--muted)">${st}</text>`;
-    s+=`<text x="${cx.toFixed(1)}" y="${H-4}" text-anchor="middle" font-family="var(--mono)" font-size="9.5" fill="var(--faint)">${(q[i]).toFixed(2)}</text>`;
+function drawDial(pn,qn,Hb){
+  const W=680,H=270,padT=18,padB=40,ih=H-padT-padB,base=padT+ih;
+  const bx0=34,bx1=440,gw=(bx1-bx0)/3,bw=30;
+  let s=`<line x1="${bx0}" y1="${base}" x2="${bx1}" y2="${base}" stroke="var(--hair2)"/>`;
+  REG.forEach((r,i)=>{
+    const cx=bx0+gw*(i+0.5),hp=pn[i]*ih,hq=qn[i]*ih;
+    s+=`<rect x="${(cx-bw-3).toFixed(1)}" y="${(base-hp).toFixed(1)}" width="${bw}" height="${hp.toFixed(1)}" fill="var(--accent)" opacity="0.9" rx="2"/>`;
+    s+=`<rect x="${(cx+3).toFixed(1)}" y="${(base-hq).toFixed(1)}" width="${bw}" height="${hq.toFixed(1)}" fill="var(--series)" opacity="0.9" rx="2"/>`;
+    s+=`<text x="${(cx-bw/2-3).toFixed(1)}" y="${(base-hp-5).toFixed(1)}" text-anchor="middle" font-family="var(--mono)" font-size="9.5" fill="var(--accent)">${(pn[i]*100).toFixed(0)}%</text>`;
+    s+=`<text x="${(cx+bw/2+3).toFixed(1)}" y="${(base-hq-5).toFixed(1)}" text-anchor="middle" font-family="var(--mono)" font-size="9.5" fill="var(--series)">${(qn[i]*100).toFixed(0)}%</text>`;
+    s+=`<text x="${cx.toFixed(1)}" y="${H-16}" text-anchor="middle" font-family="var(--mono)" font-size="11.5" fill="var(--muted)">${r}</text>`;
   });
-  document.getElementById('bars').innerHTML=s;
+  /* entropy gauge, in bits, ceiling log2(3) */
+  const gx=520,gwd=46,scaleMax=LOG23*1.06;
+  s+=`<rect x="${gx}" y="${base-ih}" width="${gwd}" height="${ih}" fill="none" stroke="var(--hair2)"/>`;
+  [0,0.5,1.0,1.5].forEach(v=>{const y=base-(v/scaleMax)*ih;s+=`<line x1="${gx-4}" y1="${y.toFixed(1)}" x2="${gx}" y2="${y.toFixed(1)}" stroke="var(--hair2)"/><text x="${gx-7}" y="${(y+3).toFixed(1)}" text-anchor="end" font-family="var(--mono)" font-size="9" fill="var(--faint)">${v}</text>`;});
+  const hh=Math.min(Hb,LOG23)/scaleMax*ih;
+  s+=`<rect x="${gx+1}" y="${(base-hh).toFixed(1)}" width="${gwd-2}" height="${Math.max(hh,0).toFixed(1)}" fill="var(--accent)" opacity="0.85"/>`;
+  const yc=base-(LOG23/scaleMax)*ih;
+  s+=`<line x1="${gx-8}" y1="${yc.toFixed(1)}" x2="${gx+gwd+8}" y2="${yc.toFixed(1)}" stroke="var(--series)" stroke-dasharray="4 3" stroke-width="1.5"/>`;
+  s+=`<text x="${gx+gwd+6}" y="${(yc-5).toFixed(1)}" font-family="var(--mono)" font-size="9.5" fill="var(--series)">log₂3 = 1.585</text>`;
+  s+=`<text x="${gx+gwd/2}" y="${(base-hh-6).toFixed(1)}" text-anchor="middle" font-family="var(--mono)" font-size="11" fill="var(--accent)">${Hb.toFixed(3)}</text>`;
+  s+=`<text x="${gx+gwd/2}" y="${H-16}" text-anchor="middle" font-family="var(--mono)" font-size="11" fill="var(--muted)">H(p) bits</text>`;
+  document.getElementById('dial').innerHTML=s;
 }
-function compute(){
-  const p=pVec(),q=qVec();
-  let Hp=0,Hpq=0,KL=0;
-  for(let i=0;i<p.length;i++){ if(p[i]>0){Hp+=-p[i]*Math.log(p[i]);Hpq+=-p[i]*Math.log(q[i]);KL+=p[i]*Math.log(p[i]/q[i]);} }
-  document.getElementById('Hp').textContent=Hp.toFixed(3);
-  document.getElementById('Hpq').textContent=Hpq.toFixed(3);
-  document.getElementById('KL').textContent=KL.toFixed(3);
-  if(pmode==='one'){
-    document.getElementById('ceLbl').textContent='NLL = −ln q(realized)';
-    document.getElementById('cnote').innerHTML=`p is certain (${STATES[oneHot]}), so H(p)=0 and cross-entropy = KL = <b>−ln q(${STATES[oneHot]}) = −ln ${q[oneHot].toFixed(3)} = ${Hpq.toFixed(3)}</b>. That single number <i>is</i> the negative log-likelihood the model assigned to what happened — the log-loss. Raise q on ${STATES[oneHot]} to lower it.`;
+function narrate1(pn,qn,Hb,klpq,klqp,Hpq,Hn){
+  const zi=REG.findIndex((r,i)=>pn[i]>1e-12&&qn[i]===0);
+  if(zi>=0)return `q prices ${REG[zi]} at exactly zero while p keeps ${(pn[zi]*100).toFixed(0)}% there. The day ${REG[zi]} arrives carries −ln 0 = ∞ surprise, so KL(p‖q) = ∞ — while KL(q‖p) = ${f3(klqp)} nats stays finite, because the average under q never looks at the state q ignores. Pricing a possible regime at zero is not a bold call; it is an infinitely punished one. That asymmetry is the twist's whole second barrel.`;
+  if(Hb<0.02)return `p is essentially certain: H(p) ≈ ${Hb.toFixed(3)} bits. A known regime carries no information — the floor of any forecaster's loss drops to zero, and the entire cross-entropy ${isFinite(Hpq)?'('+Hpq.toFixed(3)+' nats) ':''}is KL: pure penalty for q ≠ p.`;
+  const dev=Math.max(...pn.map(v=>Math.abs(v-1/3)));
+  if(dev<0.005)return `p is uniform: H(p) = log₂3 = ${LOG23.toFixed(3)} bits — the ceiling. Three equally live regimes is the most confused a 3-state read can be; every move of the sliders away from uniform buys certainty and lowers the gauge.`;
+  return `H(p) = ${Hb.toFixed(3)} of ${LOG23.toFixed(3)} bits possible. KL(p‖q) = ${f3(klpq)} ≠ KL(q‖p) = ${f3(klqp)} nats — the divergence has a direction. And the identity readout shows H(p,q) = ${f3(Hpq)} rebuilt as H(p) + KL = ${f3(Hn)} + ${f3(klpq)}, the two sides agreeing to ~10⁻¹⁶. Drag q toward p and both KLs die together.`;
+}
+function refreshDial(){
+  const pn=norm(pw),qn=norm(qw);
+  const Hn=entN(pn),Hb=Hn/LN2;
+  const Hpq=xentN(pn,qn),klpq=klN(pn,qn),klqp=klN(qn,pn);
+  [0,1,2].forEach(i=>{document.getElementById('pL'+i).textContent=(pn[i]*100).toFixed(0)+'%';document.getElementById('qL'+i).textContent=(qn[i]*100).toFixed(0)+'%';});
+  document.getElementById('HpB').textContent=Hb.toFixed(3)+' bits';
+  document.getElementById('KLpq').textContent=f3(klpq)+(isFinite(klpq)?' nats':'');
+  document.getElementById('KLqp').textContent=f3(klqp)+(isFinite(klqp)?' nats':'');
+  document.getElementById('idChk').textContent=isFinite(Hpq)
+    ? Hpq.toFixed(12)+' = '+(Hn+klpq).toFixed(12)+'  ·  |Δ| = '+Math.abs(Hpq-(Hn+klpq)).toExponential(1)
+    : '∞ = '+Hn.toFixed(3)+' + ∞ — the identity holds, vacuously';
+  drawDial(pn,qn,Hb);
+  document.getElementById('c1').textContent=narrate1(pn,qn,Hb,klpq,klqp,Hpq,Hn);
+}
+pS.forEach((el,i)=>el.addEventListener('input',()=>{pw[i]=+el.value;refreshDial();}));
+qS.forEach((el,i)=>el.addEventListener('input',()=>{qw[i]=+el.value;refreshDial();}));
+function syncSliders(){pS.forEach((el,i)=>el.value=pw[i]);qS.forEach((el,i)=>el.value=qw[i]);refreshDial();}
+document.getElementById('bQP').onclick=()=>{qw=pw.slice();syncSliders();};
+document.getElementById('bPU').onclick=()=>{pw=[33,33,33];syncSliders();};
+document.getElementById('bQZ').onclick=()=>{qw=[70,30,0];syncSliders();};
+document.getElementById('bRS').onclick=()=>{pw=[70,25,5];qw=[85,13,2];syncSliders();};
+
+/* ================= Interactive 2 — the honest forecaster ================= */
+const N2=500, PTRUE=0.55;
+const rng=mulberry32(115);
+let year=0, ups=0;
+function drawYearFC(){year++;let u=0;for(let i=0;i<N2;i++)if(rng()<PTRUE)u++;ups=u;}
+drawYearFC(); /* year 1 on load: exactly 500 seeded draws */
+function lossAt(f,p){return -(f*Math.log(p)+(1-f)*Math.log(1-p));}
+
+function drawFC(f,ph){
+  const W=680,H=300,padL=46,padR=14,padT=16,padB=36,iw=W-padL-padR,ih=H-padT-padB,base=padT+ih;
+  const x0=0.02,x1=0.98;
+  const Hf=lossAt(f,f);
+  const ymax=Math.max(lossAt(f,x0),lossAt(f,x1))*1.06;
+  const X=p=>padL+(p-x0)/(x1-x0)*iw, Y=v=>padT+ih-(v/ymax)*ih;
+  let s=`<line x1="${padL}" y1="${base}" x2="${W-padR}" y2="${base}" stroke="var(--hair2)"/>`;
+  [0,0.5,1.0,1.5,2.0].forEach(v=>{if(v>ymax)return;const y=Y(v);s+=`<line x1="${padL-4}" y1="${y.toFixed(1)}" x2="${padL}" y2="${y.toFixed(1)}" stroke="var(--hair2)"/><text x="${padL-7}" y="${(y+3).toFixed(1)}" text-anchor="end" font-family="var(--mono)" font-size="9.5" fill="var(--faint)">${v.toFixed(1)}</text>`;});
+  [0.1,0.3,0.5,0.7,0.9].forEach(v=>{const x=X(v);s+=`<line x1="${x.toFixed(1)}" y1="${base}" x2="${x.toFixed(1)}" y2="${base+4}" stroke="var(--hair2)"/><text x="${x.toFixed(1)}" y="${base+15}" text-anchor="middle" font-family="var(--mono)" font-size="9.5" fill="var(--faint)">${v}</text>`;});
+  s+=`<text x="${padL+4}" y="${padT+9}" font-family="var(--mono)" font-size="10" fill="var(--faint)">avg log-loss L(p̂), nats/day</text>`;
+  s+=`<text x="${W-padR}" y="${H-4}" text-anchor="end" font-family="var(--mono)" font-size="10" fill="var(--faint)">constant forecast p̂</text>`;
+  /* floor */
+  const yf=Y(Hf);
+  s+=`<line x1="${padL}" y1="${yf.toFixed(1)}" x2="${W-padR}" y2="${yf.toFixed(1)}" stroke="var(--ok)" stroke-dasharray="5 4" stroke-width="1.3"/>`;
+  s+=`<text x="${W-padR-4}" y="${(yf-6).toFixed(1)}" text-anchor="end" font-family="var(--mono)" font-size="10" fill="var(--ok)">floor H(f)</text>`;
+  /* curve */
+  let d='';for(let p=x0;p<=x1+1e-9;p+=0.004){const px=Math.min(p,x1);d+=(d?'L':'M')+X(px).toFixed(1)+' '+Y(Math.min(lossAt(f,px),ymax)).toFixed(1)+' ';}
+  s+=`<path d="${d}" fill="none" stroke="var(--accent)" stroke-width="2"/>`;
+  /* minimum at f */
+  s+=`<line x1="${X(f).toFixed(1)}" y1="${base}" x2="${X(f).toFixed(1)}" y2="${yf.toFixed(1)}" stroke="var(--series)" stroke-dasharray="3 3" stroke-width="1.3"/>`;
+  s+=`<circle cx="${X(f).toFixed(1)}" cy="${yf.toFixed(1)}" r="4.5" fill="var(--series)"/>`;
+  s+=`<text x="${(X(f)+7).toFixed(1)}" y="${(base-8).toFixed(1)}" font-family="var(--mono)" font-size="10" fill="var(--series)">p̂* = f</text>`;
+  /* the reader's pin */
+  const Lp=lossAt(f,ph),yp=Y(Math.min(Lp,ymax));
+  s+=`<line x1="${X(ph).toFixed(1)}" y1="${base}" x2="${X(ph).toFixed(1)}" y2="${yp.toFixed(1)}" stroke="var(--accent)" opacity="0.3"/>`;
+  s+=`<circle cx="${X(ph).toFixed(1)}" cy="${yp.toFixed(1)}" r="5" fill="var(--accent)"/>`;
+  s+=`<text x="${(X(ph)).toFixed(1)}" y="${(yp-10).toFixed(1)}" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--accent)">you</text>`;
+  document.getElementById('fc').innerHTML=s;
+}
+function refreshFC(){
+  const f=ups/N2, ph=+document.getElementById('phS').value;
+  const Hf=lossAt(f,f), Lp=lossAt(f,ph), exc=Lp-Hf;
+  document.getElementById('phOut').textContent=ph.toFixed(3);
+  document.getElementById('upsK').textContent='up days · year '+year;
+  document.getElementById('upsV').textContent=ups+' / '+N2;
+  document.getElementById('fV').textContent=f.toFixed(3);
+  document.getElementById('bestV').textContent='p̂* = f = '+f.toFixed(3);
+  document.getElementById('lossV').textContent=Lp.toFixed(4)+' nats';
+  document.getElementById('floorV').textContent=Hf.toFixed(4)+' nats · '+(Hf/LN2).toFixed(4)+' bits';
+  document.getElementById('excV').textContent=exc.toFixed(4)+' nats';
+  drawFC(f,ph);
+  const c=document.getElementById('c2');
+  if(Math.abs(ph-f)<5e-4){
+    c.textContent=`Year ${year}: pinned at p̂ = f = ${f.toFixed(3)} — the loss sits exactly on the floor H(f) = ${Hf.toFixed(4)} nats, excess ${exc.toFixed(4)}. Strict propriety in the flesh: the realized frequency is the unique best constant forecast. The floor is the market's own entropy; nothing you report can go below it.`;
   }else{
-    document.getElementById('ceLbl').textContent='cross-entropy H(p,q)';
-    const gap=Hpq-Hp;
-    document.getElementById('cnote').innerHTML = gap<0.005
-      ? `q now matches p: KL = 0, and cross-entropy has hit its floor H(p) = ${Hp.toFixed(3)}. No model can score better than the true distribution's own entropy.`
-      : `Check the identity: H(p,q) = H(p) + KL = ${Hp.toFixed(3)} + ${gap.toFixed(3)} = ${Hpq.toFixed(3)}. The KL is the avoidable penalty for q ≠ p — drag the sliders toward the blue bars and watch it fall to zero.`;
+    const dir=ph<f?`hedging (your p̂ sits below f, toward the safety of 0.5)`:`exaggerating (your p̂ sits above f, toward false conviction)`;
+    c.textContent=`Year ${year}: realized f = ${f.toFixed(3)}. Your constant p̂ = ${ph.toFixed(3)} pays ${Lp.toFixed(4)} nats/day against the floor H(f) = ${Hf.toFixed(4)} at p̂* = f. The gap, ${exc.toFixed(4)} nats/day, is exactly KL(Bern(f)‖Bern(p̂)) — and it is all your fault: ${dir} costs, because log-loss rewards neither humility nor bravado, only honesty. Draw another year and watch the minimum track the new frequency.`;
   }
 }
-function refresh(){bars();compute();}
+document.getElementById('phS').addEventListener('input',refreshFC);
+document.getElementById('nextYr').onclick=()=>{drawYearFC();refreshFC();};
+document.getElementById('toBest').onclick=()=>{document.getElementById('phS').value=(ups/N2).toFixed(3);refreshFC();};
 
-// build q sliders
-const qc=document.getElementById('qsliders');
-STATES.forEach((st,i)=>{
-  const d=document.createElement('div');d.className='qs';
-  d.innerHTML=`<input type="range" min="0.01" max="1" step="0.01" value="${qraw[i]}" data-i="${i}"><span>${st}</span>`;
-  qc.appendChild(d);
-});
-qc.querySelectorAll('input').forEach(inp=>inp.addEventListener('input',e=>{qraw[+e.target.dataset.i]=+e.target.value;refresh();}));
-// one-hot selector
-const oh=document.getElementById('oneh');
-STATES.forEach((st,i)=>{const b=document.createElement('button');b.textContent=st;b.className=i===oneHot?'on':'';b.onclick=()=>{oneHot=i;oh.querySelectorAll('button').forEach((x,xi)=>x.classList.toggle('on',xi===i));refresh();};oh.appendChild(b);});
-// p mode
-document.querySelectorAll('#pmode button').forEach(b=>b.onclick=()=>{pmode=b.dataset.m;document.querySelectorAll('#pmode button').forEach(x=>x.classList.toggle('on',x===b));document.getElementById('oneh').classList.toggle('show',pmode==='one');refresh();});
-document.getElementById('matchp').onclick=()=>{const p=pmode==='dist'?Pdist:pVec();qraw=p.slice();qc.querySelectorAll('input').forEach((inp,i)=>inp.value=qraw[i]);refresh();};
-document.getElementById('unif').onclick=()=>{qraw=[0.2,0.2,0.2,0.2,0.2];qc.querySelectorAll('input').forEach((inp,i)=>inp.value=qraw[i]);refresh();};
-
+/* ================= retrieval ================= */
 const QS={
-  q1:{opts:["symmetric and can be negative","always ≥ 0, and = 0 exactly when q = p","a proper distance (a metric)","bounded above by 1"],a:1,
-    fb:"By Gibbs' inequality KL ≥ 0, with equality iff the distributions match. It is not symmetric and not a metric — just a non-negative divergence."},
-  q2:{opts:["H(p,q) = H(p) − H(q)","H(p,q) = H(p) + KL(p‖q)","H(p,q) = KL(p‖q) − H(p)","H(p,q) = H(q) + KL(q‖p)"],a:1,
-    fb:"Cross-entropy = the true distribution's own entropy plus the KL penalty for using q. Since KL ≥ 0, cross-entropy is minimized (at H(p)) exactly when q = p."},
-  q3:{opts:["maximizing entropy","maximum-likelihood estimation of θ (equivalently, minimizing KL(data‖model))","minimizing the model's entropy","minimizing variance"],a:1,
-    fb:"Empirical cross-entropy = average NLL, so minimizing it maximizes likelihood — equivalently it minimizes the forward KL from the data distribution to the model."},
-  q4:{opts:["a uniform noise model","a Gaussian noise model","a Bernoulli model","no probabilistic model"],a:1,
-    fb:"Under y = ŷ + Gaussian noise, −ln p(y|ŷ) = (y−ŷ)²/(2σ²) + const, so squared error is the Gaussian NLL. Every standard loss is an NLL under some assumed noise."},
-  q5:{opts:["q","−ln q","1 − q","q·ln q"],a:1,
-    fb:"The per-outcome cross-entropy / log-loss is −ln q(realized): confident-and-right is cheap, confident-and-wrong is heavily penalized. Averaged over history it's the model's NLL."}
+  q1:{opts:["1 bit — one three-way choice","3 bits — one per regime","log₂3 ≈ 1.585 bits — the ceiling for three outcomes","0 bits — the probabilities are all equal"],a:2,
+    fb:"H = −Σ(1/3)log₂(1/3) = log₂3 ≈ 1.585 bits. Uniform is the maximum-entropy distribution on three outcomes (Jensen, Lesson 14), which is exactly why the gauge in the regime dial tops out there. One bit only resolves a binary choice; three live regimes need log₂3 of them."},
+  q2:{opts:["only the KL term — H(p) is the world's intrinsic uncertainty, which no model can remove","only H(p) — entropy measures the model's confusion","both terms equally — they trade off against each other","neither — the split depends on the sample size"],a:0,
+    fb:"The identity splits the loss into the source's own entropy H(p) — a floor untouchable by any q — plus KL(p‖q) ≥ 0, which vanishes exactly when you price q = p. Training can only ever shrink the KL term; the floor is the world's, not yours."},
+  q3:{opts:["the Cauchy–Schwarz inequality to Σ pᵢqᵢ","Jensen's inequality to the convex −ln: E_p[−ln(q/p)] ≥ −ln E_p[q/p] = −ln Σqᵢ ≥ 0","the triangle inequality — KL is a metric","the central limit theorem as n → ∞"],a:1,
+    fb:"KL(p‖q) = E_p[−ln(q/p)], and −ln is strictly convex, so Jensen gives ≥ −ln E_p[q/p] = −ln Σ_{p>0} qᵢ ≥ −ln 1 = 0 — Lesson 14's convexity cashed in. Strictness gives equality iff q = p. And no, KL is not a metric: it is asymmetric and fails the triangle inequality."},
+  q4:{opts:["KL(q‖p) = ∞ — q is the overconfident one","both divergences are infinite","both stay finite — probabilities are bounded","KL(p‖q) = ∞ while KL(q‖p) stays finite — the average under p meets −ln 0 on the unpriced regime"],a:3,
+    fb:"KL(p‖q) contains the term p(crisis)·ln(p/q) with q = 0 — infinite: if crisis can happen and you priced it impossible, the day it arrives carries infinite surprise. KL(q‖p) averages under q, never visits the crisis state, and stays finite. Asymmetry with teeth — this is the mass-covering vs mode-seeking split of the twist."},
+  q5:{opts:["0.5 — hedge when uncertain","1.0 — back the majority with full conviction","exactly 0.60 — the realized frequency","just above 0.60 — a little extra conviction is rewarded"],a:2,
+    fb:"L(p̂) = −[0.6 ln p̂ + 0.4 ln(1−p̂)] is strictly convex with its unique minimum at p̂ = 0.6 — log-loss is strictly proper, so the honest frequency beats both the hedge and any exaggeration. Forecasting 1.0 is catastrophic: the first down day costs −ln 0 = ∞."},
+  q6:{opts:["minimizing the entropy of qθ","maximizing Lesson 3's likelihood — the average is the cross-entropy H(p̂ₙ, qθ) against the empirical distribution","minimizing the reverse divergence KL(qθ‖p̂ₙ)","minimizing the variance of the estimator"],a:1,
+    fb:"Group the sum by outcome: (1/n)Σᵢ −ln q(xᵢ) = −Σₓ p̂ₙ(x) ln q(x) = H(p̂ₙ,q) = H(p̂ₙ) + KL(p̂ₙ‖q). The H(p̂ₙ) term is θ-free, so minimizing the loss minimizes the forward KL — equivalently maximizes likelihood. Cross-entropy training is Lesson 3's MLE in information-theoretic clothes; the reverse KL is a different objective (mode-seeking — see the twist)."}
 };
-const sel={q1:null,q2:null,q3:null,q4:null,q5:null};let revealed=false;
+const sel={q1:null,q2:null,q3:null,q4:null,q5:null,q6:null};let revealed=false;
 Object.keys(QS).forEach(id=>{const holder=document.querySelector('#'+id+' .opts');QS[id].opts.forEach((txt,i)=>{const b=document.createElement('button');b.className='opt';b.textContent=String.fromCharCode(65+i)+'.  '+txt;b.onclick=()=>{if(revealed)return;sel[id]=i;[...holder.children].forEach((c,ci)=>c.classList.toggle('sel',ci===i));document.getElementById('hint').style.display='none';};holder.appendChild(b);});});
 document.getElementById('check').onclick=async()=>{
   if(revealed)return;if(Object.values(sel).some(v=>v===null)){document.getElementById('hint').style.display='inline';return;}
   revealed=true;let score=0;
   Object.keys(QS).forEach(id=>{const a=QS[id].a,holder=document.querySelector('#'+id+' .opts'),fb=document.querySelector('#'+id+' .fb');[...holder.children].forEach((c,ci)=>{c.style.cursor='default';c.classList.remove('sel');if(ci===a)c.classList.add('correct');else if(ci===sel[id])c.classList.add('wrong');});if(sel[id]===a)score++;fb.textContent=QS[id].fb;fb.classList.add('show');});
   document.getElementById('check').style.opacity='0.5';document.getElementById('check').textContent='Checked';
-  document.getElementById('scoreOut').textContent=score+' / 5';document.getElementById('done').classList.add('show');
-  try{await window.storage.set('mfs:lesson15',JSON.stringify({done:true,retrieval:score+'/5',ts:Date.now()}),false);}catch(e){}
+  document.getElementById('scoreOut').textContent=score+' / 6';document.getElementById('done').classList.add('show');
+  try{await window.storage.set('mfs:lesson15',JSON.stringify({done:true,retrieval:score+'/6',ts:Date.now()}),false);}catch(e){}
 };
-function boot(){renderMath();refresh();}
+function boot(){renderMath();refreshDial();refreshFC();}
 if(window.katex)boot();else window.addEventListener('load',boot);
 (async()=>{try{const r=await window.storage.get('mfs:lesson15',false);if(r&&r.value){const v=JSON.parse(r.value);if(v.done){const c=document.getElementById('chip');c.classList.add('show');c.textContent='completed · '+v.retrieval;}}}catch(e){}})();
 </script>
