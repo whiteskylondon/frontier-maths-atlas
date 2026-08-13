@@ -3,61 +3,63 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Lesson 14 — Convexity, saddles & the reparameterization trick</title>
+<title>Lesson 14 — Convexity, saddles &amp; the reparameterization trick</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
 <style>
-  :root{--paper:#FAFAF6;--ink:#1A1C22;--muted:#63676E;--faint:#9A9EA4;--hair:#E4E3DB;--hair2:#D4D3CA;--panel:#FFFFFF;--accent:#24507A;--accent-bg:#EAF0F6;--series:#B07A2E;--miss:#B23A3A;--ok:#2F6B4F;--ok-bg:#E9F1EC;--min:#2F6B4F;--max:#B23A3A;--saddle:#B07A2E;--vol:#8A5A2B;--vol-bg:#F6EFE6;--serif:Iowan Old Style,Palatino,Georgia,serif;--sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;}
-  @media (prefers-color-scheme:dark){:root{--paper:#15161A;--ink:#E9E8E2;--muted:#A2A6AC;--faint:#71757B;--hair:#2A2C31;--hair2:#3A3C42;--panel:#1B1D22;--accent:#7FB0E0;--accent-bg:#1E2A38;--series:#D9A85E;--miss:#E07A7A;--ok:#7FC49F;--ok-bg:#1C2A22;--min:#7FC49F;--max:#E07A7A;--saddle:#D9A85E;--vol:#D9A066;--vol-bg:#2A2115;}}
+  :root{
+    --paper:#FAFAF6;--ink:#1A1C22;--muted:#63676E;--faint:#9A9EA4;--hair:#E4E3DB;--hair2:#D4D3CA;--panel:#FFFFFF;
+    --accent:#24507A;--accent-bg:#EAF0F6;--series:#B07A2E;--miss:#B23A3A;--ok:#2F6B4F;--ok-bg:#E9F1EC;
+    --vol:#8A5A2B;--vol-bg:#F6EFE6;--serif:Iowan Old Style,Palatino,Georgia,serif;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme:dark){:root{--paper:#15161A;--ink:#E9E8E2;--muted:#A2A6AC;--faint:#71757B;--hair:#2A2C31;--hair2:#3A3C42;--panel:#1B1D22;--accent:#7FB0E0;--accent-bg:#1E2A38;--series:#D9A85E;--miss:#E07A7A;--ok:#7FC49F;--ok-bg:#1C2A22;--vol:#D9A066;--vol-bg:#2A2115;}}
   *{box-sizing:border-box}
   body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.62;-webkit-font-smoothing:antialiased}
   .wrap{max-width:750px;margin:0 auto;padding:32px 24px 60px}
   .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 6px}
-  h1{font-family:var(--serif);font-weight:600;font-size:26px;line-height:1.2;margin:0 0 6px;letter-spacing:-.01em}
-  .chip{display:none;font-family:var(--mono);font-size:11px;color:var(--ok);border:1px solid var(--ok);border-radius:20px;padding:3px 10px;vertical-align:middle;margin-left:10px}
+  h1{font-family:var(--serif);font-weight:600;font-size:27px;line-height:1.22;margin:0 0 6px;letter-spacing:-.01em}
+  .chip{display:none;font-family:var(--mono);font-size:11px;letter-spacing:.05em;color:var(--ok);border:1px solid var(--ok);border-radius:20px;padding:3px 10px;vertical-align:middle;margin-left:10px}
   .chip.show{display:inline-block}
   .sub{color:var(--muted);font-size:15px;margin:0 0 18px}
   .levels{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 26px}
   .levels .lk{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
   .levels .pill{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-family:var(--mono);color:var(--muted);background:var(--panel);border:1px solid var(--hair2);border-radius:20px;padding:4px 11px}
-  .levels .pill b{color:var(--accent);font-weight:700}
-  p.lead{font-size:16px;margin:0 0 22px}p.lead b{font-weight:600}
+  .levels .pill b{color:var(--accent);font-weight:700;letter-spacing:.03em}
+  p.lead{font-size:16px;margin:0 0 22px}
+  p.lead b{font-weight:600}
   .sec{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:36px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--hair)}
   .mblock{margin:16px 0;overflow-x:auto}
   .glo{list-style:none;padding:0;margin:14px 0 0}
   .glo li{display:flex;gap:14px;padding:9px 0;border-top:1px solid var(--hair);align-items:baseline}
   .glo li:first-child{border-top:none}
-  .glo .sym{flex:0 0 100px;text-align:right;padding-top:2px;font-family:var(--mono);font-size:13px;color:var(--accent)}
-  .glo .def{font-size:14.5px}.glo .def .n{color:var(--muted)}
+  .glo .sym{flex:0 0 110px;text-align:right;padding-top:2px}
+  .glo .def{font-size:14.5px}
+  .glo .def .n{color:var(--muted)}
   .step{font-size:14.5px;color:var(--muted);margin:10px 0}
   .panel{background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:20px;margin:14px 0}
   .seg{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
   .seg button{font-family:var(--mono);font-size:12px;padding:6px 11px;border:1px solid var(--hair2);border-radius:7px;background:var(--panel);color:var(--muted);cursor:pointer}
   .seg button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
-  .row{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start}
-  canvas{border:1px solid var(--hair2);border-radius:8px;cursor:crosshair;max-width:100%}
-  .hess{flex:1;min-width:220px;font-family:var(--mono);font-size:13px}
-  .hess .verdict{font-size:16px;font-weight:700;margin:0 0 10px;font-family:var(--sans)}
-  .hess table{border-collapse:separate;border-spacing:4px;margin:6px 0}
-  .hess td{width:64px;height:30px;text-align:center;border:1px solid var(--hair2);border-radius:5px;background:var(--paper)}
-  .hess .eig{margin:8px 0 0;color:var(--muted)}
-  .field{display:flex;flex-direction:column;gap:5px;min-width:150px;flex:1}
-  .field label{font-size:11.5px;color:var(--muted);font-family:var(--mono);display:flex;justify-content:space-between}
+  canvas{border:1px solid var(--hair2);border-radius:8px;max-width:100%;background:var(--panel)}
+  svg{max-width:100%;height:auto;display:block}
+  .ctrls{display:flex;flex-wrap:wrap;gap:16px 26px;align-items:flex-end;margin:16px 0 6px}
+  .field{display:flex;flex-direction:column;gap:6px;min-width:180px;flex:1}
+  .field label{font-size:12px;color:var(--muted);font-family:var(--mono);letter-spacing:.03em;display:flex;justify-content:space-between}
   .field label b{color:var(--ink);font-weight:600}
-  input[type=range]{width:100%;accent-color:var(--accent);height:18px}
-  .ctrls{display:flex;flex-wrap:wrap;gap:14px 22px;align-items:flex-end;margin:14px 0 6px}
-  .tally{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0 2px}
-  .stat{flex:1;min-width:130px;background:var(--paper);border-radius:9px;padding:9px 12px}
-  .stat .k{font-size:11px;font-family:var(--mono);color:var(--muted);text-transform:uppercase}
-  .stat .v{font-size:15px;font-weight:600;font-family:var(--mono);margin-top:2px}
-  .stat .v.g{color:var(--min)}
-  .callout{font-size:14px;color:var(--muted);border-left:2px solid var(--accent);padding:2px 0 2px 14px;margin:14px 0 2px;min-height:1.4em}
+  input[type=range]{width:100%;accent-color:var(--accent);height:20px}
+  .tally{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 2px}
+  .stat{flex:1;min-width:120px;background:var(--paper);border-radius:9px;padding:9px 12px}
+  .stat .k{font-size:11px;font-family:var(--mono);letter-spacing:.04em;color:var(--muted);text-transform:uppercase}
+  .stat .v{font-size:16px;font-weight:600;font-family:var(--mono);margin-top:2px}
+  .stat .v.a{color:var(--accent)}.stat .v.g{color:var(--ok)}
+  .callout{font-size:14px;color:var(--muted);border-left:2px solid var(--accent);padding:2px 0 2px 14px;margin:16px 0 2px;min-height:1.4em}
   .theorem{background:var(--accent-bg);border-radius:12px;padding:18px 20px;margin:16px 0}
   .theorem .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
   .theorem p{font-family:var(--serif);font-size:16px;line-height:1.55;margin:0}
   .twist{border:1px dashed var(--hair2);border-radius:12px;padding:16px 18px;margin:16px 0;background:var(--panel)}
   .twist .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
-  .twist p{margin:0;font-size:14.6px}
+  .twist p{margin:0 0 10px;font-size:14.6px}.twist p:last-child{margin-bottom:0}
   .vol{background:var(--vol-bg);border:1px solid var(--vol);border-radius:12px;padding:18px 20px;margin:16px 0}
   .vol .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:var(--vol);margin:0 0 8px}
   .vol p{margin:0 0 10px;font-size:14.8px}.vol p:last-child{margin-bottom:0}
@@ -65,12 +67,14 @@
   .q{border:1px solid var(--hair);border-radius:12px;padding:16px 18px;margin:12px 0;background:var(--panel)}
   .q .stem{font-size:15px;font-weight:500;margin:0 0 12px}
   .opt{display:block;width:100%;text-align:left;font-size:14px;padding:10px 12px;margin:0 0 8px;border:1px solid var(--hair2);border-radius:8px;background:transparent;color:var(--ink);cursor:pointer;line-height:1.45}
-  .opt:last-child{margin-bottom:0}.opt:hover{border-color:var(--accent)}
+  .opt:last-child{margin-bottom:0}
+  .opt:hover{border-color:var(--accent)}
   .opt.sel{border-color:var(--accent);background:var(--accent-bg)}
   .opt.correct{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
   .opt.wrong{background:#F7ECEC;border-color:var(--miss);color:var(--miss)}
   @media (prefers-color-scheme:dark){.opt.wrong{background:#2E1E1E}}
-  .fb{font-size:13.5px;color:var(--muted);margin:10px 0 0;line-height:1.5;display:none}.fb.show{display:block}
+  .fb{font-size:13.5px;color:var(--muted);margin:10px 0 0;line-height:1.5;display:none}
+  .fb.show{display:block}
   .checkRow{display:flex;align-items:center;gap:14px;margin:18px 0 0;flex-wrap:wrap}
   .hint{font-size:13px;color:var(--miss);display:none}
   button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-family:var(--sans);font-size:14px;padding:8px 14px;border-radius:8px;border:1px solid var(--accent);cursor:pointer}
@@ -84,181 +88,286 @@
   <p class="eyebrow">Lesson 14 · Wing II — the optimization engine</p>
   <h1>Convexity, saddle points &amp; the reparameterization trick<span class="chip" id="chip"></span></h1>
   <p class="sub">Whether a problem has one answer or many is decided by the sign of a curvature matrix.</p>
-  <div class="levels"><span class="lk">Level</span><span class="pill"><b>US</b> Graduate</span><span class="pill"><b>FR</b> Master M2 · ENSAE 3A</span></div>
+  <div class="levels"><span class="lk">Level</span><span class="pill"><b>US</b> Graduate</span><span class="pill"><b>FR</b> M2 · ENSAE 3A</span></div>
 
-  <p class="lead">A <b>convex</b> loss is a single bowl: any local minimum is the global one, and descent can't get stuck. Most deep-learning losses are <b>non-convex</b> — riddled with saddle points where the gradient vanishes but you're not at a minimum. What separates a minimum from a maximum from a saddle is the <b>Hessian</b>, the matrix of second derivatives: read its eigenvalues and you know the local shape. This lesson also fixes a separate problem — how to take gradients through a <i>random</i> node — with the reparameterization trick, which quant desks already know as the pathwise method for Greeks.</p>
+  <p class="lead">Two ideas run this lesson, and both are promises. A <b>convex</b> function is one shaped like a bowl: pick any two points on its graph and the straight chord between them never dips below the graph. Bowls promise that rolling downhill reaches <i>the</i> bottom, because there is only one. A <b>saddle point</b> is where that promise breaks: the ground is flat — the <b>gradient</b>, the slope vector from Lesson 9, is zero — yet you are at the bottom of nothing, because the surface curves up one way and down another. Which case you are in is read off the <b>Hessian</b>, the matrix of second derivatives, whose eigenvalues (Lesson 6) are the curvatures along its eigenvector directions. The second promise is that you can differentiate through <i>sampling</i>: when a loss is an average over random draws whose distribution depends on your parameters, there are exactly two honest ways to push the gradient inside the expectation — and a trading desk already knows them as <b>pathwise</b> and <b>likelihood-ratio</b> Greeks.</p>
 
-  <div class="sec">Convexity and the second-order test</div>
-  <div class="mblock math" data-tex="f\text{ convex}\iff \nabla^2 f(x)\succeq 0\ \ \forall x\quad(\text{Hessian positive semidefinite})" data-display="1"></div>
-  <p class="step">At a stationary point (∇f = 0), the Hessian's eigenvalues classify it: all positive → a minimum (bowl up in every direction), all negative → a maximum, <b>mixed signs → a saddle</b> (up some ways, down others).</p>
-  <div class="mblock math" data-tex="\lambda_i(\nabla^2 f)>0\ \forall i:\text{ min}\qquad \lambda_i<0\ \forall i:\text{ max}\qquad \text{mixed signs: saddle}" data-display="1"></div>
+  <div class="sec">Convex, in plain words first</div>
+  <p class="step">The set version first: a set is <b>convex</b> if it has no dents — the straight segment between any two of its points stays inside it. (Portfolio constraints like "weights sum to 1, each between 0 and 1" carve out a convex set.) A <b>function</b> is convex when its graph is bowl-shaped over such a set, which the chord says precisely:</p>
+  <div class="mblock math" data-tex="f\big(\alpha x+(1-\alpha)y\big)\;\le\;\alpha f(x)+(1-\alpha)f(y)\qquad\forall\,x,y,\;\alpha\in[0,1]" data-display="1"></div>
   <ul class="glo">
-    <li><span class="sym">∇²f</span><span class="def">the <b>Hessian</b>: matrix of second partials. <span class="n">Local curvature; its eigenvalues are the curvatures along principal directions (Lesson 6).</span></span></li>
-    <li><span class="sym">⪰ 0</span><span class="def"><b>positive semidefinite</b>: all eigenvalues ≥ 0. <span class="n">Curves up (or flat) in every direction — the definition of a convex bowl.</span></span></li>
-    <li><span class="sym">saddle</span><span class="def">∇f = 0 but not an extremum. <span class="n">Mixed-sign Hessian; the dominant critical point in high dimensions (Lesson 9).</span></span></li>
+    <li><span class="sym math" data-tex="\alpha"></span><span class="def"><b>blend weight</b>, sliding from y (α=0) to x (α=1). <span class="n">Left side: f at a blend of the inputs. Right side: the same blend of the outputs — a point on the chord.</span></span></li>
+    <li><span class="sym math" data-tex="x,\,y"></span><span class="def">any two points of the (convex) domain. <span class="n">The domain must be convex so the blended point is somewhere f is defined.</span></span></li>
+    <li><span class="sym math" data-tex="\le"></span><span class="def">"the chord sits above the graph". <span class="n">Strict &lt; for α∈(0,1), x≠y is <b>strict</b> convexity — a bowl with no flat patches, hence at most one minimizer.</span></span></li>
   </ul>
+  <p class="step">Two equivalent tests are more usable in practice. The <b>first-order</b> test: the tangent plane at any point is a <i>global</i> under-estimator — a convex function hides nothing below its linearizations. The <b>second-order</b> test reads curvature directly:</p>
+  <div class="mblock math" data-tex="f(y)\;\ge\;f(x)+\nabla f(x)^{\top}(y-x)\quad\forall\,x,y\qquad\Longleftrightarrow\qquad \nabla^2 f(x)\,\succeq\,0\;\;\forall x\;\;(f\in C^2)" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="\nabla f(x)"></span><span class="def">the <b>gradient</b> — steepest-ascent vector (Lesson 9). <span class="n">If ∇f(x★)=0 the inequality reads f(y) ≥ f(x★) for every y: a stationary point of a convex f is already globally optimal.</span></span></li>
+    <li><span class="sym math" data-tex="\nabla^2 f(x)"></span><span class="def">the <b>Hessian</b>, (∇²f)ᵢⱼ = ∂²f/∂xᵢ∂xⱼ. <span class="n">Symmetric, so it has real eigenvalues and orthogonal eigenvectors (Lesson 6) — the principal curvatures and their directions.</span></span></li>
+    <li><span class="sym math" data-tex="\succeq 0"></span><span class="def"><b>positive semidefinite</b>: vᵀ(∇²f)v ≥ 0 for every direction v — curves up or is flat every way you slice it. <span class="n">≻ 0 (all eigenvalues &gt; 0) gives strict convexity and a unique minimizer.</span></span></li>
+  </ul>
+  <p class="step"><b>Why bowls keep their promise, in one line:</b> if x★ is a local minimum but some y beats it, f(y) &lt; f(x★), the chord inequality gives f((1−α)x★+αy) ≤ (1−α)f(x★)+αf(y) &lt; f(x★) for every α∈(0,1) — lower points arbitrarily close to x★, contradicting local minimality. So no better y exists: <b>every local minimum of a convex function is global</b>.</p>
+  <p class="step">Push the chord to averages and you get <b>Jensen's inequality</b>: for convex f, <span class="math" data-tex="f(\mathbb E[X])\le\mathbb E[f(X)]"></span> — the function of the average understates the average of the function. You have already been burned by it: Lesson 2's c₄ story is Jensen with the inequality flipped, because √· is concave — E[√V] ≤ √E[V], so the sample standard deviation is biased low.</p>
+  <p class="step">And the convexity you already own: <b>portfolio variance</b>. As a function of the weights w it is the quadratic wᵀΣw, whose Hessian is 2Σ — and Lesson 6 proved Σ ⪰ 0 for the deepest possible reason:</p>
+  <div class="mblock math" data-tex="\nabla^2_w\big(w^{\top}\Sigma\,w\big)=2\Sigma,\qquad a^{\top}\Sigma\,a=\operatorname{Var}\!\big(a^{\top}r\big)\;\ge\;0\quad\forall\,a" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="\Sigma"></span><span class="def"><b>covariance matrix</b> of the asset returns r. <span class="n">PSD not by assumption but by construction: quadratic forms in it are variances.</span></span></li>
+    <li><span class="sym math" data-tex="w"></span><span class="def">portfolio weights; wᵀΣw is exactly Var(wᵀr), the portfolio variance (Lesson 6). <span class="n">A quadratic with PSD Hessian is convex — so minimum-variance and mean-variance programs are convex programs.</span></span></li>
+    <li><span class="sym math" data-tex="a^{\top}\Sigma a"></span><span class="def">the quadratic form = variance of the return aᵀr — cannot be negative. <span class="n">This one inequality is the entire license behind "the optimizer found <i>the</i> optimal portfolio".</span></span></li>
+  </ul>
+  <p class="step">When convexity fails, stationary points stop being conclusions. At any point with ∇f = 0, the Hessian's eigenvalue signs are the whole local story: all positive → a strict minimum; all negative → a maximum; <b>mixed signs → a saddle</b> — uphill along some eigenvectors, downhill along others; an eigenvalue at zero → a flat direction, the degenerate valley Lesson 5 met in collinear regression. Sculpt it yourself:</p>
 
-  <div class="sec">See it — click a point, read the curvature</div>
+  <div class="sec">See it — sculpt the landscape, drop the balls</div>
   <div class="panel">
-    <div class="seg" id="surf">
-      <button data-s="var" class="on">Portfolio variance wᵀΣw (convex)</button>
-      <button data-s="saddle">Saddle x² − y²</button>
-      <button data-s="well">Double well (non-convex)</button>
+    <p class="step" style="margin-top:0">f(w) = ½wᵀHw, where you choose the two eigenvalues of H (its eigenvectors are fixed, rotated 30° off the axes — the dark diagonal is the small-λ eigenvector). 12 seeded balls run 80 steps of gradient descent (η = 0.08) with a whisper of SGD noise (τ = 0.015). Darker = lower f; the ✕ marks the unique minimum when one exists.</p>
+    <div class="seg" id="presets">
+      <button data-l1="2" data-l2="0.6">bowl · λ = 2.0, 0.6</button>
+      <button data-l1="2" data-l2="-1">saddle · λ = 2.0, −1.0</button>
+      <button data-l1="2" data-l2="0">valley · λ = 2.0, 0.0</button>
     </div>
-    <div class="row">
-      <canvas id="cv" width="330" height="300"></canvas>
-      <div class="hess">
-        <p class="verdict" id="verdict">—</p>
-        <div>Hessian ∇²f at the point:</div>
-        <table id="htab"><tr><td>—</td><td>—</td></tr><tr><td>—</td><td>—</td></tr></table>
-        <div class="eig" id="eig">—</div>
-      </div>
-    </div>
-    <p class="callout" id="cnote">Click anywhere on the surface. Darker = lower value; the ✕ marks the global minimum where one exists.</p>
-  </div>
-
-  <div class="sec">Differentiating through randomness — the reparameterization trick</div>
-  <p class="step">Objectives in VAEs, policy gradients, and Monte-Carlo pricing take the form E<sub>z∼p<sub>θ</sub></sub>[f(z)], where θ controls the <i>distribution</i> you sample from. You can't backprop through "draw a sample." The fix: push the randomness into a fixed, parameter-free variable ε and make θ enter deterministically —</p>
-  <div class="mblock math" data-tex="z=\mu+\sigma\,\varepsilon,\ \ \varepsilon\sim\mathcal N(0,1)\ \Longrightarrow\ \nabla_\mu\,\mathbb E_z[f(z)]=\mathbb E_\varepsilon\big[f'(\mu+\sigma\varepsilon)\big]" data-display="1"></div>
-  <p class="step">Now the gradient flows through the sample. The alternative — the <b>score-function</b> (likelihood-ratio) estimator ∇<sub>μ</sub>E[f] = E[f(z)·∇<sub>μ</sub>log p(z)] — is unbiased too but usually far noisier. In derivatives language these are the <b>pathwise</b> and <b>likelihood-ratio</b> estimators of a Greek.</p>
-  <div class="panel">
-    <p class="step" style="margin-top:0">Estimating the delta ∂/∂μ E[ max(z − K, 0) ] of a call on z ∼ 𝒩(μ, σ), K = 0, from ~4000 samples. Both estimators target the same number (Φ(μ/σ)); compare their spread.</p>
+    <canvas id="land" width="300" height="300"></canvas>
     <div class="ctrls">
-      <div class="field"><label>drift μ <b id="muO">0.10</b></label><input type="range" id="mu" min="-0.5" max="0.5" value="0.1" step="0.02"></div>
-      <div class="field"><label>vol σ <b id="sgO">0.30</b></label><input type="range" id="sg" min="0.1" max="0.9" value="0.3" step="0.02"></div>
+      <div class="field"><label>eigenvalue λ₁ <b id="l1O">2.0</b></label><input type="range" id="l1" min="-2" max="3" value="2" step="0.1" /></div>
+      <div class="field"><label>eigenvalue λ₂ <b id="l2O">0.6</b></label><input type="range" id="l2" min="-2" max="3" value="0.6" step="0.1" /></div>
     </div>
     <div class="tally">
-      <div class="stat"><div class="k">pathwise (reparam) est ± sd</div><div class="v g" id="pw">—</div></div>
-      <div class="stat"><div class="k">score-function est ± sd</div><div class="v" id="sf">—</div></div>
-      <div class="stat"><div class="k">noise ratio (sf / pw)</div><div class="v" id="ratio">—</div></div>
+      <div class="stat"><div class="k">eigenvalues of H</div><div class="v a" id="lamStat">—</div></div>
+      <div class="stat"><div class="k">critical point at 0</div><div class="v" id="clsStat">—</div></div>
+      <div class="stat"><div class="k">balls escaped</div><div class="v g" id="escStat">—</div></div>
     </div>
-    <div style="margin-top:8px"><button class="primary" id="resample">New samples</button></div>
+    <p class="callout" id="cnote"></p>
+  </div>
+
+  <div class="sec">Differentiating through randomness — the two identities</div>
+  <p class="step">Now the second promise. Objectives in VAEs (Lesson 28), policy gradients (Lesson 31), and Monte-Carlo pricing all take the form E<sub>x∼p<sub>θ</sub></sub>[f(x)] — an average over draws whose <i>distribution</i> depends on the parameters. You cannot backprop through "draw a sample". There are exactly two honest ways to move ∇<sub>θ</sub> inside the expectation, and everything in this corner of ML and of derivatives pricing is one of the two:</p>
+  <div class="mblock math" data-tex="\nabla_\theta\,\mathbb E_{x\sim p_\theta}\!\big[f(x)\big]\;=\;\underbrace{\mathbb E_{\varepsilon\sim p_0}\!\big[\nabla_\theta\, f\big(g(\theta,\varepsilon)\big)\big]}_{\text{pathwise / reparameterization}}\;=\;\underbrace{\mathbb E_{x\sim p_\theta}\!\big[f(x)\,\nabla_\theta \ln p_\theta(x)\big]}_{\text{likelihood-ratio / score}}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="g(\theta,\varepsilon)"></span><span class="def">the <b>reparameterization</b>: write the sample as x = g(θ,ε), θ entering deterministically. <span class="n">Gaussian case: g = μ + σε. Valid when θ ↦ f(g(θ,ε)) is differentiable for a.e. ε <i>and</i> the derivative is dominated by an integrable bound — that is what licenses swapping ∇ and E.</span></span></li>
+    <li><span class="sym math" data-tex="\varepsilon\sim p_0"></span><span class="def">the <b>frozen noise</b>: all the randomness, none of the parameters. <span class="n">Gradients now flow through the deterministic path θ → x → f — this is "the reparameterization trick".</span></span></li>
+    <li><span class="sym math" data-tex="\nabla_\theta \ln p_\theta"></span><span class="def">the <b>score</b> — Lesson 3's likelihood machinery reappearing. <span class="n">This identity needs only the <i>density</i> differentiable in θ; f may be a black box, a jump, a discrete indicator.</span></span></li>
+    <li><span class="sym math" data-tex="="></span><span class="def">both are exact and unbiased where valid. <span class="n">They differ wildly in <b>variance</b> — that is the shootout below.</span></span></li>
+  </ul>
+  <p class="step">Markets translation: a Black–Scholes Monte-Carlo path is already a reparameterization — the parameter S₀ enters deterministically and the noise Z is frozen. Differentiate the payoff along the path, or multiply the payoff by the score:</p>
+  <div class="mblock math" data-tex="S_T=S_0\,e^{(r-\sigma^2/2)T+\sigma\sqrt{T}\,Z},\qquad \widehat{\Delta}_{\mathrm{PW}}=\mathbf 1\{S_T&gt;K\}\,\frac{S_T}{S_0},\qquad \widehat{\Delta}_{\mathrm{LR}}=\Pi(S_T)\,\frac{Z}{S_0\,\sigma\sqrt{T}}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="S_T"></span><span class="def">terminal price on the path; Z ∼ 𝒩(0,1) is the frozen noise. <span class="n">∂S_T/∂S₀ = S_T/S₀ — the path derivative every pathwise Greek rides.</span></span></li>
+    <li><span class="sym math" data-tex="\widehat{\Delta}_{\mathrm{PW}}"></span><span class="def"><b>pathwise</b> call delta: chain rule through the payoff (S_T−K)⁺. <span class="n">Valid because a call is Lipschitz — differentiable except at the single point S_T = K, which paths hit with probability 0.</span></span></li>
+    <li><span class="sym math" data-tex="\widehat{\Delta}_{\mathrm{LR}}"></span><span class="def"><b>likelihood-ratio</b> delta: payoff Π times the score of the lognormal density in S₀. <span class="n">Never touches Π′ — works for any integrable payoff, including digitals.</span></span></li>
+    <li><span class="sym math" data-tex="\Phi(d_1)"></span><span class="def">the closed forms both estimators chase: vanilla Δ = Φ(d₁) ≈ 0.540 here; digital Δ = φ(d₂)/(S₀σ√T) ≈ 0.01985. <span class="n">With S₀ = K = 100, σ = 20%, T = 1, r = 0: d₁ = 0.10, d₂ = −0.10.</span></span></li>
+  </ul>
+
+  <div class="sec">See it — the Greek shootout</div>
+  <div class="panel">
+    <p class="step" style="margin-top:0">Same seeded Gaussian paths, two estimators, one target. Toggle the payoff: for the vanilla call both are unbiased but not equally noisy; for the cash-or-nothing digital, one of them silently returns 0 on every path.</p>
+    <div class="seg" id="paymode">
+      <button data-m="van" class="on">vanilla call (S_T − K)⁺</button>
+      <button data-m="dig">digital 1{S_T &gt; K}</button>
+    </div>
+    <div class="ctrls">
+      <div class="field"><label>Monte-Carlo paths N <b id="npO">4,000</b></label><input type="range" id="np" min="0" max="8" value="5" step="1" /></div>
+    </div>
+    <svg id="bars" viewBox="0 0 320 130" role="img" aria-label="Delta estimates with error bars vs closed form"></svg>
+    <div class="tally">
+      <div class="stat"><div class="k">pathwise Δ̂ ± s.e.</div><div class="v g" id="pwStat">—</div></div>
+      <div class="stat"><div class="k">likelihood-ratio Δ̂ ± s.e.</div><div class="v" id="lrStat">—</div></div>
+      <div class="stat"><div class="k">closed-form Δ</div><div class="v a" id="cfStat">—</div></div>
+      <div class="stat"><div class="k">variance ratio LR/PW</div><div class="v" id="vrStat">—</div></div>
+    </div>
     <p class="callout" id="c2note"></p>
   </div>
 
   <div class="theorem">
     <p class="lbl">The precise statement</p>
-    <p>For C² f, convexity on a domain is equivalent to ∇²f(x) ⪰ 0 everywhere; then every stationary point is a global minimum and the set of minimizers is convex. At a stationary point, the signature of ∇²f classifies it: positive definite → strict local min, negative definite → max, indefinite → saddle. For an objective 𝔼_{z∼p_θ}[f(z)] with a reparameterizable p_θ (z = g(θ, ε), ε ∼ base), ∇_θ 𝔼[f] = 𝔼_ε[∇_θ f(g(θ,ε))] (pathwise) — generally lower variance than the score-function estimator 𝔼[f(z)∇_θ log p_θ(z)], which needs only that p_θ be differentiable in θ but not that f be differentiable.</p>
+    <p>Let f be C² on a convex open set. Then f is convex iff ∇²f(x) ⪰ 0 for all x; if ∇²f(x) ≻ 0 for all x, f is strictly convex and any stationary point is the unique global minimizer. At a stationary point of a general C² function, the Hessian's signature classifies it: positive definite → strict local minimum, negative definite → local maximum, mixed signs → saddle. Reparameterization: let x = g(θ,ε), ε ∼ p₀ fixed, so x ∼ p_θ. If θ ↦ f(g(θ,ε)) is differentiable for a.e. ε and ‖∇_θ f(g(θ,ε))‖ ≤ M(ε) with 𝔼[M] &lt; ∞ (domination), then ∇_θ 𝔼_{x∼p_θ}[f(x)] = 𝔼_ε[∇_θ f(g(θ,ε))]. If instead only the density is differentiable in θ (f merely integrable), ∇_θ 𝔼[f] = 𝔼[f(x) ∇_θ ln p_θ(x)].</p>
   </div>
 
   <div class="twist">
-    <p class="lbl">The twist — non-convex sounds fatal but mostly isn't</p>
-    <p>Two reassurances that make modern ML work. First, the villain of a non-convex loss is not local minima but <b>saddle points</b> — and in high dimensions a random critical point is overwhelmingly a saddle (to be a minimum, <i>all</i> d Hessian eigenvalues must be positive; with signs roughly independent that's ~2⁻ᵈ likely). Saddles have a downhill direction, so SGD's noise slips off them; the minima it lands in are usually comparably good. Second, the reparameterization vs score-function split is a real, bankable trade you already meet as <b>pathwise vs likelihood-ratio Greeks</b>: pathwise (reparam) exploits the payoff's derivative for low variance but needs smoothness — it struggles exactly at kinks like a digital's delta, where the likelihood-ratio method, which never differentiates the payoff, takes over. The two methods are complementary, and knowing which regime you're in is the whole skill. Convexity buys you a unique answer; when you can't have it, geometry (saddles are escapable) and variance control (pick the right estimator) are what save you.</p>
+    <p class="lbl">The twist — the enemy isn't minima, and a failing Greek built REINFORCE</p>
+    <p>First upgrade: in high dimension, non-convexity's stereotypical villain — the bad local minimum — is mostly a myth. A critical point needs all d Hessian eigenvalues positive to be a minimum; in the random-matrix picture of generic landscapes (Bray–Dean, and Dauphin et al.'s empirics in networks), the signs behave roughly independently near a typical critical point, so all-positive is exponentially rare — order 2⁻ᵈ, about 10⁻³⁰ at d = 100. What you actually hit are saddles, and saddles are escapable: noise walks you off along the negative-curvature eigenvector (your panel above), and perturbed gradient descent provably escapes them. The local minima that survive in overparameterized nets tend to sit at nearly the same loss — non-convexity did not kill deep learning; it replaced "one bowl" with "many good floors" (Wing V makes this quantitative).</p>
+    <p>Second upgrade: the digital option's dead pathwise Greek is not a pricing curiosity — it is the exact reason score-function gradients exist in ML. Sampling a discrete token <i>is</i> a digital payoff: nudging the logits infinitesimally leaves the sampled outcome unchanged almost everywhere, so the pathwise gradient is 0 — and REINFORCE (Lesson 31) is precisely the likelihood-ratio estimator, variance and all. The reparameterization trick with a continuous relaxation (Gumbel-softmax; Lesson 28's VAEs) is the pathwise cure.</p>
   </div>
 
   <div class="vol">
     <p class="lbl">Why this matters · volarixs</p>
-    <p>The cleanest convex object you own is the <b>minimum-variance portfolio</b>: variance is wᵀΣw, and because the covariance Σ is positive semidefinite (its eigenvalues ≥ 0, straight from Lessons 6 and 8), the objective is convex — so the optimizer has a <i>unique</i> global solution with no saddles to trap it. Mean-variance optimization is a convex quadratic program for exactly this reason. When Σ is near-singular (collinear assets, tiny eigenvalues), the bowl gets a nearly-flat direction — the same ill-conditioning that shrinkage / ridge (Lessons 5, 8) fixes.</p>
-    <p>And the reparameterization trick is your Monte-Carlo Greeks: simulate returns as z = μ + σε and the <b>pathwise</b> estimator gives smooth-payoff sensitivities at far lower variance than bumping, while the <b>likelihood-ratio</b> estimator rescues the discontinuous payoffs (digitals, barriers). Same mathematics that lets a VAE (Lesson 28) train by gradient descent.</p>
+    <p>Σ ⪰ 0 is the license behind every mean-variance and minimum-variance overlay volarixs runs: wᵀΣw is convex <i>by construction</i>, so "the optimizer found the global optimum" is a theorem, not marketing. The caveat is Lesson 5's: on a collinear returns panel the smallest eigenvalues of Σ — the tail of the <code>pca_factors</code> spectrum — sit near zero, and the bowl degenerates toward a knife-edge valley: the optimum still exists, but its location along the flat directions is numerically meaningless. Shrink or truncate (Lessons 5, 8) before trusting the weights.</p>
+    <p>And pathwise-vs-likelihood-ratio is the daily estimator choice on an exotic or digital book: smooth payoffs → pathwise deltas and vegas at low variance; digitals and barrier-adjacent payoffs → the payoff's derivative is a lie (zero a.e.), so switch to likelihood-ratio or smooth the payoff. The failure mode isn't an error message — it is a confident zero.</p>
   </div>
 
   <div class="sec">Check yourself</div>
-  <div class="q" id="q1"><p class="stem">A twice-differentiable function is convex on its domain if and only if its Hessian is:</p><div class="opts"></div><p class="fb"></p></div>
-  <div class="q" id="q2"><p class="stem">At a stationary point, a Hessian with both positive and negative eigenvalues indicates:</p><div class="opts"></div><p class="fb"></p></div>
-  <div class="q" id="q3"><p class="stem">Why are saddle points, not local minima, the main obstacle in high-dimensional non-convex optimization?</p><div class="opts"></div><p class="fb"></p></div>
-  <div class="q" id="q4"><p class="stem">The reparameterization trick z = μ + σε exists to:</p><div class="opts"></div><p class="fb"></p></div>
-  <div class="q" id="q5"><p class="stem">The minimum-variance portfolio problem is convex because:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q1"><p class="stem">A twice-differentiable f is convex on a convex domain if and only if:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q2"><p class="stem">Portfolio variance wᵀΣw is a convex function of the weights w because:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q3"><p class="stem">At a stationary point the Hessian has eigenvalues λ₁ = +1.4 and λ₂ = −0.3. The point is:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q4"><p class="stem">For the Monte-Carlo delta of a cash-or-nothing digital, which estimator works, and why?</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q5"><p class="stem">When is the pathwise (reparameterization) estimator the better choice?</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q6"><p class="stem">Why does convexity guarantee that any local minimum is global?</p><div class="opts"></div><p class="fb"></p></div>
 
-  <div class="checkRow"><button class="primary" id="check">Check answers</button><span class="scoreOut" id="scoreOut"></span><span class="hint" id="hint">Answer all five first.</span></div>
-  <div class="done" id="done">Wing II complete — the engine is fully mapped. Next: Wing III, entropy, cross-entropy & KL.</div>
+  <div class="checkRow">
+    <button class="primary" id="check">Check answers</button>
+    <span class="scoreOut" id="scoreOut"></span>
+    <span class="hint" id="hint">Answer all six first.</span>
+  </div>
+  <div class="done" id="done">Wing II complete — the optimization engine is mapped. Next: entropy, cross-entropy, KL — the loss is a negative log-likelihood.</div>
 </div>
 
 <script>
 /* storage shim: window.storage (Claude artifacts) or localStorage (web) */
 if(!window.storage){window.storage={async get(k){const v=localStorage.getItem(k);if(v==null)throw new Error('missing');return{key:k,value:v}},async set(k,v){localStorage.setItem(k,v);return{key:k,value:v}},async delete(k){localStorage.removeItem(k);return{key:k,deleted:true}},async list(p){const ks=[];for(let i=0;i<localStorage.length;i++){const kk=localStorage.key(i);if(!p||kk.startsWith(p))ks.push(kk)}return{keys:ks}}};}
 function renderMath(){document.querySelectorAll('.math').forEach(el=>{const tex=el.getAttribute('data-tex');if(!tex||el.dataset.done)return;try{if(window.katex){katex.render(tex,el,{displayMode:el.dataset.display==='1',throwOnError:false});el.dataset.done='1';}else el.textContent=tex;}catch(e){el.textContent=tex;}});}
-function randn(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+const el=id=>document.getElementById(id);
 
-/* ---- Hessian classifier ---- */
-const SIG=[[1.0,0.6],[0.6,1.4]];
-const SURF={
-  var:{dom:[-2,2,-2,2],min:[0,0],hasMin:true,f:(x,y)=>SIG[0][0]*x*x+2*SIG[0][1]*x*y+SIG[1][1]*y*y},
-  saddle:{dom:[-2,2,-2,2],min:null,hasMin:false,f:(x,y)=>x*x-y*y},
-  well:{dom:[-2,2,-2,2],min:[1,0],hasMin:true,f:(x,y)=>(x*x-1)*(x*x-1)+y*y}
-};
-let cur='var', probe=[0.9,0.7];
-const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
-function px(s,x,y){const[xa,xb,ya,yb]=s.dom;return [(x-xa)/(xb-xa)*cv.width,(1-(y-ya)/(yb-ya))*cv.height];}
-function heat(){
-  const s=SURF[cur],[xa,xb,ya,yb]=s.dom,img=ctx.createImageData(cv.width,cv.height);
-  let mx=-1e9,mn=1e9;const buf=new Float64Array(cv.width*cv.height);
-  for(let py=0;py<cv.height;py++)for(let pxx=0;pxx<cv.width;pxx++){const x=xa+pxx/cv.width*(xb-xa),y=ya+(1-py/cv.height)*(yb-ya);const v=s.f(x,y);buf[py*cv.width+pxx]=v;if(v>mx)mx=v;if(v<mn)mn=v;}
-  for(let i=0;i<buf.length;i++){const t=(buf[i]-mn)/((mx-mn)||1),r=20+t*205,g=35+t*200,b=58+t*190;img.data[i*4]=r;img.data[i*4+1]=g;img.data[i*4+2]=b;img.data[i*4+3]=255;}
-  ctx.putImageData(img,0,0);
-}
-function hessAt(s,x,y){const e=1e-3,f=s.f;
-  const fxx=(f(x+e,y)-2*f(x,y)+f(x-e,y))/(e*e);
-  const fyy=(f(x,y+e)-2*f(x,y)+f(x,y-e))/(e*e);
-  const fxy=(f(x+e,y+e)-f(x+e,y-e)-f(x-e,y+e)+f(x-e,y-e))/(4*e*e);
-  const tr=fxx+fyy,det=fxx*fyy-fxy*fxy,disc=Math.sqrt(Math.max(0,(tr/2)*(tr/2)-det));
-  return {fxx,fyy,fxy,l1:tr/2+disc,l2:tr/2-disc};
-}
-function classify(l1,l2){const p=1e-6;if(l1>p&&l2>p)return['minimum','var(--min)'];if(l1<-p&&l2<-p)return['maximum','var(--max)'];if((l1>p&&l2<-p)||(l1<-p&&l2>p))return['saddle point','var(--saddle)'];return['degenerate / flat','var(--muted)'];}
-function drawProbe(){const s=SURF[cur];heat();
-  if(s.hasMin){const[mx,my]=px(s,s.min[0],s.min[1]);ctx.strokeStyle=getComputedStyle(document.body).getPropertyValue('--ink');ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(mx-5,my-5);ctx.lineTo(mx+5,my+5);ctx.moveTo(mx+5,my-5);ctx.lineTo(mx-5,my+5);ctx.stroke();}
-  const[cxp,cyp]=px(s,probe[0],probe[1]);ctx.fillStyle='#fff';ctx.strokeStyle='#000';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(cxp,cyp,5,0,7);ctx.fill();ctx.stroke();
-}
-function updateHess(){
-  const s=SURF[cur],H=hessAt(s,probe[0],probe[1]),[verdict,col]=classify(H.l1,H.l2);
-  document.getElementById('verdict').innerHTML=`<span style="color:${col}">${verdict}</span>`;
-  document.getElementById('htab').innerHTML=`<tr><td>${H.fxx.toFixed(2)}</td><td>${H.fxy.toFixed(2)}</td></tr><tr><td>${H.fxy.toFixed(2)}</td><td>${H.fyy.toFixed(2)}</td></tr>`;
-  document.getElementById('eig').innerHTML=`eigenvalues λ₁=${H.l1.toFixed(2)}, λ₂=${H.l2.toFixed(2)}`;
-  drawProbe();
-  document.getElementById('cnote').textContent = cur==='var'
-    ? `Portfolio variance wᵀΣw: the Hessian is 2Σ everywhere — both eigenvalues positive, so it's a convex bowl with one global minimum (the min-variance portfolio). Wherever you click, the verdict is "minimum-type" curvature.`
-    : cur==='saddle'
-      ? `x² − y² curves up along x and down along y, so the Hessian is indefinite (λ₁>0, λ₂<0) at every point — a pure saddle. The gradient is zero at the origin, but it's no minimum.`
-      : `Two minima at (±1, 0) and a saddle at the origin. Click near a well vs near the centre and watch the eigenvalues flip sign — the same surface is convex in some places, saddle-shaped in others.`;
-}
-document.querySelectorAll('#surf button').forEach(b=>b.onclick=()=>{cur=b.dataset.s;probe=cur==='saddle'?[0.8,0.6]:cur==='well'?[0.0,0.4]:[0.9,0.7];document.querySelectorAll('#surf button').forEach(x=>x.classList.toggle('on',x===b));updateHess();});
-cv.addEventListener('click',e=>{const r=cv.getBoundingClientRect(),s=SURF[cur],[xa,xb,ya,yb]=s.dom;probe=[xa+((e.clientX-r.left)/r.width)*(xb-xa),ya+(1-(e.clientY-r.top)/r.height)*(yb-ya)];updateHess();});
-
-/* ---- reparam vs score-function delta ---- */
-const NS=4000, Kstrike=0;
-function reparam(){
-  const mu=+document.getElementById('mu').value, sg=+document.getElementById('sg').value;
-  document.getElementById('muO').textContent=mu.toFixed(2);document.getElementById('sgO').textContent=sg.toFixed(2);
-  const pw=new Float64Array(NS), sf=new Float64Array(NS);
-  for(let i=0;i<NS;i++){const eps=randn(),z=mu+sg*eps;
-    pw[i]=z>Kstrike?1:0;                        // pathwise: d/dμ max(z-K,0) = 1{z>K}
-    sf[i]=Math.max(z-Kstrike,0)*(z-mu)/(sg*sg); // score fn: payoff * d/dμ log p
-  }
-  const stat=a=>{let m=0;for(const v of a)m+=v;m/=a.length;let s=0;for(const v of a)s+=(v-m)**2;return {m,sd:Math.sqrt(s/a.length)};};
-  const P=stat(pw),S=stat(sf);
-  document.getElementById('pw').textContent=P.m.toFixed(3)+' ± '+P.sd.toFixed(2);
-  document.getElementById('sf').textContent=S.m.toFixed(3)+' ± '+S.sd.toFixed(2);
-  document.getElementById('ratio').textContent=(S.sd/(P.sd||1e-9)).toFixed(1)+'×';
-  document.getElementById('c2note').textContent=`Both estimate the delta Φ(μ/σ) ≈ ${(0.5*(1+erf((mu)/(sg*Math.SQRT2)))).toFixed(3)}, but the score-function estimator's per-sample noise is ${(S.sd/(P.sd||1e-9)).toFixed(1)}× larger — so for the same sample budget the pathwise (reparameterization) estimate is far tighter. That noise gap is exactly why the trick matters for training and for smooth-payoff Greeks.`;
-}
+/* ---------- deterministic RNG (seed 114) ---------- */
+function mulberry32(seed){let a=seed>>>0;return function(){a|=0;a=(a+0x6D2B79F5)|0;let t=Math.imul(a^(a>>>15),1|a);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296;}}
+function randn(rng){let u=0,v=0;while(!u)u=rng();while(!v)v=rng();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
 function erf(x){const t=1/(1+0.3275911*Math.abs(x));const y=1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-x*x);return x>=0?y:-y;}
-['mu','sg'].forEach(id=>document.getElementById(id).addEventListener('input',reparam));
-document.getElementById('resample').onclick=reparam;
+const Phi=x=>0.5*(1+erf(x/Math.SQRT2)), phiN=x=>Math.exp(-0.5*x*x)/Math.sqrt(2*Math.PI);
 
+/* ---------- interactive 1: the landscape morph ---------- */
+const NB=12,STEPS=80,ETA=0.08,TAU=0.015,ESCR=3,TH=Math.PI/6;
+const cvL=el('land'),ctxL=cvL.getContext('2d');
+function hessOf(l1,l2){const c=Math.cos(TH),s=Math.sin(TH);return{h11:l1*c*c+l2*s*s,h22:l1*s*s+l2*c*c,h12:(l1-l2)*c*s};}
+function simulate(l1,l2){
+  const rng=mulberry32(114),H=hessOf(l1,l2),balls=[];let esc=0;
+  const starts=[];for(let b=0;b<NB;b++)starts.push([(rng()*2-1)*1.5,(rng()*2-1)*1.5]);
+  for(let b=0;b<NB;b++){
+    let[x,y]=starts[b];const path=[[x,y]];let escaped=false;
+    for(let t=0;t<STEPS;t++){
+      const gx=H.h11*x+H.h12*y,gy=H.h12*x+H.h22*y;
+      x+=-ETA*gx+TAU*randn(rng);y+=-ETA*gy+TAU*randn(rng);
+      path.push([x,y]);
+      if(Math.hypot(x,y)>ESCR){escaped=true;break;}
+    }
+    if(escaped)esc++;balls.push({path,escaped});
+  }
+  return{balls,esc,H};
+}
+function classify(l1,l2){const e=1e-9;if(l1>e&&l2>e)return'minimum';if(l1<-e&&l2<-e)return'maximum';if((l1>e&&l2<-e)||(l1<-e&&l2>e))return'saddle';return'degenerate';}
+const pxL=(x,y)=>[(x+2)/4*cvL.width,(1-(y+2)/4)*cvL.height];
+function drawLand(sim,isMin){
+  const{h11,h12,h22}=sim.H,W=cvL.width,Hh=cvL.height,img=ctxL.createImageData(W,Hh);
+  const buf=new Float64Array(W*Hh);let mn=1e18,mx=-1e18;
+  for(let py=0;py<Hh;py++)for(let qx=0;qx<W;qx++){
+    const x=-2+qx/W*4,y=-2+(1-py/Hh)*4,v=0.5*(h11*x*x+2*h12*x*y+h22*y*y);
+    buf[py*W+qx]=v;if(v<mn)mn=v;if(v>mx)mx=v;
+  }
+  for(let i=0;i<buf.length;i++){let t=(buf[i]-mn)/((mx-mn)||1);t=Math.floor(t*12)/12;
+    img.data[i*4]=20+t*205;img.data[i*4+1]=35+t*200;img.data[i*4+2]=58+t*190;img.data[i*4+3]=255;}
+  ctxL.putImageData(img,0,0);
+  sim.balls.forEach(b=>{
+    ctxL.strokeStyle=b.escaped?'#E06666':'#FFFFFF';ctxL.globalAlpha=0.75;ctxL.lineWidth=1.3;
+    ctxL.beginPath();b.path.forEach(([x,y],i)=>{const[px,py]=pxL(x,y);if(i===0)ctxL.moveTo(px,py);else ctxL.lineTo(px,py);});ctxL.stroke();
+    const[fx,fy]=pxL(b.path[b.path.length-1][0],b.path[b.path.length-1][1]);
+    ctxL.globalAlpha=1;ctxL.fillStyle=b.escaped?'#E06666':'#FFFFFF';ctxL.strokeStyle='#000';ctxL.lineWidth=1;
+    ctxL.beginPath();ctxL.arc(fx,fy,2.6,0,7);ctxL.fill();ctxL.stroke();
+  });
+  if(isMin){const[ox,oy]=pxL(0,0);ctxL.globalAlpha=1;ctxL.strokeStyle='#FFFFFF';ctxL.lineWidth=1.6;
+    ctxL.beginPath();ctxL.moveTo(ox-5,oy-5);ctxL.lineTo(ox+5,oy+5);ctxL.moveTo(ox+5,oy-5);ctxL.lineTo(ox-5,oy+5);ctxL.stroke();}
+  ctxL.globalAlpha=1;
+}
+function landUpdate(){
+  const l1=+el('l1').value,l2=+el('l2').value;
+  el('l1O').textContent=l1.toFixed(1);el('l2O').textContent=l2.toFixed(1);
+  const cls=classify(l1,l2),sim=simulate(l1,l2);
+  drawLand(sim,cls==='minimum');
+  el('lamStat').textContent=l1.toFixed(1)+' / '+l2.toFixed(1);
+  el('clsStat').textContent=cls==='minimum'?'minimum (bowl)':cls==='maximum'?'maximum (dome)':cls==='saddle'?'saddle':'degenerate (flat)';
+  el('escStat').textContent=sim.esc+' / '+NB;
+  document.querySelectorAll('#presets button').forEach(b=>b.classList.toggle('on',Math.abs(+b.dataset.l1-l1)<1e-9&&Math.abs(+b.dataset.l2-l2)<1e-9));
+  el('cnote').textContent = cls==='minimum'
+    ? `Both eigenvalues positive: a strict bowl. Every GD step contracts every direction (multipliers 1−ηλ < 1), so ${sim.esc} of ${NB} seeded balls escaped — they all fell to the unique global minimum and jitter on the noise floor. This is the geometry a mean-variance optimizer lives in: wᵀΣw with Σ ≻ 0.`
+    : cls==='saddle'
+    ? `λ₂ < 0 breaks the bowl: the origin is still stationary (∇f = 0) but ${sim.esc} of ${NB} balls escaped, sliding off along the negative-curvature eigenvector (the dark diagonal). That eigenvector is the escape route — exactly what perturbed / saddle-free methods compute. Lesson 5's flat valley is the λ→0 edge of this cliff.`
+    : cls==='degenerate'
+    ? `One eigenvalue is exactly 0: a valley with a perfectly flat floor. Balls drop onto the floor fast, then only the SGD noise moves them — an aimless drift along the flat eigenvector, no signal at all; ${sim.esc} of ${NB} escaped. This is collinear regression (Lesson 5): the optimum exists, but its position along the floor is arbitrary.`
+    : `Both eigenvalues negative — a dome. Every direction is downhill from the origin, so nothing holds: ${sim.esc} of ${NB} balls escaped. A stationary point, but a maximum.`;
+}
+el('l1').addEventListener('input',landUpdate);el('l2').addEventListener('input',landUpdate);
+document.querySelectorAll('#presets button').forEach(b=>b.onclick=()=>{el('l1').value=b.dataset.l1;el('l2').value=b.dataset.l2;landUpdate();});
+
+/* ---------- interactive 2: the Greek shootout ---------- */
+const S0=100,KS=100,SIG=0.2,TMAT=1,RF=0,SQT=Math.sqrt(TMAT);
+const D1=(Math.log(S0/KS)+(RF+0.5*SIG*SIG)*TMAT)/(SIG*SQT),D2=D1-SIG*SQT;
+const CF_VAN=Phi(D1),CF_DIG=phiN(D2)/(S0*SIG*SQT);
+const NLIST=[100,200,500,1000,2000,4000,8000,12000,20000],NMAX=20000;
+const Zs=new Float64Array(NMAX),STs=new Float64Array(NMAX);
+(function(){const rng=mulberry32(114);for(let i=0;i<NMAX;i++){const z=randn(rng);Zs[i]=z;STs[i]=S0*Math.exp((RF-0.5*SIG*SIG)*TMAT+SIG*SQT*z);}})();
+let payMode='van';
+function estim(N,mode){
+  let s1=0,s2=0,t1=0,t2=0;
+  for(let i=0;i<N;i++){
+    const st=STs[i],z=Zs[i];
+    const pw=mode==='van'?(st>KS?st/S0:0):0;
+    const pay=mode==='van'?Math.max(st-KS,0):(st>KS?1:0);
+    const lr=pay*z/(S0*SIG*SQT);
+    s1+=pw;s2+=pw*pw;t1+=lr;t2+=lr*lr;
+  }
+  const mp=s1/N,ml=t1/N;
+  const vp=Math.max(0,(s2-N*mp*mp)/(N-1)),vl=Math.max(0,(t2-N*ml*ml)/(N-1));
+  return{mp,ml,sp:Math.sqrt(vp),sl:Math.sqrt(vl)};
+}
+function drawBars(mp,seP,ml,seL,cf){
+  const W=320,Hh=130,padL=10,padR=10;
+  let lo=Math.min(mp-2.6*seP,ml-2.6*seL,cf),hi=Math.max(mp+2.6*seP,ml+2.6*seL,cf);
+  const span=(hi-lo)||Math.abs(cf)||1;lo-=span*0.10;hi+=span*0.10;
+  const X=v=>padL+(v-lo)/(hi-lo)*(W-padL-padR);
+  let s='';
+  s+=`<line x1="${X(cf).toFixed(1)}" y1="16" x2="${X(cf).toFixed(1)}" y2="${Hh-22}" stroke="var(--series)" stroke-dasharray="4 3" stroke-width="1.5"/>`;
+  s+=`<text x="${X(cf).toFixed(1)}" y="12" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--series)">closed form</text>`;
+  [[mp,seP,44,'pathwise'],[ml,seL,92,'likelihood-ratio']].forEach(([m,se,y,lab])=>{
+    s+=`<text x="${padL}" y="${y-12}" font-family="var(--mono)" font-size="10" fill="var(--muted)">${lab}</text>`;
+    if(se>0)s+=`<line x1="${X(m-2*se).toFixed(1)}" y1="${y}" x2="${X(m+2*se).toFixed(1)}" y2="${y}" stroke="var(--accent)" stroke-width="2"/>`;
+    s+=`<circle cx="${X(m).toFixed(1)}" cy="${y}" r="4" fill="var(--accent)"/>`;
+  });
+  s+=`<text x="${padL}" y="${Hh-6}" font-family="var(--mono)" font-size="10" fill="var(--faint)">${lo.toFixed(3)}</text>`;
+  s+=`<text x="${W-padR}" y="${Hh-6}" text-anchor="end" font-family="var(--mono)" font-size="10" fill="var(--faint)">${hi.toFixed(3)}</text>`;
+  el('bars').innerHTML=s;
+}
+function mcUpdate(){
+  const N=NLIST[+el('np').value];el('npO').textContent=N.toLocaleString('en-US');
+  const e=estim(N,payMode),cf=payMode==='van'?CF_VAN:CF_DIG;
+  const seP=e.sp/Math.sqrt(N),seL=e.sl/Math.sqrt(N);
+  el('pwStat').textContent=payMode==='van'?e.mp.toFixed(4)+' ± '+seP.toFixed(4):'0.0000 (all paths)';
+  el('lrStat').textContent=e.ml.toFixed(4)+' ± '+seL.toFixed(4);
+  el('cfStat').textContent=cf.toFixed(4);
+  const vr=(e.sl*e.sl)/(e.sp*e.sp);
+  el('vrStat').textContent=payMode==='van'?vr.toFixed(1)+'×':'∞';
+  drawBars(e.mp,seP,e.ml,seL,cf);
+  document.querySelectorAll('#paymode button').forEach(b=>b.classList.toggle('on',b.dataset.m===payMode));
+  el('c2note').textContent = payMode==='van'
+    ? `Same ${N.toLocaleString('en-US')} paths, same target Φ(d₁) = ${cf.toFixed(4)}: pathwise ${e.mp.toFixed(4)} ± ${seP.toFixed(4)}, likelihood-ratio ${e.ml.toFixed(4)} ± ${seL.toFixed(4)}. Both unbiased — but the LR estimator's empirical variance is ${vr.toFixed(1)}× the pathwise one's, because it multiplies the payoff by an unbounded score Z/(S₀σ√T) instead of using the payoff's tame derivative. Smooth payoff ⇒ pathwise wins.`
+    : `The pathwise estimator returned exactly 0 on every one of the ${N.toLocaleString('en-US')} paths — the digital payoff is flat almost everywhere, its derivative never sees the jump at K, and more paths will never fix that. The likelihood-ratio delta, which differentiates the density instead of the payoff, reads ${e.ml.toFixed(4)} ± ${seL.toFixed(4)} against the closed form φ(d₂)/(S₀σ√T) = ${cf.toFixed(4)}. Non-smooth payoff ⇒ LR is the only valid estimator.`;
+}
+el('np').addEventListener('input',mcUpdate);
+document.querySelectorAll('#paymode button').forEach(b=>b.onclick=()=>{payMode=b.dataset.m;mcUpdate();});
+
+/* ---------- retrieval ---------- */
 const QS={
-  q1:{opts:["negative definite everywhere","positive semidefinite everywhere (all eigenvalues ≥ 0)","zero everywhere","invertible"],a:1,
-    fb:"Convexity ⟺ Hessian ⪰ 0 on the domain: the function curves up (or is flat) in every direction. Then every stationary point is the global minimum."},
-  q2:{opts:["a local minimum","a saddle point","a local maximum","a discontinuity"],a:1,
-    fb:"Mixed-sign eigenvalues mean the surface curves up in some directions and down in others — a saddle. The gradient can vanish there without it being an extremum."},
-  q3:{opts:["local minima are more numerous","being a minimum needs ALL eigenvalues positive, exponentially unlikely at random — so most critical points are escapable saddles","saddles have no gradient","the Hessian doesn't exist"],a:1,
-    fb:"With d eigenvalues of roughly random sign, all-positive (a minimum) has ~2⁻ᵈ chance, so critical points are almost always saddles — which have a downhill direction SGD can slip off. The minima found are usually comparably good."},
-  q4:{opts:["reduce the number of parameters","move randomness into a fixed variable ε so gradients flow through the sample (deterministic θ)","make the distribution Gaussian","eliminate the need for sampling"],a:1,
-    fb:"Writing z = μ + σε with ε ∼ 𝒩(0,1) makes θ = (μ,σ) enter deterministically, so ∇_θ passes through the sample — enabling backprop through stochastic nodes (and giving the low-variance pathwise Greek)."},
-  q5:{opts:["returns are always positive","the objective is wᵀΣw with Σ positive semidefinite, so it's a convex quadratic with a unique global minimum","there are only two assets","volatility is constant"],a:1,
-    fb:"Variance is the quadratic form wᵀΣw; Σ ⪰ 0 (covariance eigenvalues ≥ 0) makes the Hessian 2Σ PSD, hence convex — a convex QP with one global min-variance solution and no saddles."}
+  q1:{opts:["its gradient vanishes somewhere on the domain","its Hessian has at least one positive eigenvalue at every point","its Hessian is positive semidefinite (all eigenvalues ≥ 0) at every point","it is bounded below"],a:2,
+    fb:"Convex ⇔ ∇²f(x) ⪰ 0 everywhere: the function curves up (or is flat) along every direction at every point. One positive eigenvalue is not enough — a saddle has that too — and neither stationarity nor boundedness is equivalent to convexity."},
+  q2:{opts:["aᵀΣa = Var(aᵀr) ≥ 0 for every a — Σ is PSD because it is a variance (Lesson 6), and the Hessian of wᵀΣw is 2Σ","asset returns are normally distributed","Σ is symmetric, and symmetric matrices give convex quadratics","the weights are constrained to sum to one"],a:0,
+    fb:"The Hessian of wᵀΣw is 2Σ, and Σ ⪰ 0 for the deepest possible reason: any quadratic form aᵀΣa is the variance of the portfolio return aᵀr, and variances cannot be negative (Lesson 6). Symmetry alone doesn't give PSD (x² − y² has a symmetric indefinite Hessian), and no distributional assumption is needed."},
+  q3:{opts:["a local minimum","a saddle point","a local maximum","degenerate — it cannot be classified"],a:1,
+    fb:"Mixed signs: the surface curves up along the λ₁ = +1.4 eigenvector and down along the λ₂ = −0.3 eigenvector — a saddle. The gradient vanishes there, but GD arriving nearby will eventually slide off along the negative-curvature direction."},
+  q4:{opts:["pathwise — the payoff's derivative is 1 above the strike","both work equally well on enough paths","pathwise, but only after increasing the path count","likelihood-ratio — it differentiates the density, never the payoff; the pathwise estimator is identically zero because the payoff is flat almost everywhere"],a:3,
+    fb:"The digital payoff 1{S_T>K} has derivative 0 everywhere except at the jump S_T = K, which paths hit with probability 0 — so the pathwise estimator returns exactly 0 on every path, at any sample size. The likelihood-ratio estimator needs only the score of the density and stays unbiased."},
+  q5:{opts:["when the payoff is discontinuous","never — the likelihood-ratio estimator is always tighter","when the payoff is (a.e.) smooth in the parameter — it then exploits the payoff's derivative and typically has far lower variance","only when the risk-free rate is zero"],a:2,
+    fb:"For smooth (Lipschitz, a.e.-differentiable) payoffs, pathwise per-path values are tame while the LR estimator multiplies the payoff by an unbounded score factor — on the same paths its variance is several times larger (you measured the ratio above). At kinks and jumps the roles flip, because pathwise stops being valid at all."},
+  q6:{opts:["because convex functions have exactly one stationary point","if some y had f(y) < f(x★), the chord from x★ to y would descend — putting points arbitrarily close to x★ below f(x★), contradicting local minimality","because the gradient of a convex function never vanishes","because convex functions are bounded below"],a:1,
+    fb:"The chord argument: f((1−α)x★ + αy) ≤ (1−α)f(x★) + αf(y) < f(x★) for every α ∈ (0,1) — arbitrarily near x★, contradicting that x★ is a local min. Uniqueness needs strict convexity; convex functions can have flat sets of minimizers and need not be bounded below (a linear function is convex)."}
 };
-const sel={q1:null,q2:null,q3:null,q4:null,q5:null};let revealed=false;
-Object.keys(QS).forEach(id=>{const holder=document.querySelector('#'+id+' .opts');QS[id].opts.forEach((txt,i)=>{const b=document.createElement('button');b.className='opt';b.textContent=String.fromCharCode(65+i)+'.  '+txt;b.onclick=()=>{if(revealed)return;sel[id]=i;[...holder.children].forEach((c,ci)=>c.classList.toggle('sel',ci===i));document.getElementById('hint').style.display='none';};holder.appendChild(b);});});
-document.getElementById('check').onclick=async()=>{
-  if(revealed)return;if(Object.values(sel).some(v=>v===null)){document.getElementById('hint').style.display='inline';return;}
+const sel={q1:null,q2:null,q3:null,q4:null,q5:null,q6:null};let revealed=false;
+Object.keys(QS).forEach(id=>{const holder=document.querySelector('#'+id+' .opts');QS[id].opts.forEach((txt,i)=>{const b=document.createElement('button');b.className='opt';b.textContent=String.fromCharCode(65+i)+'.  '+txt;b.onclick=()=>{if(revealed)return;sel[id]=i;[...holder.children].forEach((c,ci)=>c.classList.toggle('sel',ci===i));el('hint').style.display='none';};holder.appendChild(b);});});
+el('check').onclick=async()=>{
+  if(revealed)return;if(Object.values(sel).some(v=>v===null)){el('hint').style.display='inline';return;}
   revealed=true;let score=0;
   Object.keys(QS).forEach(id=>{const a=QS[id].a,holder=document.querySelector('#'+id+' .opts'),fb=document.querySelector('#'+id+' .fb');[...holder.children].forEach((c,ci)=>{c.style.cursor='default';c.classList.remove('sel');if(ci===a)c.classList.add('correct');else if(ci===sel[id])c.classList.add('wrong');});if(sel[id]===a)score++;fb.textContent=QS[id].fb;fb.classList.add('show');});
-  document.getElementById('check').style.opacity='0.5';document.getElementById('check').textContent='Checked';
-  document.getElementById('scoreOut').textContent=score+' / 5';document.getElementById('done').classList.add('show');
-  try{await window.storage.set('mfs:lesson14',JSON.stringify({done:true,retrieval:score+'/5',ts:Date.now()}),false);}catch(e){}
+  el('check').style.opacity='0.5';el('check').textContent='Checked';
+  el('scoreOut').textContent=score+' / 6';el('done').classList.add('show');
+  try{await window.storage.set('mfs:lesson14',JSON.stringify({done:true,retrieval:score+'/6',ts:Date.now()}),false);}catch(e){}
 };
-function boot(){renderMath();updateHess();reparam();}
+function boot(){renderMath();landUpdate();mcUpdate();}
 if(window.katex)boot();else window.addEventListener('load',boot);
-(async()=>{try{const r=await window.storage.get('mfs:lesson14',false);if(r&&r.value){const v=JSON.parse(r.value);if(v.done){const c=document.getElementById('chip');c.classList.add('show');c.textContent='completed · '+v.retrieval;}}}catch(e){}})();
+(async()=>{try{const r=await window.storage.get('mfs:lesson14',false);if(r&&r.value){const v=JSON.parse(r.value);if(v.done){const c=el('chip');c.classList.add('show');c.textContent='completed · '+v.retrieval;}}}catch(e){}})();
 </script>
 </body>
 </html>
