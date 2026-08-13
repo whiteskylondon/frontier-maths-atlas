@@ -8,30 +8,17 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
 <style>
   :root{
-    --paper:#FAFAF6; --ink:#1A1C22; --muted:#63676E; --faint:#9A9EA4;
-    --hair:#E4E3DB; --hair2:#D4D3CA; --panel:#FFFFFF;
-    --accent:#24507A; --accent-bg:#EAF0F6;
-    --series:#B07A2E;
-    --miss:#B23A3A; --ok:#2F6B4F; --ok-bg:#E9F1EC;
-    --vol:#8A5A2B; --vol-bg:#F6EFE6;
-    --serif:Iowan Old Style,Palatino,"Palatino Linotype",Georgia,serif;
-    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    --paper:#FAFAF6;--ink:#1A1C22;--muted:#63676E;--faint:#9A9EA4;--hair:#E4E3DB;--hair2:#D4D3CA;--panel:#FFFFFF;
+    --accent:#24507A;--accent-bg:#EAF0F6;--series:#B07A2E;--miss:#B23A3A;--ok:#2F6B4F;--ok-bg:#E9F1EC;
+    --vol:#8A5A2B;--vol-bg:#F6EFE6;--serif:Iowan Old Style,Palatino,Georgia,serif;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
   }
-  @media (prefers-color-scheme: dark){
-    :root{
-      --paper:#15161A; --ink:#E9E8E2; --muted:#A2A6AC; --faint:#71757B;
-      --hair:#2A2C31; --hair2:#3A3C42; --panel:#1B1D22;
-      --accent:#7FB0E0; --accent-bg:#1E2A38; --series:#D9A85E;
-      --miss:#E07A7A; --ok:#7FC49F; --ok-bg:#1C2A22;
-      --vol:#D9A066; --vol-bg:#2A2115;
-    }
-  }
+  @media (prefers-color-scheme:dark){:root{--paper:#15161A;--ink:#E9E8E2;--muted:#A2A6AC;--faint:#71757B;--hair:#2A2C31;--hair2:#3A3C42;--panel:#1B1D22;--accent:#7FB0E0;--accent-bg:#1E2A38;--series:#D9A85E;--miss:#E07A7A;--ok:#7FC49F;--ok-bg:#1C2A22;--vol:#D9A066;--vol-bg:#2A2115;}}
   *{box-sizing:border-box}
   body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.62;-webkit-font-smoothing:antialiased}
-  .wrap{max-width:740px;margin:0 auto;padding:32px 24px 60px}
+  .wrap{max-width:750px;margin:0 auto;padding:32px 24px 60px}
   .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 6px}
-  h1{font-family:var(--serif);font-weight:600;font-size:29px;line-height:1.2;margin:0 0 6px;letter-spacing:-.01em}
+  h1{font-family:var(--serif);font-weight:600;font-size:27px;line-height:1.22;margin:0 0 6px;letter-spacing:-.01em}
   .chip{display:none;font-family:var(--mono);font-size:11px;letter-spacing:.05em;color:var(--ok);border:1px solid var(--ok);border-radius:20px;padding:3px 10px;vertical-align:middle;margin-left:10px}
   .chip.show{display:inline-block}
   .sub{color:var(--muted);font-size:15px;margin:0 0 18px}
@@ -41,7 +28,7 @@
   .levels .pill b{color:var(--accent);font-weight:700;letter-spacing:.03em}
   p.lead{font-size:16px;margin:0 0 22px}
   p.lead b{font-weight:600}
-  .sec{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:34px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--hair)}
+  .sec{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:36px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--hair)}
   .mblock{margin:16px 0;overflow-x:auto}
   .glo{list-style:none;padding:0;margin:14px 0 0}
   .glo li{display:flex;gap:14px;padding:9px 0;border-top:1px solid var(--hair);align-items:baseline}
@@ -51,41 +38,27 @@
   .glo .def .n{color:var(--muted)}
   .step{font-size:14.5px;color:var(--muted);margin:10px 0}
   .panel{background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:20px;margin:14px 0}
-  .ctrls{display:flex;flex-wrap:wrap;gap:18px 28px;align-items:flex-end;margin:0 0 14px}
-  .field{display:flex;flex-direction:column;gap:6px;min-width:150px;flex:1}
+  .ctrls{display:flex;flex-wrap:wrap;gap:16px 26px;align-items:flex-end;margin:0 0 12px}
+  .field{display:flex;flex-direction:column;gap:6px;min-width:200px;flex:1}
   .field label{font-size:12px;color:var(--muted);font-family:var(--mono);letter-spacing:.03em;display:flex;justify-content:space-between}
   .field label b{color:var(--ink);font-weight:600}
   input[type=range]{width:100%;accent-color:var(--accent);height:20px}
-  .btns{display:flex;flex-wrap:wrap;gap:8px;margin:2px 0 12px}
-  button.act{font-family:var(--sans);font-size:14px;padding:8px 14px;border-radius:8px;border:1px solid var(--hair2);background:var(--panel);color:var(--ink);cursor:pointer}
-  button.act:hover{border-color:var(--accent);color:var(--accent)}
-  button.act.primary{background:var(--accent);border-color:var(--accent);color:#fff}
-  button.act.primary:hover{color:#fff;opacity:.92}
   svg{max-width:100%;height:auto;display:block}
-  .legend{display:flex;flex-wrap:wrap;gap:16px;margin:10px 0 2px;font-size:12.5px;color:var(--muted);font-family:var(--mono)}
-  .legend span{display:inline-flex;align-items:center;gap:6px}
-  .sw{width:16px;height:0;border-top-width:2px;border-top-style:solid;display:inline-block}
   .tally{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 2px}
   .stat{flex:1;min-width:120px;background:var(--paper);border-radius:9px;padding:9px 12px}
-  .stat .k{font-size:11px;font-family:var(--mono);letter-spacing:.05em;color:var(--muted);text-transform:uppercase}
-  .stat .v{font-size:21px;font-weight:600;font-family:var(--mono);margin-top:2px}
-  .stat .v.low{color:var(--series)}
-  .callout{font-size:14px;color:var(--muted);border-left:2px solid var(--accent);padding:2px 0 2px 14px;margin:16px 0 2px}
+  .stat .k{font-size:11px;font-family:var(--mono);letter-spacing:.04em;color:var(--muted);text-transform:uppercase}
+  .stat .v{font-size:17px;font-weight:600;font-family:var(--mono);margin-top:2px}
+  .stat .v.a{color:var(--accent)}.stat .v.g{color:var(--ok)}.stat .v.s{color:var(--series)}
+  .callout{font-size:14px;color:var(--muted);border-left:2px solid var(--accent);padding:2px 0 2px 14px;margin:16px 0 2px;min-height:1.4em}
   .theorem{background:var(--accent-bg);border-radius:12px;padding:18px 20px;margin:16px 0}
   .theorem .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
-  .theorem p{font-family:var(--serif);font-size:16.5px;line-height:1.55;margin:0}
-  .props{list-style:none;padding:0;margin:6px 0 0}
-  .props li{padding:10px 0;border-top:1px solid var(--hair);font-size:14.6px}
-  .props li:first-child{border-top:none}
-  .props b{font-weight:600}
-  .props .n{color:var(--muted)}
+  .theorem p{font-family:var(--serif);font-size:16px;line-height:1.55;margin:0}
   .twist{border:1px dashed var(--hair2);border-radius:12px;padding:16px 18px;margin:16px 0;background:var(--panel)}
   .twist .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
   .twist p{margin:0;font-size:14.6px}
   .vol{background:var(--vol-bg);border:1px solid var(--vol);border-radius:12px;padding:18px 20px;margin:16px 0}
   .vol .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:var(--vol);margin:0 0 8px}
-  .vol p{margin:0 0 10px;font-size:14.8px}
-  .vol p:last-child{margin-bottom:0}
+  .vol p{margin:0 0 10px;font-size:14.8px}.vol p:last-child{margin-bottom:0}
   .vol code{font-family:var(--mono);font-size:13px;background:rgba(138,90,43,.12);padding:1px 5px;border-radius:4px}
   .q{border:1px solid var(--hair);border-radius:12px;padding:16px 18px;margin:12px 0;background:var(--panel)}
   .q .stem{font-size:15px;font-weight:500;margin:0 0 12px}
@@ -95,196 +68,289 @@
   .opt.sel{border-color:var(--accent);background:var(--accent-bg)}
   .opt.correct{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
   .opt.wrong{background:#F7ECEC;border-color:var(--miss);color:var(--miss)}
-  @media (prefers-color-scheme: dark){ .opt.wrong{background:#2E1E1E} }
+  @media (prefers-color-scheme:dark){.opt.wrong{background:#2E1E1E}}
   .fb{font-size:13.5px;color:var(--muted);margin:10px 0 0;line-height:1.5;display:none}
   .fb.show{display:block}
-  .checkRow{display:flex;align-items:center;gap:14px;margin:16px 0 0;flex-wrap:wrap}
+  .checkRow{display:flex;align-items:center;gap:14px;margin:18px 0 0;flex-wrap:wrap}
   .hint{font-size:13px;color:var(--miss);display:none}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-family:var(--sans);font-size:14px;padding:8px 14px;border-radius:8px;border:1px solid var(--accent);cursor:pointer}
+  .scoreOut{font-family:var(--mono);font-size:14px;font-weight:600}
   .done{display:none;align-items:center;gap:10px;background:var(--ok-bg);color:var(--ok);border-radius:10px;padding:12px 16px;font-size:14px;margin:14px 0 0}
   .done.show{display:flex}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <p class="eyebrow">Lesson 03 · Estimation &amp; inference</p>
+  <p class="eyebrow">Lesson 03 · Wing 0 — statistical &amp; linear-algebra foundations</p>
   <h1>Maximum likelihood, done properly<span class="chip" id="chip"></span></h1>
   <p class="sub">Pick the parameter that makes the data you saw most probable — then ask what that estimate is worth.</p>
   <div class="levels">
     <span class="lk">Level</span>
-    <span class="pill"><b>US</b> Senior undergrad → early graduate</span>
-    <span class="pill"><b>FR</b> Master M1 · ENSAE 2A</span>
+    <span class="pill"><b>US</b> Senior undergrad → graduate</span>
+    <span class="pill"><b>FR</b> Master 1 · ENSAE 2A</span>
   </div>
 
-  <p class="lead">Maximum likelihood answers one question: given the data, which value of the parameter would have made it <b>most probable</b>? You write the probability of the sample as a function of θ, then climb to its peak. The payoff here is a loose end tied: the MLE of a normal's variance is <b>exactly the biased ÷n estimator</b> from Lesson 2 — so now you'll see where that estimator came from, and why "most likely" and "unbiased" are different goals.</p>
+  <p class="lead">You watched an index for a year: 250 daily returns. You believe a model — each day's move is a draw from a bell curve with some centre μ and some spread σ — but nobody tells you the two numbers. Maximum likelihood is the rule for choosing them: for each candidate pair, ask <b>"how probable was the year I actually saw, if this pair were the truth?"</b>, and keep the pair that makes your data most probable. That probability-read-backwards is called the <b>likelihood</b>. The payoff ties Lesson 2's loose end: for the bell curve the recipe has closed forms, and the spread it picks is <b>exactly the biased ÷n estimator</b> — "most likely" and "unbiased" are different gods.</p>
 
-  <div class="sec">The likelihood and the score</div>
-  <div class="mblock math" data-tex="L(\theta)=\prod_{i=1}^{n} f(x_i;\theta)\qquad\quad \ell(\theta)=\sum_{i=1}^{n}\log f(x_i;\theta)\qquad\quad \hat\theta=\arg\max_{\theta}\ \ell(\theta)" data-display="1"></div>
-  <p class="step">You maximise the <i>log</i>-likelihood — same peak, but sums beat products. At an interior maximum its derivative, the <b>score</b>, is zero:</p>
-  <div class="mblock math" data-tex="U(\theta)=\ell'(\theta)=\sum_{i=1}^{n}\frac{\partial}{\partial\theta}\log f(x_i;\theta)\ ,\qquad U(\hat\theta)=0" data-display="1"></div>
+  <div class="sec">The vocabulary, in plain words</div>
   <ul class="glo">
-    <li><span class="sym math" data-tex="L(\theta)"></span><span class="def">the <b>likelihood</b> — the sample's probability read as a function of θ, data fixed. <span class="n">Not a probability over θ; it needn't integrate to 1.</span></span></li>
-    <li><span class="sym math" data-tex="\ell(\theta)"></span><span class="def">the <b>log-likelihood</b>. <span class="n">The product becomes a sum, which is why the log is used; the argmax is unchanged.</span></span></li>
-    <li><span class="sym math" data-tex="U(\theta)"></span><span class="def">the <b>score</b> — slope of ℓ. <span class="n">The MLE is the root of the estimating equation U(θ̂)=0: the flat point at the top.</span></span></li>
-    <li><span class="sym math" data-tex="I(\theta)"></span><span class="def"><b>Fisher information</b> = Var(U) = −E[ℓ″(θ)]. <span class="n">The curvature of ℓ at the peak: a sharper peak means the data pin θ down more tightly.</span></span></li>
+    <li><span class="sym"><b>likelihood</b></span><span class="def">the probability (density) of the sample you actually saw, viewed as a function of the candidate parameters — data frozen, parameters varying. <span class="n">Not a distribution over the parameters: it needn't integrate to 1 in θ, which is why the word is likelihood, not probability.</span></span></li>
+    <li><span class="sym"><b>log-likelihood ℓ</b></span><span class="def">the log of that. Same peak — log is increasing — but 250 multiplied densities become 250 added terms. <span class="n">Kinder to calculus (derivatives of sums) and to floating point (no underflow).</span></span></li>
+    <li><span class="sym"><b>estimator vs estimate</b></span><span class="def">the recipe vs the number it returns on your data. <span class="n">μ̂ and σ̂ wear hats because they are outputs of a recipe fed a random sample — hence random themselves, as in Lessons 1–2.</span></span></li>
+    <li><span class="sym"><b>score</b></span><span class="def">the slope of ℓ. At an interior peak the slope is zero, so "set the score to zero" is the master equation of estimation. <span class="n">Every gradient-based fit in ML is climbing a (log-)likelihood or a close cousin.</span></span></li>
+    <li><span class="sym"><b>Fisher information</b></span><span class="def">the curvature of ℓ at its peak. Sharp peak → the data pin the parameter down → small standard error. <span class="n">Flat peak → many parameter values explain the data about equally well.</span></span></li>
+    <li><span class="sym"><b>profile likelihood</b></span><span class="def">the likelihood of one parameter after letting the others do their best at each of its values. <span class="n">The mountain seen from one axis: its ridge-line. This is how honest intervals for a single parameter are cut.</span></span></li>
   </ul>
 
-  <div class="sec">Worked example — the normal, and the ÷n loose end</div>
-  <div class="mblock math" data-tex="\ell(\mu,\sigma^2)=-\frac{n}{2}\log(2\pi\sigma^2)-\frac{1}{2\sigma^2}\sum_{i=1}^{n}(x_i-\mu)^2" data-display="1"></div>
-  <p class="step">Set each partial score to zero. The μ-equation gives the sample mean; the σ²-equation gives the ÷n estimator:</p>
-  <div class="mblock math" data-tex="\partial_\mu\ell=0\ \Rightarrow\ \hat\mu=\bar x\qquad\qquad \partial_{\sigma^2}\ell=0\ \Rightarrow\ \hat\sigma^2=\frac1n\sum_{i}(x_i-\bar x)^2=S^2_n" data-display="1"></div>
-  <p class="step">There it is: maximum likelihood <i>chooses</i> the biased estimator. It optimises fit to the data seen, not long-run unbiasedness — the two objectives simply differ.</p>
+  <div class="sec">The data — one seeded year</div>
+  <p class="step">Everything below runs on a single simulated year: <b>n = 250</b> daily index returns in basis points, drawn once from a Gaussian with true drift <b>μ = 3 bp/day</b> and true vol <b>σ = 100 bp/day</b> (≈ 16% annualised — an ordinary equity-index year) using a fixed-seed generator, so the page shows the same year on every load. The page knows the truth; the estimator is never told.</p>
 
-  <div class="sec">See it — the likelihood peak is the estimate</div>
+  <div class="sec">From probability to likelihood</div>
+  <div class="mblock math" data-tex="L(\theta)=\prod_{i=1}^{n} f(x_i;\theta)\qquad \ell(\theta)=\sum_{i=1}^{n}\log f(x_i;\theta)\qquad \hat\theta=\arg\max_{\theta}\,\ell(\theta)" data-display="1"></div>
+  <p class="step">Independence turns the year's probability into a product of daily densities; the log turns the product into a sum. At an interior maximum the derivative — the score — vanishes:</p>
+  <div class="mblock math" data-tex="U(\theta)=\ell'(\theta)=\sum_{i=1}^{n}\frac{\partial}{\partial\theta}\log f(x_i;\theta),\qquad U(\hat\theta)=0" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="f(x_i;\theta)"></span><span class="def">the model's density at observed return xᵢ under parameters θ. <span class="n">Here θ = (μ, σ) and f is the Gaussian density.</span></span></li>
+    <li><span class="sym math" data-tex="L(\theta)"></span><span class="def">the <b>likelihood</b> — the sample's joint density as a function of θ, data fixed. <span class="n">The i.i.d. assumption is what makes it a product.</span></span></li>
+    <li><span class="sym math" data-tex="U(\theta)"></span><span class="def">the <b>score</b> — the gradient of ℓ. <span class="n">U(θ̂) = 0 is the estimating equation: the flat point at the summit.</span></span></li>
+    <li><span class="sym math" data-tex="\hat\theta"></span><span class="def">the <b>maximum-likelihood estimator</b>. <span class="n">A statistic — a function of the sample — so it has a sampling distribution, standard error, bias.</span></span></li>
+  </ul>
+
+  <div class="sec">The Gaussian pipeline — score equations to closed forms</div>
+  <div class="mblock math" data-tex="\ell(\mu,\sigma)=-\,n\log\sigma-\frac{n}{2}\log(2\pi)-\frac{1}{2\sigma^{2}}\sum_{i=1}^{n}(x_i-\mu)^{2}" data-display="1"></div>
+  <p class="step">Two parameters, two score equations, both solvable by hand — the rare model where the summit has coordinates in closed form:</p>
+  <div class="mblock math" data-tex="\frac{\partial\ell}{\partial\mu}=\frac{1}{\sigma^{2}}\sum_i (x_i-\mu)=0\ \Rightarrow\ \hat\mu=\bar x\qquad \frac{\partial\ell}{\partial\sigma}=-\frac{n}{\sigma}+\frac{1}{\sigma^{3}}\sum_i (x_i-\mu)^{2}=0\ \Rightarrow\ \hat\sigma^{2}=\frac{1}{n}\sum_i (x_i-\bar x)^{2}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="\bar x"></span><span class="def">the sample mean of the year's returns. <span class="n">The μ-score is linear in μ, so its root is unique and σ-free — remember this for the profile.</span></span></li>
+    <li><span class="sym math" data-tex="\hat\sigma^{2}"></span><span class="def">the MLE of the variance — divisor <b>1/n</b>. <span class="n">Exactly Lesson 2's biased estimator: E[σ̂²] = ((n−1)/n)·σ².</span></span></li>
+    <li><span class="sym math" data-tex="-n\log\sigma"></span><span class="def">the penalty for claiming a big σ. <span class="n">A wide bell "explains" everything weakly; this term is what stops σ̂ from running to infinity.</span></span></li>
+  </ul>
+  <p class="step">There is the loose end, tied: <b>the likelihood's own peak divides by n, not n−1</b>. Maximum likelihood optimises fit to the year you saw, not average correctness over the years you didn't. At n = 250 the expected shortfall is the factor (n−1)/n = 249/250 — σ² understated by 0.4% on average. The size is trivial; the principle is not.</p>
+  <p class="step">For the seeded year the summit lands at <b>μ̂ = <span id="muhatP">…</span> bp</b> and <b>σ̂ = <span id="sighatP">…</span> bp</b> per day. Keep those in view — every picture below is drawn on this ℓ.</p>
+
+  <div class="sec">See it — the log-likelihood surface ℓ(μ, σ)</div>
+  <p class="step">The whole surface at once: μ horizontal, σ vertical, darker blue = higher ℓ. The gold dot is the closed-form summit (x̄, σ̂); the gold dashed ring collects every pair within Δℓ ≤ 3.00 of it — the joint 95% confidence region (χ²₂;₀.₉₅/2). Park the pin anywhere and read the price of leaving the peak.</p>
   <div class="panel">
-    <div class="ctrls">
-      <div class="field">
-        <label>sample size <i>n</i> <b id="nOut">8</b></label>
-        <input type="range" id="n" min="3" max="200" value="8" step="1" />
-      </div>
-    </div>
-    <div class="btns">
-      <button class="act primary" id="one">New sample</button>
-      <button class="act" id="fifty">Run 50 resamples</button>
-      <button class="act" id="reset">Reset</button>
-    </div>
-    <svg id="plot" viewBox="0 0 680 320" role="img" aria-label="Profile log-likelihood as a function of the variance, with its peak marked against the true variance"></svg>
-    <div class="legend">
-      <span><i class="sw" style="border-color:var(--accent)"></i>log-likelihood ℓ(σ²)</span>
-      <span><i class="sw" style="border-color:var(--series);border-top-style:dashed"></i>peak = σ̂²ₘₗₑ</span>
-      <span><i class="sw" style="border-color:var(--ink)"></i>true σ² = 144</span>
+    <svg id="surface" viewBox="0 0 680 330" role="img" aria-label="Heatmap of the Gaussian log-likelihood over mu and sigma with the MLE and a draggable pin"><g id="hmG"></g><g id="pinG"></g></svg>
+    <div class="ctrls" style="margin-top:14px">
+      <div class="field"><label>pin μ (bp/day) <b id="muOut">—</b></label><input type="range" id="muS" min="0" max="100" value="30" step="1" /></div>
+      <div class="field"><label>pin σ (bp/day) <b id="sgOut">—</b></label><input type="range" id="sgS" min="0" max="100" value="70" step="1" /></div>
     </div>
     <div class="tally">
-      <div class="stat"><div class="k">this sample's σ̂²ₘₗₑ</div><div class="v" id="cur">—</div></div>
-      <div class="stat"><div class="k">mean σ̂²ₘₗₑ over resamples</div><div class="v low" id="avg">—</div></div>
-      <div class="stat"><div class="k">resamples</div><div class="v" id="cnt">0</div></div>
+      <div class="stat"><div class="k">ℓ at the MLE</div><div class="v g" id="sMax">—</div></div>
+      <div class="stat"><div class="k">ℓ at the pin</div><div class="v a" id="sPin">—</div></div>
+      <div class="stat"><div class="k">drop Δℓ</div><div class="v s" id="sDrop">—</div></div>
     </div>
-    <p class="callout" id="note">The peak of the curve is the estimate. At small n it sits left of 144 (that's the bias); raise n and the peak both sharpens — the data carry more Fisher information — and settles onto the true value.</p>
+    <p class="callout" id="c1"></p>
   </div>
+
+  <div class="sec">Curvature is information — the Fisher matrix</div>
+  <p class="step">How much should you trust the summit's coordinates? Look at how fast ℓ falls as you step away — the curvature. Averaged over data, that curvature is the <b>Fisher information</b>; inverted, it is the asymptotic variance of the estimator:</p>
+  <div class="mblock math" data-tex="I_n(\mu,\sigma)=\begin{pmatrix}\dfrac{n}{\sigma^{2}} & 0\\[4pt] 0 & \dfrac{2n}{\sigma^{2}}\end{pmatrix}\qquad\quad \widehat{\mathrm{SE}}(\hat\mu)=\frac{\hat\sigma}{\sqrt{n}}\ ,\qquad \widehat{\mathrm{SE}}(\hat\sigma)=\frac{\hat\sigma}{\sqrt{2n}}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="I_n(\mu,\sigma)"></span><span class="def">Fisher information of the whole sample: I = E[−∇²ℓ] = Var(U). <span class="n">Expected curvature of ℓ at the truth; n observations stack information linearly.</span></span></li>
+    <li><span class="sym math" data-tex="0"></span><span class="def">the off-diagonal — μ and σ are <b>information-orthogonal</b> in the Gaussian. <span class="n">Estimation errors of μ̂ and σ̂ are asymptotically uncorrelated; each can be treated alone.</span></span></li>
+    <li><span class="sym math" data-tex="\widehat{\mathrm{SE}}"></span><span class="def">asymptotic standard error, read off I⁻¹ with σ̂ plugged in. <span class="n">Var(θ̂) ≈ I_n(θ₀)⁻¹ — the sharper the peak, the smaller the error bar.</span></span></li>
+  </ul>
+  <p class="step">Plug the year in: SE(μ̂) = σ̂/√n ≈ <b><span id="semuP">…</span> bp</b>, so μ̂ sits only <b><span id="zmuP">…</span></b> standard errors from zero — one year of daily data cannot tell a 3 bp drift from no drift at all. But SE(σ̂) = σ̂/√(2n) ≈ <b><span id="sesigP">…</span> bp</b>: the same year pins the vol to within a few percent. That √2 is why markets let you measure risk far better than reward.</p>
+  <p class="step">One more gift, <b>invariance</b>: the MLE of any transform is the transform of the MLE. σ̂ = √σ̂² needs no new optimisation, and the desk's annualised vol √252·σ̂ = <b><span id="annP">…</span>%</b> comes free. (Unbiasedness has no such property — E[√X] ≠ √E[X]. Hold that thought for the twist.)</p>
 
   <div class="theorem">
     <p class="lbl">The precise statement</p>
-    <p>Under regularity conditions, the MLE is consistent and asymptotically normal: √n(θ̂ₙ − θ₀) →ᵈ 𝒩(0, I₁(θ₀)⁻¹), reaching the Cramér–Rao lower bound in the limit — asymptotically, no estimator does better. It is <i>not</i> guaranteed unbiased in finite samples, as σ̂² shows.</p>
+    <p>Let x₁,…,xₙ be i.i.d. from f(x;θ₀) with θ₀ interior to the parameter set and f regular: support free of θ, ℓ twice continuously differentiable, I(θ₀) finite and positive definite. Then the MLE θ̂ₙ is consistent (θ̂ₙ → θ₀), invariant (the MLE of g(θ) is g(θ̂ₙ) for any g), and asymptotically normal: √n(θ̂ₙ − θ₀) →ᵈ 𝒩(0, I₁(θ₀)⁻¹), attaining the Cramér–Rao bound in the limit — no regular estimator does better asymptotically. Finite-sample unbiasedness is not among the guarantees: for the Gaussian, E[σ̂²] = ((n−1)/n)·σ².</p>
   </div>
 
-  <div class="sec">What the estimate is worth — properties</div>
-  <ul class="props">
-    <li><b>Consistent.</b> <span class="n">θ̂ₙ → θ₀ as n → ∞. The peak walks onto the truth.</span></li>
-    <li><b>Asymptotically normal &amp; efficient.</b> <span class="n">Its spread is I₁(θ₀)⁻¹/n — the smallest any (regular) estimator can achieve in the limit. More Fisher information ⇒ tighter estimate ⇒ smaller standard error.</span></li>
-    <li><b>Invariant.</b> <span class="n">The MLE of g(θ) is g(θ̂). Estimate σ², read off σ̂ = √σ̂² for free.</span></li>
-    <li><b>But not finite-sample unbiased.</b> <span class="n">σ̂² = S²ₙ is biased low; MLE optimises likelihood, not bias. Asymptotically the bias washes out.</span></li>
+  <div class="sec">The profile likelihood — an honest interval for σ</div>
+  <p class="step">The μ-score's root was x̄ no matter what σ is, so maximising over μ at each fixed σ costs nothing: the <b>profile log-likelihood</b> of σ is the mountain's ridge-line seen from the σ axis. From it you cut an interval in the spirit of Lesson 1's — but read directly off the likelihood, with no need to pretend σ̂'s sampling distribution is exactly normal:</p>
+  <div class="mblock math" data-tex="\ell_p(\sigma)=\max_{\mu}\ \ell(\mu,\sigma)=\ell(\bar x,\sigma)\qquad\quad \mathrm{CI}_{1-\alpha}=\Big\{\sigma:\ \ell_p(\sigma)\ \ge\ \ell_{\max}-\tfrac{1}{2}\chi^{2}_{1,1-\alpha}\Big\}\qquad\quad \text{Wald: } \hat\sigma\pm z_{1-\alpha/2}\,\frac{\hat\sigma}{\sqrt{2n}}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="\ell_p(\sigma)"></span><span class="def">the profile — the best log-likelihood any μ can achieve at that σ. <span class="n">With k nuisance parameters you maximise them all out; the χ²₁ calibration below survives.</span></span></li>
+    <li><span class="sym math" data-tex="\chi^{2}_{1,1-\alpha}"></span><span class="def">chi-square(1) quantile: <b>3.84</b> at 95%, so the cut sits 3.84/2 = <b>1.92</b> below the peak. <span class="n">Wilks (1938): 2[ℓp(σ̂) − ℓp(σ₀)] →ᵈ χ²₁ under H₀ — the likelihood-ratio test, folded into an interval. The ½ is because the statistic carries a 2.</span></span></li>
+    <li><span class="sym math" data-tex="z_{1-\alpha/2}"></span><span class="def">normal quantile of the <b>Wald</b> recipe (1.96 at 95%) — a parabola fitted at the summit. <span class="n">1.96² = 3.84: the two intervals coincide exactly when the profile is exactly quadratic, and only then.</span></span></li>
   </ul>
+  <div class="panel">
+    <svg id="profile" viewBox="0 0 680 300" role="img" aria-label="Profile log-likelihood of sigma with the chi-square cut and the likelihood-ratio interval shaded"><g id="pfG"></g><g id="lrG"></g></svg>
+    <div class="ctrls" style="margin-top:14px">
+      <div class="field"><label>confidence level <b id="lvlOut">95%</b></label><input type="range" id="lvl" min="0" max="2" value="1" step="1" /></div>
+    </div>
+    <div class="tally">
+      <div class="stat"><div class="k">σ̂ (bp/day)</div><div class="v g" id="pSig">—</div></div>
+      <div class="stat"><div class="k">cut below peak</div><div class="v s" id="pCut">—</div></div>
+      <div class="stat"><div class="k">LR interval</div><div class="v a" id="pLR">—</div></div>
+      <div class="stat"><div class="k">Wald interval</div><div class="v" id="pWald">—</div></div>
+    </div>
+    <p class="callout" id="c2"></p>
+  </div>
+  <p class="step">For the seeded year at 95%: profile-likelihood interval σ ∈ <b><span id="lrP">…</span></b> against Wald <b><span id="wP">…</span></b>. Close — n = 250 is asymptopia's front porch — but the LR interval sits shifted toward larger σ, tracking the true skew of the profile. Only one of the two survives a change of coordinates, which is the twist.</p>
 
   <div class="twist">
-    <p class="lbl">The twist — when the guarantees quietly fail</p>
-    <p>Consistency and asymptotic normality rest on <b>regularity conditions</b>, and they can break. For Uniform(0, θ) the MLE is θ̂ = max(xᵢ): it is biased (E = nθ/(n+1)), converges at rate <b>n</b> rather than √n, and is <b>not</b> asymptotically normal — because the support depends on θ, so you can't differentiate under the integral. With many nuisance parameters (Neyman–Scott) the MLE can even be inconsistent. "Maximum likelihood" is a default worth reaching for, not a theorem that holds unconditionally — always check the conditions before trusting the standard errors.</p>
+    <p class="lbl">The twist — Wald and the likelihood ratio are not the same god either</p>
+    <p>The Wald interval is a parabola fitted at the summit, symmetric by decree — and <b>not reparameterization-invariant</b>. Build it for σ² and square-root the endpoints: this year's data give <b><span id="tw2">…</span></b>. Build it directly for σ: <b><span id="tw1">…</span></b>. Same data, same 95%, different intervals — the quadratic approximation was taken in different coordinates. The likelihood-ratio interval has no such wobble: the likelihood itself transforms exactly (invariance again), so profiling σ or σ² lands on the <i>same</i> interval, and on skewed profiles it is honestly asymmetric where Wald is blindly symmetric. Parting teaser: on <i>real</i> index returns a Student-t likelihood beats this Gaussian decisively — fat tails are not a correction to the model, they are a different likelihood, and maximum likelihood itself is the referee of that contest.</p>
   </div>
 
   <div class="vol">
     <p class="lbl">Why this matters · volarixs</p>
-    <p>MLE is the engine under most of your fitting. Fat-tailed returns → a Student-t fit by maximum likelihood; volatility → GARCH by (quasi-)MLE; every classifier trained on cross-entropy is doing MLE, since <code>cross-entropy = −log-likelihood</code>. Recognising that unifies "loss functions" and "estimation" into one object.</p>
-    <p>The operational payoff is Fisher information → <b>standard errors on fitted coefficients</b>. Whether a signal's fitted loading is distinguishable from zero is a statement about the curvature of its likelihood — the same machinery as the confidence intervals in Lesson 1, and the honest input to the multiple-testing correction in your pre-registration. And the twist is a live warning: fit too many parameters on too little history and the finite-sample bias and inflated errors bite exactly where you're trying to read a faint edge.</p>
+    <p>The <code>regime HMM</code> is this lesson at industrial scale: it is fit by maximum likelihood, and EM is nothing but a reliable way to climb exactly this log-likelihood — each E-step builds a lower bound on ℓ, each M-step solves score equations in closed form (regime means and variances with the same ÷n structure, weighted by regime responsibilities). When the fit converges, the thing that has converged is ℓmax.</p>
+    <p>And the 1.92-drop logic is the honest referee for model choice: a second regime <i>always</i> lifts ℓmax, so the question is whether the lift beats likelihood-ratio noise — the same Δℓ yardstick the profile interval used (with the standard caveat that at the one-regime boundary the χ² calibration needs adjusting). A regime you cannot defend on Δℓ is a regime fitted to noise.</p>
   </div>
 
   <div class="sec">Check yourself</div>
-  <div class="q" id="q1"><p class="stem">The MLE θ̂ is characterised as the value where:</p><div class="opts"></div><p class="fb"></p></div>
-  <div class="q" id="q2"><p class="stem">For a normal sample with μ estimated by x̄, maximum likelihood gives σ̂² equal to:</p><div class="opts"></div><p class="fb"></p></div>
-  <div class="q" id="q3"><p class="stem">Which statement about the MLE is true in general?</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q1"><p class="stem">For the year of returns, the likelihood L(μ, σ) is best described as:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q2"><p class="stem">We maximise ℓ = log L rather than L itself because:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q3"><p class="stem">Maximum likelihood estimates the Gaussian variance of the year of returns by dividing the sum of squared deviations by:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q4"><p class="stem">The 95% profile-likelihood interval cuts the curve 1.92 units below the peak. Where does 1.92 come from?</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q5"><p class="stem">You fitted σ̂² for the index; the desk wants daily σ̂ and annualised √252·σ̂. Maximum likelihood lets you:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q6"><p class="stem">Your desk fits the Gaussian to n = 250 daily returns. From the Fisher information, the asymptotic standard error of the fitted vol σ̂ is:</p><div class="opts"></div><p class="fb"></p></div>
 
   <div class="checkRow">
-    <button class="act primary" id="check">Check answers</button>
-    <span class="hint" id="hint">Select an answer for all three first.</span>
+    <button class="primary" id="check">Check answers</button>
+    <span class="scoreOut" id="scoreOut"></span>
+    <span class="hint" id="hint">Answer all six first.</span>
   </div>
-  <div class="done" id="done">Phase 1 nearly done — final item next: conditional expectation as an L² projection.</div>
+  <div class="done" id="done">Estimation engine installed. Next: conditional expectation as a projection.</div>
 </div>
 
 <script>
 /* storage shim: window.storage (Claude artifacts) or localStorage (web) */
 if(!window.storage){window.storage={async get(k){const v=localStorage.getItem(k);if(v==null)throw new Error('missing');return{key:k,value:v}},async set(k,v){localStorage.setItem(k,v);return{key:k,value:v}},async delete(k){localStorage.removeItem(k);return{key:k,deleted:true}},async list(p){const ks=[];for(let i=0;i<localStorage.length;i++){const kk=localStorage.key(i);if(!p||kk.startsWith(p))ks.push(kk)}return{keys:ks}}};}
-function renderMath(){
-  document.querySelectorAll('.math').forEach(el=>{
-    const tex=el.getAttribute('data-tex'); if(!tex||el.dataset.done)return;
-    try{ if(window.katex){katex.render(tex,el,{displayMode:el.dataset.display==='1',throwOnError:false});el.dataset.done='1';} else {el.textContent=tex;} }
-    catch(e){ el.textContent=tex; }
-  });
-}
-const MU=50,SIGMA=12,TRUE=144,VMIN=20,VMAX=340;
-const peaks=[]; let curSS=null,curN=null;
-const nVal=()=>parseInt(document.getElementById('n').value,10);
-function randn(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
-function sampleOnce(){
-  const n=nVal();let s=0;const xs=[];for(let j=0;j<n;j++){const x=MU+SIGMA*randn();xs.push(x);s+=x;}
-  const xbar=s/n;let SS=0;for(const x of xs)SS+=(x-xbar)*(x-xbar);
-  curSS=SS;curN=n;peaks.push(SS/n);if(peaks.length>2000)peaks.shift();
-}
-function loglik(v){ return -curN/2*Math.log(v) - curSS/(2*v); }
-function renderPlot(){
-  const PW=680,PH=320,padL=40,padR=18,padT=18,padB=34,iw=PW-padL-padR,ih=PH-padT-padB,y0=padT+ih;
-  const X=v=>padL+((v-VMIN)/(VMAX-VMIN))*iw;
-  let s='';
-  s+=`<line x1="${padL}" y1="${y0}" x2="${PW-padR}" y2="${y0}" stroke="var(--hair2)" stroke-width="1"/>`;
-  [50,TRUE,240,VMAX].forEach(v=>{s+=`<text x="${X(v)}" y="${y0+18}" text-anchor="middle" font-family="var(--mono)" font-size="11" fill="var(--faint)">${v}</text>`;});
-  s+=`<text x="${padL}" y="${padT-4}" font-family="var(--mono)" font-size="11" fill="var(--faint)">ℓ(σ²)</text>`;
-  if(curSS!=null){
-    const N=220,pts=[];let gmin=Infinity,gmax=-Infinity;
-    for(let i=0;i<=N;i++){const v=VMIN+(i/N)*(VMAX-VMIN);const g=loglik(v);pts.push([v,g]);if(g<gmin)gmin=g;if(g>gmax)gmax=g;}
-    const Y=g=>padT+ (1-(g-gmin)/(gmax-gmin))*ih;
-    const path=pts.map((p,i)=>(i?'L':'M')+X(p[0]).toFixed(1)+' '+Y(p[1]).toFixed(1)).join(' ');
-    s+=`<path d="${path}" fill="none" stroke="var(--accent)" stroke-width="2"/>`;
-    const vhat=curSS/curN;
-    // peak marker + flat tangent (score = 0)
-    const yp=Y(loglik(vhat));
-    s+=`<line x1="${X(vhat)}" y1="${padT}" x2="${X(vhat)}" y2="${y0}" stroke="var(--series)" stroke-width="1.6" stroke-dasharray="5 4"/>`;
-    s+=`<line x1="${(X(vhat)-26).toFixed(1)}" y1="${yp.toFixed(1)}" x2="${(X(vhat)+26).toFixed(1)}" y2="${yp.toFixed(1)}" stroke="var(--series)" stroke-width="1.4"/>`;
-    s+=`<circle cx="${X(vhat).toFixed(1)}" cy="${yp.toFixed(1)}" r="3.4" fill="var(--series)"/>`;
-    s+=`<text x="${X(vhat).toFixed(1)}" y="${(yp-9).toFixed(1)}" text-anchor="middle" font-family="var(--mono)" font-size="11" fill="var(--series)">ℓ′=0</text>`;
-  }
-  s+=`<line x1="${X(TRUE)}" y1="${padT}" x2="${X(TRUE)}" y2="${y0}" stroke="var(--ink)" stroke-width="1.6"/>`;
-  s+=`<text x="${X(TRUE)}" y="${(padT+10)}" text-anchor="middle" font-family="var(--mono)" font-size="11" fill="var(--ink)">σ²=144</text>`;
-  document.getElementById('plot').innerHTML=s;
-  const cur=curSS!=null?(curSS/curN):null, avg=peaks.length?peaks.reduce((a,b)=>a+b,0)/peaks.length:null;
-  document.getElementById('cur').textContent=cur!=null?cur.toFixed(1):'—';
-  document.getElementById('avg').textContent=avg!=null?avg.toFixed(1):'—';
-  document.getElementById('cnt').textContent=peaks.length;
-  if(peaks.length>=30){const n=nVal();document.getElementById('note').textContent=`Mean of the peaks sits near ${(TRUE*(n-1)/n).toFixed(0)} = (n−1)/n·σ² — the same bias as Lesson 2, because the peak IS the ÷n estimator. Raise n: the curve sharpens (more Fisher information) and the peak converges to 144.`;}
-}
-function reset(){peaks.length=0;curSS=null;curN=null;renderPlot();document.getElementById('note').textContent='The peak of the curve is the estimate. At small n it sits left of 144 (that\u2019s the bias); raise n and the peak both sharpens \u2014 the data carry more Fisher information \u2014 and settles onto the true value.';}
-document.getElementById('n').addEventListener('input',e=>{document.getElementById('nOut').textContent=e.target.value;});
-document.getElementById('n').addEventListener('change',()=>{peaks.length=0;sampleOnce();renderPlot();});
-document.getElementById('one').onclick=()=>{sampleOnce();renderPlot();};
-document.getElementById('fifty').onclick=()=>{for(let i=0;i<50;i++)sampleOnce();renderPlot();};
-document.getElementById('reset').onclick=reset;
+function renderMath(){document.querySelectorAll('.math').forEach(el=>{const tex=el.getAttribute('data-tex');if(!tex||el.dataset.done)return;try{if(window.katex){katex.render(tex,el,{displayMode:el.dataset.display==='1',throwOnError:false});el.dataset.done='1';}else el.textContent=tex;}catch(e){el.textContent=tex;}});}
 
+/* ---------- deterministic sample: one seeded year of index returns ---------- */
+function mulberry32(seed){let a=seed>>>0;return function(){a|=0;a=(a+0x6D2B79F5)|0;let t=Math.imul(a^(a>>>15),1|a);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296;}}
+function randn(rng){let u=0,v=0;while(!u)u=rng();while(!v)v=rng();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+const N=250,MU0=3,SIG0=100;
+const rng=mulberry32(103);
+const R=new Float64Array(N);for(let i=0;i<N;i++)R[i]=MU0+SIG0*randn(rng);
+let _s=0;for(let i=0;i<N;i++)_s+=R[i];const xbar=_s/N;
+let SS=0;for(let i=0;i<N;i++){const d=R[i]-xbar;SS+=d*d;}
+const s2=SS/N,sig=Math.sqrt(s2),LOG2PI=Math.log(2*Math.PI);
+const ell=(mu,sg)=>-N*Math.log(sg)-(N/2)*LOG2PI-(SS+N*(xbar-mu)*(xbar-mu))/(2*sg*sg);
+const ellMax=ell(xbar,sig);
+/* theory constants: chi-square(1) and normal quantiles, chi-square(2) 95% */
+const CHI1={90:2.705543454095404,95:3.841458820694124,99:6.634896601021214};
+const ZQ={90:1.6448536269514722,95:1.959963984540054,99:2.5758293035489004};
+const JOINT95=5.991464547107979/2;
+function lrInterval(q){const cut=ellMax-q/2;const bis=(lo,hi)=>{for(let i=0;i<80;i++){const m=(lo+hi)/2;if(((ell(xbar,m)-cut)>0)===((ell(xbar,lo)-cut)>0))lo=m;else hi=m;}return(lo+hi)/2;};return[bis(sig*0.5,sig),bis(sig,sig*2)];}
+function wald(z){const w=z*sig/Math.sqrt(2*N);return[sig-w,sig+w];}
+const f1=x=>x.toFixed(1),f2=x=>x.toFixed(2);
+const put=(id,t)=>{document.getElementById(id).textContent=t;};
+const br=(a,b)=>'['+f1(a)+', '+f1(b)+'] bp';
+function fillProse(){
+  put('muhatP',f2(xbar));put('sighatP',f2(sig));
+  put('semuP',f2(sig/Math.sqrt(N)));put('zmuP',(Math.abs(xbar)/(sig/Math.sqrt(N))).toFixed(1));
+  put('sesigP',f2(sig/Math.sqrt(2*N)));put('annP',(Math.sqrt(252)*sig/100).toFixed(1));
+  const L=lrInterval(CHI1[95]),W=wald(ZQ[95]);
+  put('lrP',br(L[0],L[1]));put('wP',br(W[0],W[1]));put('tw1',br(W[0],W[1]));
+  const se2=s2*Math.sqrt(2/N);
+  put('tw2',br(Math.sqrt(s2-ZQ[95]*se2),Math.sqrt(s2+ZQ[95]*se2)));
+}
+
+/* ---------- interactive 1: the log-likelihood surface ---------- */
+const SV={W:680,H:330,pl:46,pr:14,pt:12,pb:30};SV.iw=SV.W-SV.pl-SV.pr;SV.ih=SV.H-SV.pt-SV.pb;
+const MUL=xbar-20,MUH=xbar+20,SGL=sig-14,SGH=sig+16;
+const SX=mu=>SV.pl+(mu-MUL)/(MUH-MUL)*SV.iw,SY=sg=>SV.pt+(1-(sg-SGL)/(SGH-SGL))*SV.ih;
+function drawSurface(){
+  const nx=46,ny=30,cw=SV.iw/nx,ch=SV.ih/ny;let s='';
+  for(let i=0;i<nx;i++)for(let j=0;j<ny;j++){
+    const mu=MUL+(i+0.5)/nx*(MUH-MUL),sg=SGL+(j+0.5)/ny*(SGH-SGL);
+    const d=ellMax-ell(mu,sg),o=Math.max(0.04,Math.exp(-d/4))*0.95;
+    s+='<rect x="'+(SV.pl+i*cw).toFixed(1)+'" y="'+(SV.pt+(ny-1-j)*ch).toFixed(1)+'" width="'+(cw+0.5).toFixed(1)+'" height="'+(ch+0.5).toFixed(1)+'" fill="var(--accent)" opacity="'+o.toFixed(3)+'"/>';
+  }
+  /* 95% joint region: Δℓ = χ²₂;0.95/2, contour traced by bisection along rays from the MLE */
+  const pts=[];
+  for(let a=0;a<64;a++){const th=a/64*2*Math.PI,cx=Math.cos(th),sy=Math.sin(th);
+    let lo=0,hi=1.4;for(let it=0;it<40;it++){const m=(lo+hi)/2;if(ellMax-ell(xbar+m*20*cx,sig+m*15*sy)<JOINT95)lo=m;else hi=m;}
+    const r=(lo+hi)/2;pts.push(SX(xbar+r*20*cx).toFixed(1)+','+SY(sig+r*15*sy).toFixed(1));}
+  s+='<polygon points="'+pts.join(' ')+'" fill="none" stroke="var(--series)" stroke-width="1.6" stroke-dasharray="5 4"/>';
+  s+='<circle cx="'+SX(xbar).toFixed(1)+'" cy="'+SY(sig).toFixed(1)+'" r="4" fill="var(--series)" stroke="var(--paper)" stroke-width="1.5"/>';
+  [MUL,xbar,MUH].forEach(v=>{s+='<text x="'+SX(v).toFixed(1)+'" y="'+(SV.H-8)+'" text-anchor="middle" font-family="var(--mono)" font-size="11" fill="var(--faint)">'+v.toFixed(0)+'</text>';});
+  [SGL,sig,SGH].forEach(v=>{s+='<text x="'+(SV.pl-7)+'" y="'+(SY(v)+4).toFixed(1)+'" text-anchor="end" font-family="var(--mono)" font-size="11" fill="var(--faint)">'+v.toFixed(0)+'</text>';});
+  s+='<text x="'+(SV.W-SV.pr)+'" y="'+(SV.pt+12)+'" text-anchor="end" font-family="var(--mono)" font-size="11" fill="var(--faint)">μ horizontal · σ vertical (bp/day)</text>';
+  document.getElementById('hmG').innerHTML=s;
+}
+function drawPin(){
+  const mu=MUL+(+document.getElementById('muS').value/100)*(MUH-MUL);
+  const sg=SGL+(+document.getElementById('sgS').value/100)*(SGH-SGL);
+  const lp=ell(mu,sg),d=ellMax-lp;
+  put('muOut',f1(mu));put('sgOut',f1(sg));
+  let s='<line x1="'+SX(mu).toFixed(1)+'" y1="'+SV.pt+'" x2="'+SX(mu).toFixed(1)+'" y2="'+(SV.pt+SV.ih)+'" stroke="var(--ink)" stroke-width="1" stroke-dasharray="3 3" opacity="0.7"/>';
+  s+='<line x1="'+SV.pl+'" y1="'+SY(sg).toFixed(1)+'" x2="'+(SV.pl+SV.iw)+'" y2="'+SY(sg).toFixed(1)+'" stroke="var(--ink)" stroke-width="1" stroke-dasharray="3 3" opacity="0.7"/>';
+  s+='<circle cx="'+SX(mu).toFixed(1)+'" cy="'+SY(sg).toFixed(1)+'" r="4.5" fill="none" stroke="var(--ink)" stroke-width="1.8"/>';
+  document.getElementById('pinG').innerHTML=s;
+  put('sMax',f1(ellMax));put('sPin',f1(lp));put('sDrop',d.toFixed(2));
+  document.getElementById('c1').textContent = d<0.05
+    ? 'The pin is on the summit: ℓ = '+f1(lp)+' = ℓmax. Every step away costs log-likelihood — how fast it costs is the Fisher information.'
+    : 'Pin at (μ = '+f1(mu)+', σ = '+f1(sg)+'): ℓ = '+f1(lp)+', a drop of Δℓ = '+d.toFixed(2)+' below the peak — '+(d<=JOINT95?'inside':'outside')+' the dashed 95% region. Pairs with Δℓ ≤ '+JOINT95.toFixed(2)+' (= χ²₂;₀.₉₅/2) survive a 5% likelihood-ratio test; the gold dot is the MLE (μ̂, σ̂).';
+}
+
+/* ---------- interactive 2: profile likelihood for σ ---------- */
+const PV={W:680,H:300,pl:46,pr:14,pt:14,pb:30};PV.iw=PV.W-PV.pl-PV.pr;PV.ih=PV.H-PV.pt-PV.pb;
+const gmin=Math.min(ell(xbar,SGL),ell(xbar,SGH)),gtop=ellMax+0.05*(ellMax-gmin);
+const PX=sg=>PV.pl+(sg-SGL)/(SGH-SGL)*PV.iw,PY=e=>PV.pt+(1-(e-gmin)/(gtop-gmin))*PV.ih;
+function drawProfileStatic(){
+  const M=240;let p='';
+  for(let i=0;i<=M;i++){const sg=SGL+i/M*(SGH-SGL);p+=(i?'L':'M')+PX(sg).toFixed(1)+' '+PY(ell(xbar,sg)).toFixed(1);}
+  let s='<line x1="'+PV.pl+'" y1="'+(PV.pt+PV.ih)+'" x2="'+(PV.W-PV.pr)+'" y2="'+(PV.pt+PV.ih)+'" stroke="var(--hair2)"/>';
+  [SGL,sig,SGH].forEach(v=>{s+='<text x="'+PX(v).toFixed(1)+'" y="'+(PV.H-8)+'" text-anchor="middle" font-family="var(--mono)" font-size="11" fill="var(--faint)">'+v.toFixed(0)+'</text>';});
+  s+='<text x="'+PV.pl+'" y="'+(PV.pt-2)+'" font-family="var(--mono)" font-size="11" fill="var(--faint)">ℓp(σ)</text>';
+  s+='<text x="'+(PV.W-PV.pr)+'" y="'+(PV.pt+12)+'" text-anchor="end" font-family="var(--mono)" font-size="11" fill="var(--faint)">σ (bp/day)</text>';
+  s+='<path d="'+p+'" fill="none" stroke="var(--accent)" stroke-width="2"/>';
+  document.getElementById('pfG').innerHTML=s;
+}
+const LVLS=[90,95,99];
+function drawLR(){
+  const lv=LVLS[+document.getElementById('lvl').value],q=CHI1[lv],cut=ellMax-q/2;
+  const iv=lrInterval(q),lo=iv[0],hi=iv[1],wv=wald(ZQ[lv]),wlo=wv[0],whi=wv[1];
+  put('lvlOut',lv+'%');
+  let s='<line x1="'+PV.pl+'" y1="'+PY(cut).toFixed(1)+'" x2="'+(PV.pl+PV.iw)+'" y2="'+PY(cut).toFixed(1)+'" stroke="var(--series)" stroke-width="1.4" stroke-dasharray="6 4"/>';
+  s+='<text x="'+(PV.pl+4)+'" y="'+(PY(cut)-5).toFixed(1)+'" font-family="var(--mono)" font-size="11" fill="var(--series)">ℓmax − '+(q/2).toFixed(2)+'</text>';
+  const M=80;let poly='';
+  for(let i=0;i<=M;i++){const sg=lo+i/M*(hi-lo);poly+=PX(sg).toFixed(1)+','+PY(ell(xbar,sg)).toFixed(1)+' ';}
+  poly+=PX(hi).toFixed(1)+','+PY(cut).toFixed(1)+' '+PX(lo).toFixed(1)+','+PY(cut).toFixed(1);
+  s+='<polygon points="'+poly+'" fill="var(--accent)" opacity="0.16"/>';
+  [lo,hi].forEach(v=>{
+    s+='<line x1="'+PX(v).toFixed(1)+'" y1="'+PY(cut).toFixed(1)+'" x2="'+PX(v).toFixed(1)+'" y2="'+(PV.pt+PV.ih)+'" stroke="var(--series)" stroke-width="1.2" stroke-dasharray="3 3"/>';
+    s+='<text x="'+PX(v).toFixed(1)+'" y="'+(PV.H-8)+'" text-anchor="middle" font-family="var(--mono)" font-size="11" fill="var(--series)">'+f1(v)+'</text>';});
+  s+='<line x1="'+PX(lo).toFixed(1)+'" y1="'+(PV.pt+PV.ih-20)+'" x2="'+PX(hi).toFixed(1)+'" y2="'+(PV.pt+PV.ih-20)+'" stroke="var(--accent)" stroke-width="4" opacity="0.9"/>';
+  s+='<text x="'+(PX(hi)+7).toFixed(1)+'" y="'+(PV.pt+PV.ih-16)+'" font-family="var(--mono)" font-size="10" fill="var(--accent)">LR</text>';
+  s+='<line x1="'+PX(wlo).toFixed(1)+'" y1="'+(PV.pt+PV.ih-8)+'" x2="'+PX(whi).toFixed(1)+'" y2="'+(PV.pt+PV.ih-8)+'" stroke="var(--series)" stroke-width="4" opacity="0.9"/>';
+  s+='<text x="'+(PX(whi)+7).toFixed(1)+'" y="'+(PV.pt+PV.ih-4)+'" font-family="var(--mono)" font-size="10" fill="var(--series)">Wald</text>';
+  s+='<circle cx="'+PX(sig).toFixed(1)+'" cy="'+PY(ellMax).toFixed(1)+'" r="3.5" fill="var(--accent)"/>';
+  s+='<text x="'+PX(sig).toFixed(1)+'" y="'+(PY(ellMax)-8).toFixed(1)+'" text-anchor="middle" font-family="var(--mono)" font-size="11" fill="var(--accent)">σ̂ = '+f2(sig)+'</text>';
+  document.getElementById('lrG').innerHTML=s;
+  put('pSig',f2(sig));put('pCut',(q/2).toFixed(2));put('pLR',br(lo,hi));put('pWald',br(wlo,whi));
+  document.getElementById('c2').textContent='At '+lv+'% the bar sits '+(q/2).toFixed(2)+' log-likelihood units below the summit (χ²₁;'+(lv/100).toFixed(2)+'/2), and the curve stays above it for σ ∈ ['+f1(lo)+', '+f1(hi)+'] bp. The arms are unequal — '+f1(sig-lo)+' bp down, '+f1(hi-sig)+' bp up — because ℓp falls away faster toward small σ. The Wald bar ['+f1(wlo)+', '+f1(whi)+'] is symmetric by construction and sits shifted toward small σ; at n = 250 they nearly agree, but only the LR interval survives reparameterisation.';
+}
+
+/* ---------- retrieval ---------- */
 const QS={
-  q1:{opts:["the log-likelihood equals zero","the score ℓ′(θ) equals zero — the flat top of the likelihood","the Fisher information is minimised","the variance of the data is largest"],a:1,
-    fb:"The MLE is the root of the estimating equation U(θ̂)=ℓ′(θ̂)=0. The log-likelihood value at the peak is generally nonzero; it's its slope that vanishes."},
-  q2:{opts:["Σ(xᵢ−x̄)²/(n−1), the unbiased estimator","Σ(xᵢ−x̄)²/n — the biased ÷n estimator from Lesson 2","the sample median of squared deviations","σ² cannot be estimated by MLE"],a:1,
-    fb:"Setting ∂ℓ/∂σ²=0 gives σ̂²=Σ(xᵢ−x̄)²/n. Maximum likelihood picks the biased estimator — it optimises fit to the observed data, not unbiasedness."},
-  q3:{opts:["It is unbiased in every finite sample","It is consistent and asymptotically normal under regularity conditions, but may be biased in finite samples","It always attains the Cramér–Rao bound exactly for all n","It only works when the data are normal"],a:1,
-    fb:"MLE buys asymptotic guarantees (consistency, efficiency) under regularity — finite-sample unbiasedness is not among them, and the regularity conditions can fail (e.g. Uniform(0,θ))."}
+  q1:{opts:["the probability that (μ, σ) is correct, given the data","the distribution of the returns for a fixed (μ, σ), as a function of the data","the joint density of the 250 returns actually observed, read as a function of the candidate (μ, σ) with the data frozen","a probability density over (μ, σ) that integrates to 1"],a:2,
+    fb:"Likelihood reverses the reading direction: the data are fixed at what you saw, the parameters vary. It is not a distribution over (μ, σ) and needn't integrate to 1 in θ — turning it into one requires a prior and Bayes' rule. That is why the word is likelihood, not probability."},
+  q2:{opts:["log is strictly increasing — the argmax is untouched — and it turns a product of 250 densities into a sum, kinder to calculus (the score is a sum) and to floating point (no underflow)","taking the log removes the estimator's bias","L cannot be maximised for continuous data; only ℓ can","the log makes the likelihood integrate to one"],a:0,
+    fb:"A monotone transform never moves a maximum. The gains are practical: sums differentiate term by term, and a product of 250 densities each of order 1/(σ√2π) ≈ 0.004 underflows to zero in floating point, while the logs add safely."},
+  q3:{opts:["n − 1, matching the unbiased sample variance","n — the MLE is exactly Lesson 2's biased estimator, low by the factor (n−1)/n in expectation","n + 1, which minimises mean squared error","2n, inherited from the Fisher information 2n/σ²"],a:1,
+    fb:"Setting ∂ℓ/∂σ = 0 gives σ̂² = (1/n)Σ(xᵢ−x̄)². Most-likely and unbiased are different objectives: the likelihood's peak is the ÷n estimator, with E[σ̂²] = ((n−1)/n)σ². (The ÷(n+1) rule really does minimise MSE for Gaussian data — but it is neither the MLE nor unbiased.)"},
+  q4:{opts:["it is the Wald multiplier 1.96 after a finite-sample correction","e¹·⁹² ≈ 6.8 is the likelihood ratio required for significance","it is the standard deviation of ℓmax under resampling","Wilks: twice the drop, 2[ℓp(σ̂) − ℓp(σ)], is asymptotically χ²₁, whose 95% point is 3.84 — so the cut on the ℓ scale is 3.84/2 = 1.92"],a:3,
+    fb:"The likelihood-ratio statistic 2Δℓ →ᵈ χ²₁ (Wilks), and χ²₁;₀.₉₅ = 3.84, halved to 1.92 on the ℓ scale. The near-miss with 1.96 is no accident and no rounding: χ²₁ is the square of a standard normal, so 3.84 = 1.96²."},
+  q5:{opts:["read both off directly — the MLE of any transform g(θ) is g(θ̂); that is the invariance property","refit the model in each parameterisation, because the MLE changes when the parameterisation does","transform only linearly; the square root breaks optimality","transform σ̂² to σ̂ but not to annualised vol, since 252 is not an estimated quantity"],a:0,
+    fb:"Invariance: reparameterising only relabels the axis under the same likelihood surface, so the peak maps through any g — σ̂ = √σ̂² and √252·σ̂ come free. Contrast with unbiasedness, which does not survive transforms (E[√X] ≠ √E[X]) — the deep reason Wald intervals wobble under reparameterisation while LR intervals don't."},
+  q6:{opts:["σ̂/√n, the same as for the mean","σ̂²/√n","σ̂/√(2n) — the σ-block of the Fisher information is 2n/σ², so Var(σ̂) ≈ σ²/(2n)","2σ̂/√n"],a:2,
+    fb:"Invert the information matrix: Var(μ̂) ≈ σ²/n but Var(σ̂) ≈ σ²/(2n). That √2 is why one year of daily data pins the vol to a few percent while leaving a 3 bp drift statistically invisible — you can measure risk far better than reward."}
 };
-const sel={q1:null,q2:null,q3:null};let revealed=false;
-Object.keys(QS).forEach(id=>{
-  const holder=document.querySelector('#'+id+' .opts');
-  QS[id].opts.forEach((txt,i)=>{
-    const b=document.createElement('button');b.className='opt';b.textContent=String.fromCharCode(65+i)+'.  '+txt;
-    b.onclick=()=>{if(revealed)return;sel[id]=i;[...holder.children].forEach((c,ci)=>c.classList.toggle('sel',ci===i));document.getElementById('hint').style.display='none';};
-    holder.appendChild(b);
-  });
-});
+const sel={q1:null,q2:null,q3:null,q4:null,q5:null,q6:null};let revealed=false;
+Object.keys(QS).forEach(id=>{const holder=document.querySelector('#'+id+' .opts');QS[id].opts.forEach((txt,i)=>{const b=document.createElement('button');b.className='opt';b.textContent=String.fromCharCode(65+i)+'.  '+txt;b.onclick=()=>{if(revealed)return;sel[id]=i;[...holder.children].forEach((c,ci)=>c.classList.toggle('sel',ci===i));document.getElementById('hint').style.display='none';};holder.appendChild(b);});});
 document.getElementById('check').onclick=async()=>{
-  if(revealed)return;
-  if(sel.q1===null||sel.q2===null||sel.q3===null){document.getElementById('hint').style.display='inline';return;}
+  if(revealed)return;if(Object.values(sel).some(v=>v===null)){document.getElementById('hint').style.display='inline';return;}
   revealed=true;let score=0;
-  Object.keys(QS).forEach(id=>{
-    const a=QS[id].a,holder=document.querySelector('#'+id+' .opts'),fb=document.querySelector('#'+id+' .fb');
-    [...holder.children].forEach((c,ci)=>{c.style.cursor='default';c.classList.remove('sel');if(ci===a)c.classList.add('correct');else if(ci===sel[id])c.classList.add('wrong');});
-    if(sel[id]===a)score++;fb.textContent=QS[id].fb;fb.classList.add('show');
-  });
-  const btn=document.getElementById('check');btn.style.opacity='0.5';btn.textContent='Checked · '+score+'/3';
-  document.getElementById('done').classList.add('show');
-  try{await window.storage.set('mfs:lesson03',JSON.stringify({done:true,retrieval:score+'/3',ts:Date.now()}),false);}catch(e){}
+  Object.keys(QS).forEach(id=>{const a=QS[id].a,holder=document.querySelector('#'+id+' .opts'),fb=document.querySelector('#'+id+' .fb');[...holder.children].forEach((c,ci)=>{c.style.cursor='default';c.classList.remove('sel');if(ci===a)c.classList.add('correct');else if(ci===sel[id])c.classList.add('wrong');});if(sel[id]===a)score++;fb.textContent=QS[id].fb;fb.classList.add('show');});
+  document.getElementById('check').style.opacity='0.5';document.getElementById('check').textContent='Checked';
+  document.getElementById('scoreOut').textContent=score+' / 6';document.getElementById('done').classList.add('show');
+  try{await window.storage.set('mfs:lesson03',JSON.stringify({done:true,retrieval:score+'/6',ts:Date.now()}),false);}catch(e){}
 };
-function boot(){renderMath();sampleOnce();renderPlot();}
+document.getElementById('muS').addEventListener('input',drawPin);
+document.getElementById('sgS').addEventListener('input',drawPin);
+document.getElementById('lvl').addEventListener('input',drawLR);
+function boot(){renderMath();fillProse();drawSurface();drawPin();drawProfileStatic();drawLR();}
 if(window.katex)boot();else window.addEventListener('load',boot);
 (async()=>{try{const r=await window.storage.get('mfs:lesson03',false);if(r&&r.value){const v=JSON.parse(r.value);if(v.done){const c=document.getElementById('chip');c.classList.add('show');c.textContent='completed · '+v.retrieval;}}}catch(e){}})();
 </script>
