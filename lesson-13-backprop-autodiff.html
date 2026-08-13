@@ -7,44 +7,47 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
 <style>
-  :root{--paper:#FAFAF6;--ink:#1A1C22;--muted:#63676E;--faint:#9A9EA4;--hair:#E4E3DB;--hair2:#D4D3CA;--panel:#FFFFFF;--accent:#24507A;--accent-bg:#EAF0F6;--series:#B07A2E;--miss:#B23A3A;--ok:#2F6B4F;--ok-bg:#E9F1EC;--grad:#7A3B8F;--grad-bg:#F0E6F4;--vol:#8A5A2B;--vol-bg:#F6EFE6;--serif:Iowan Old Style,Palatino,Georgia,serif;--sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;}
-  @media (prefers-color-scheme:dark){:root{--paper:#15161A;--ink:#E9E8E2;--muted:#A2A6AC;--faint:#71757B;--hair:#2A2C31;--hair2:#3A3C42;--panel:#1B1D22;--accent:#7FB0E0;--accent-bg:#1E2A38;--series:#D9A85E;--miss:#E07A7A;--ok:#7FC49F;--ok-bg:#1C2A22;--grad:#C99BD6;--grad-bg:#291930;--vol:#D9A066;--vol-bg:#2A2115;}}
+  :root{--paper:#FAFAF6;--ink:#1A1C22;--muted:#63676E;--faint:#9A9EA4;--hair:#E4E3DB;--hair2:#D4D3CA;--panel:#FFFFFF;--accent:#24507A;--accent-bg:#EAF0F6;--series:#B07A2E;--miss:#B23A3A;--ok:#2F6B4F;--ok-bg:#E9F1EC;--grad:#7A3B8F;--vol:#8A5A2B;--vol-bg:#F6EFE6;--serif:Iowan Old Style,Palatino,Georgia,serif;--sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;}
+  @media (prefers-color-scheme:dark){:root{--paper:#15161A;--ink:#E9E8E2;--muted:#A2A6AC;--faint:#71757B;--hair:#2A2C31;--hair2:#3A3C42;--panel:#1B1D22;--accent:#7FB0E0;--accent-bg:#1E2A38;--series:#D9A85E;--miss:#E07A7A;--ok:#7FC49F;--ok-bg:#1C2A22;--grad:#C99BD6;--vol:#D9A066;--vol-bg:#2A2115;}}
   *{box-sizing:border-box}
   body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.62;-webkit-font-smoothing:antialiased}
   .wrap{max-width:750px;margin:0 auto;padding:32px 24px 60px}
   .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 6px}
   h1{font-family:var(--serif);font-weight:600;font-size:27px;line-height:1.22;margin:0 0 6px;letter-spacing:-.01em}
-  .chip{display:none;font-family:var(--mono);font-size:11px;color:var(--ok);border:1px solid var(--ok);border-radius:20px;padding:3px 10px;vertical-align:middle;margin-left:10px}
+  .chip{display:none;font-family:var(--mono);font-size:11px;letter-spacing:.05em;color:var(--ok);border:1px solid var(--ok);border-radius:20px;padding:3px 10px;vertical-align:middle;margin-left:10px}
   .chip.show{display:inline-block}
   .sub{color:var(--muted);font-size:15px;margin:0 0 18px}
   .levels{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 26px}
   .levels .lk{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
   .levels .pill{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-family:var(--mono);color:var(--muted);background:var(--panel);border:1px solid var(--hair2);border-radius:20px;padding:4px 11px}
-  .levels .pill b{color:var(--accent);font-weight:700}
+  .levels .pill b{color:var(--accent);font-weight:700;letter-spacing:.03em}
   p.lead{font-size:16px;margin:0 0 22px}p.lead b{font-weight:600}
   .sec{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:36px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--hair)}
   .mblock{margin:16px 0;overflow-x:auto}
   .glo{list-style:none;padding:0;margin:14px 0 0}
   .glo li{display:flex;gap:14px;padding:9px 0;border-top:1px solid var(--hair);align-items:baseline}
   .glo li:first-child{border-top:none}
-  .glo .sym{flex:0 0 96px;text-align:right;padding-top:2px;font-family:var(--mono);font-size:13px;color:var(--accent)}
+  .glo .sym{flex:0 0 110px;text-align:right;padding-top:2px;font-family:var(--mono);font-size:13px;color:var(--accent)}
   .glo .def{font-size:14.5px}.glo .def .n{color:var(--muted)}
   .step{font-size:14.5px;color:var(--muted);margin:10px 0}
   .panel{background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:20px;margin:14px 0}
-  .toggle{display:flex;gap:16px;margin:0 0 8px;font-family:var(--mono);font-size:12.5px}
+  .toggle{display:flex;gap:10px;margin:0 0 10px;font-family:var(--mono);font-size:12.5px}
   .toggle button{border:1px solid var(--hair2);background:var(--panel);color:var(--muted);border-radius:7px;padding:6px 12px;cursor:pointer}
   .toggle button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
   .ctrls{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px 20px;margin:14px 0 4px}
-  @media(max-width:560px){.ctrls{grid-template-columns:1fr 1fr}}
+  @media(max-width:560px){.ctrls{grid-template-columns:1fr}}
   .field{display:flex;flex-direction:column;gap:4px}
   .field label{font-size:11.5px;color:var(--muted);font-family:var(--mono);display:flex;justify-content:space-between}
   .field label b{color:var(--ink);font-weight:600}
   input[type=range]{width:100%;accent-color:var(--accent);height:18px}
   svg{max-width:100%;height:auto;display:block}
-  .legend{display:flex;flex-wrap:wrap;gap:18px;margin:8px 0 2px;font-size:12.5px;color:var(--muted);font-family:var(--mono)}
-  .legend span{display:inline-flex;align-items:center;gap:6px}
-  .dotc{width:10px;height:10px;border-radius:3px;display:inline-block}
-  .callout{font-size:14px;color:var(--muted);border-left:2px solid var(--accent);padding:2px 0 2px 14px;margin:14px 0 2px;min-height:1.4em}
+  .tally{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 2px}
+  .stat{flex:1;min-width:130px;background:var(--paper);border-radius:9px;padding:9px 12px}
+  .stat .k{font-size:11px;font-family:var(--mono);letter-spacing:.04em;color:var(--muted);text-transform:uppercase}
+  .stat .v{font-size:18px;font-weight:600;font-family:var(--mono);margin-top:2px}
+  .stat .v.a{color:var(--accent)}.stat .v.g{color:var(--ok)}
+  .stat .sm{font-size:10.5px;font-family:var(--mono);color:var(--muted);margin-top:3px;line-height:1.55}
+  .callout{font-size:14px;color:var(--muted);border-left:2px solid var(--accent);padding:2px 0 2px 14px;margin:16px 0 2px;min-height:1.4em}
   .theorem{background:var(--accent-bg);border-radius:12px;padding:18px 20px;margin:16px 0}
   .theorem .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
   .theorem p{font-family:var(--serif);font-size:16px;line-height:1.55;margin:0}
@@ -76,63 +79,125 @@
 <div class="wrap">
   <p class="eyebrow">Lesson 13 · Wing II — the optimization engine</p>
   <h1>Backprop as automatic differentiation<span class="chip" id="chip"></span></h1>
-  <p class="sub">Backpropagation isn't a neural-net trick — it's the chain rule, run backward through a graph, in one pass.</p>
-  <div class="levels"><span class="lk">Level</span><span class="pill"><b>US</b> Advanced undergrad → graduate</span><span class="pill"><b>FR</b> Master M1 · ENSAE 2A</span></div>
+  <p class="sub">Backpropagation isn't a neural-net trick — it's the chain rule run backward through a graph. Here it prices a call option and hands back every Greek in one sweep.</p>
+  <div class="levels"><span class="lk">Level</span><span class="pill"><b>US</b> Senior undergrad → graduate</span><span class="pill"><b>FR</b> Master 1 · ENSAE 2A</span></div>
 
-  <p class="lead">Lesson 9's optimizers all needed one thing: the gradient ∇L. Backpropagation is how you get it — cheaply, for millions of parameters at once. The idea is exact and simple: write the computation as a <b>graph</b> of elementary operations, do a <b>forward pass</b> to compute values, then a <b>backward pass</b> that pushes derivatives from the output back to every input by multiplying local derivatives along the way. That's the chain rule as bookkeeping — <b>reverse-mode automatic differentiation</b>.</p>
+  <p class="lead">Lesson 9's optimizers all consumed one object: the gradient ∇L. This lesson is about how that gradient is actually manufactured. The idea, in plain words: write any calculation — a loss, a price — as a <b>computation graph</b> of tiny steps, evaluate it once left-to-right (the <b>forward pass</b>), then walk the same graph once right-to-left pushing sensitivities from the output back to every input (the <b>backward sweep</b>). Each step only needs its own local derivative; the chain rule stitches them together. That bookkeeping scheme is <b>reverse-mode automatic differentiation</b>, and its punchline is economic, not mathematical: the <i>entire</i> gradient — a million partial derivatives, or all of an option's Greeks — costs a small constant times <i>one</i> evaluation.</p>
 
-  <div class="sec">The chain rule, made mechanical</div>
-  <div class="mblock math" data-tex="\frac{\partial L}{\partial \theta}=\sum_{\text{paths }\theta\to L}\ \prod_{\text{edges on path}}\frac{\partial\,(\text{child})}{\partial\,(\text{parent})}" data-display="1"></div>
-  <p class="step">Reverse mode computes this efficiently by assigning every node an <b>adjoint</b> <span class="math" data-tex="\bar v=\partial L/\partial v"></span> and sweeping from output to inputs. Each node's adjoint is its local derivative times the adjoints of the nodes it feeds — and when a node feeds several places, those contributions <b>add</b>:</p>
-  <div class="mblock math" data-tex="\bar v=\sum_{c\,\in\,\text{children}(v)}\ \bar c\;\frac{\partial c}{\partial v}" data-display="1"></div>
+  <div class="sec">The vocabulary, in plain words</div>
   <ul class="glo">
-    <li><span class="sym">forward</span><span class="def">values flow input → output. <span class="n">Compute and cache every node's value; this is just evaluating the function.</span></span></li>
-    <li><span class="sym">v̄ = ∂L/∂v</span><span class="def">the <b>adjoint</b> of node v. <span class="n">How much the final loss moves per unit change in v — the thing you want for every parameter.</span></span></li>
-    <li><span class="sym">Σ children</span><span class="def">a node feeding several places. <span class="n">Its adjoint is the SUM over all the branches it influences — the most-missed rule.</span></span></li>
+    <li><span class="sym">computation graph</span><span class="def">the recipe written as single steps. <span class="n">Each node is one elementary operation (a log, a product, a Φ); an edge means "this value feeds that step." Every pricing formula and every neural network is such a graph.</span></span></li>
+    <li><span class="sym">forward pass</span><span class="def">run the recipe input → output, caching every intermediate value. <span class="n">This is just evaluating the function — one pricing.</span></span></li>
+    <li><span class="sym">adjoint v̄</span><span class="def">a node's sensitivity: v̄ = ∂(final output)/∂(this node). <span class="n">Say "v-bar." The backward sweep fills these in, output → inputs. For an input node, the adjoint IS the derivative you wanted.</span></span></li>
+    <li><span class="sym">the tape</span><span class="def">the cache of forward values the sweep reads back. <span class="n">Local derivatives like ∂(σ√T)/∂σ = √T need the forward values, so all of them must stay alive until the sweep returns.</span></span></li>
+    <li><span class="sym">forward mode</span><span class="def">the mirror image: push one input's tiny perturbation downstream. <span class="n">One pass per input; no tape needed. Formally a Jacobian-vector product (JVP).</span></span></li>
+    <li><span class="sym">reverse mode</span><span class="def">pull the output's sensitivity upstream via adjoints. <span class="n">One pass per output. Formally a vector-Jacobian product (VJP). Backprop = reverse mode on a scalar loss.</span></span></li>
+    <li><span class="sym">Greek</span><span class="def">a derivative of a price with respect to one of its inputs: delta ∂C/∂S, vega ∂C/∂σ, rho ∂C/∂r. <span class="n">One price, many inputs — exactly the shape reverse mode devours.</span></span></li>
   </ul>
 
-  <div class="sec">See it — forward values, backward gradients</div>
+  <div class="sec">The chain rule on a graph</div>
+  <p class="step">Both modes are the same chain rule, swept in opposite directions. Forward mode carries a <b>tangent</b> v̇ (how much each node moves per unit wiggle of one chosen input); reverse mode carries an <b>adjoint</b> v̄ (how much the output moves per unit wiggle of this node). A node that feeds several places influences the output through every branch, so contributions <b>add</b> — the most-missed rule in hand-rolled backprop:</p>
+  <div class="mblock math" data-tex="\dot v_j \;=\; \sum_{i\,\in\,\mathrm{pa}(j)} \frac{\partial v_j}{\partial v_i}\,\dot v_i \qquad\qquad \bar v_i \;=\; \sum_{j\,\in\,\mathrm{ch}(i)} \bar v_j\,\frac{\partial v_j}{\partial v_i}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym">v̇ⱼ</span><span class="def"><b>tangent</b> of node j, propagated input → output. <span class="n">Seed one input with v̇ = 1, all others 0; the output's tangent is one column of the Jacobian (a JVP).</span></span></li>
+    <li><span class="sym">v̄ᵢ</span><span class="def"><b>adjoint</b> of node i, propagated output → input. <span class="n">Seed the output with v̄ = 1; every input's adjoint is one entry of the gradient (a VJP row).</span></span></li>
+    <li><span class="sym">∂vⱼ/∂vᵢ</span><span class="def">the <b>local partial</b> attached to one edge. <span class="n">Known in closed form for each elementary op — that's what makes AD exact, unlike finite differences.</span></span></li>
+    <li><span class="sym">pa(j), ch(i)</span><span class="def">parents feed j; children are fed by i. <span class="n">The sums run over edges, so each sweep touches each edge once — the seed of the cost theorem below.</span></span></li>
+  </ul>
+  <p class="step">Now the taxonomy. For f: ℝᵏ → ℝᵐ, forward mode rebuilds the full Jacobian in k passes (one per input); reverse mode in m passes (one per output). So <b>reverse wins when m = 1 and k is large</b> — a scalar loss over a million weights, a single book PnL over hundreds of risk factors. Forward wins when k is small or m is large: one shocked input propagating to a whole book of outputs.</p>
+
+  <div class="sec">The worked example — Black–Scholes as a graph</div>
+  <div class="mblock math" data-tex="d_1=\frac{\ln(S/K)+\left(r+\sigma^{2}/2\right)T}{\sigma\sqrt{T}},\qquad d_2=d_1-\sigma\sqrt{T},\qquad C=S\,\Phi(d_1)-K\,e^{-rT}\,\Phi(d_2)" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym">S, K</span><span class="def">spot price and strike. <span class="n">S is the input the desk bumps for delta.</span></span></li>
+    <li><span class="sym">σ, T, r</span><span class="def">implied volatility, time to expiry (years), risk-free rate. <span class="n">Their partials are vega, ∂C/∂T, rho.</span></span></li>
+    <li><span class="sym">Φ, φ</span><span class="def">standard normal CDF and density. <span class="n">Evaluated here with Hart's (1968) double-precision rational approximation — error ≈ 10⁻¹⁵, so it never pollutes the comparisons below.</span></span></li>
+    <li><span class="sym">d₁, d₂</span><span class="def">the two standardized log-moneyness quantities. <span class="n">d₂ reuses d₁ — a shared intermediate, i.e. a node with fan-out.</span></span></li>
+    <li><span class="sym">C</span><span class="def">the call price — the graph's single scalar output. <span class="n">m = 1: reverse mode's favourite shape.</span></span></li>
+  </ul>
+  <p class="step">A vanilla desk wants four sensitivities of that one number. The closed forms exist here (that's why this example is honest — we can grade the sweep against them):</p>
+  <div class="mblock math" data-tex="\Delta=\Phi(d_1),\qquad \text{vega}=S\sqrt{T}\,\varphi(d_1),\qquad \rho=K\,T\,e^{-rT}\,\Phi(d_2),\qquad \frac{\partial C}{\partial T}=\frac{S\sigma\,\varphi(d_1)}{2\sqrt{T}}+rK e^{-rT}\Phi(d_2)" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym">Δ = ∂C/∂S</span><span class="def">delta — the hedge ratio. <span class="n">The sweep will land on the S node with exactly Φ(d₁); the graph shows why.</span></span></li>
+    <li><span class="sym">∂C/∂σ</span><span class="def">vega — sensitivity to implied vol. <span class="n">Collected from two paths: σ√T and (r+σ²/2)T.</span></span></li>
+    <li><span class="sym">∂C/∂r, ∂C/∂T</span><span class="def">rho and the calendar sensitivity (θ = −∂C/∂T). <span class="n">T has fan-out three: √T, (r+σ²/2)T, e⁻ʳᵀ — its adjoint sums three contributions.</span></span></li>
+  </ul>
+
+  <div class="sec">See it — one forward pass, one backward sweep, all Greeks</div>
   <div class="panel">
-    <p class="step" style="margin-top:0">A tiny factor model predicting this month's index return: prediction p = tanh(w₁x₁ + w₂x₂ + b), loss L = (p − y)². <b id="modeLbl" style="color:var(--ink)">Forward</b> mode shows node values; <b style="color:var(--grad)">backward</b> shows each node's gradient ∂L/∂node. Move any leaf and watch both sweep.</p>
-    <div class="toggle" id="mode"><button data-m="both" class="on">show both</button><button data-m="fwd">forward only</button><button data-m="bwd">backward only</button></div>
-    <svg id="graph" viewBox="0 0 700 380" role="img" aria-label="Computation graph with forward values and backward gradients"></svg>
-    <div class="legend"><span><i class="dotc" style="background:var(--ink)"></i>forward value</span><span><i class="dotc" style="background:var(--grad)"></i>gradient ∂L/∂node</span></div>
+    <p class="step" style="margin-top:0">The Black–Scholes graph, live. Nodes show their <b style="color:var(--ink)">forward value</b>; run the backward sweep to light each node's <b style="color:var(--grad)">adjoint v̄ = ∂C/∂v</b> and the local partials on the key edges. K = 100 and r = 3% are pinned.</p>
+    <div class="toggle" id="sweep"><button data-m="fwd" class="on">forward pass</button><button data-m="bwd">run backward sweep</button></div>
+    <svg id="graph" viewBox="0 0 700 318" role="img" aria-label="Black-Scholes computation graph with forward values and adjoints"></svg>
     <div class="ctrls">
-      <div class="field"><label>x₁ · momentum factor <b id="x1O">1.20</b></label><input type="range" id="x1" min="-2" max="2" value="1.2" step="0.05"></div>
-      <div class="field"><label>x₂ · value factor <b id="x2O">-0.50</b></label><input type="range" id="x2" min="-2" max="2" value="-0.5" step="0.05"></div>
-      <div class="field"><label>y · realized return <b id="yO">0.15</b></label><input type="range" id="y" min="-1" max="1" value="0.15" step="0.05"></div>
-      <div class="field"><label>w₁ · loading <b id="w1O">0.30</b></label><input type="range" id="w1" min="-1" max="1" value="0.3" step="0.05"></div>
-      <div class="field"><label>w₂ · loading <b id="w2O">0.20</b></label><input type="range" id="w2" min="-1" max="1" value="0.2" step="0.05"></div>
-      <div class="field"><label>b · intercept <b id="bO">0.00</b></label><input type="range" id="b" min="-1" max="1" value="0" step="0.05"></div>
+      <div class="field"><label>S · spot <b id="sSO">105</b></label><input type="range" id="sS" min="60" max="160" value="105" step="1"></div>
+      <div class="field"><label>σ · implied vol <b id="sVO">0.20</b></label><input type="range" id="sV" min="0.05" max="0.60" value="0.20" step="0.01"></div>
+      <div class="field"><label>T · expiry (yrs) <b id="sTO">1.00</b></label><input type="range" id="sT" min="0.10" max="3.00" value="1.00" step="0.05"></div>
     </div>
-    <p class="callout" id="cnote"></p>
+    <div class="tally">
+      <div class="stat"><div class="k">Δ · adjoint of S</div><div class="v a" id="gD">—</div><div class="sm" id="gDs">—</div></div>
+      <div class="stat"><div class="k">vega · adjoint of σ</div><div class="v a" id="gV">—</div><div class="sm" id="gVs">—</div></div>
+      <div class="stat"><div class="k">ρ · adjoint of r</div><div class="v a" id="gR">—</div><div class="sm" id="gRs">—</div></div>
+      <div class="stat"><div class="k">∂C/∂T · adjoint of T</div><div class="v a" id="gT">—</div><div class="sm" id="gTs">—</div></div>
+    </div>
+    <p class="callout" id="c1"></p>
   </div>
 
+  <p class="step">Why should the full gradient be cheap? Look at the sums above: each sweep touches each <i>edge</i> exactly once, and the work per edge is one multiply-add using values already on the tape. So the backward sweep costs about what the forward pass cost — regardless of how many inputs are waiting at the far end. That intuition is a theorem:</p>
   <div class="theorem">
-    <p class="lbl">The precise statement</p>
-    <p>Reverse-mode AD computes the gradient of one scalar output with respect to all inputs in time proportional to the cost of one forward evaluation (times a small constant), by traversing the computation graph in reverse topological order and accumulating adjoints v̄ = Σ_{c∈children} c̄ · ∂c/∂v. It is exact (not finite-difference) — each adjoint is a vector-Jacobian product with the node's local Jacobian. Forward mode instead propagates one input's perturbation to all outputs (a Jacobian-vector product); reverse mode is preferred whenever outputs ≪ inputs, e.g. a scalar loss over millions of parameters.</p>
+    <p class="lbl">The precise statement — the cheap-gradient principle</p>
+    <p>(Baur–Strassen.) Let f: ℝᵏ → ℝ be computed by a straight-line program (a computation graph of arithmetic operations and elementary functions) with evaluation cost C. Then the full gradient ∇f ∈ ℝᵏ is computable with cost at most 5·C, independent of k, by accumulating adjoints v̄ᵢ = Σ_{j∈ch(i)} v̄ⱼ · ∂vⱼ/∂vᵢ in reverse topological order, reading intermediate values from the tape. In practice the constant is 2–4. Forward mode instead costs Θ(k·C) for the same gradient; a full Jacobian of f: ℝᵏ → ℝᵐ costs min(k, m)·O(C) by choosing the sweep direction.</p>
+  </div>
+
+  <div class="sec">The two costs of differentiation — and the error FD can't escape</div>
+  <p class="step">Scale the story to a vol surface: k pillar vegas of one book value (f: ℝᵏ → ℝ). Bump-and-reprice pays k+1 pricings one-sided, 2k central. Forward mode pays k tangent passes. The adjoint pays ≈ 4 pricings <b>total</b> — the bar that never moves:</p>
+  <div class="panel">
+    <svg id="bars" viewBox="0 0 660 132" role="img" aria-label="Cost of gradient methods, log scale"></svg>
+    <div class="ctrls" style="grid-template-columns:1fr">
+      <div class="field"><label>k · risk factors (pillar vegas) <b id="kkO">60</b></label><input type="range" id="kk" min="1" max="500" value="60" step="1"></div>
+    </div>
+    <div class="tally">
+      <div class="stat"><div class="k">central bump · 2k</div><div class="v" id="cb">—</div></div>
+      <div class="stat"><div class="k">forward mode · k</div><div class="v" id="cf">—</div></div>
+      <div class="stat"><div class="k">adjoint · const</div><div class="v g" id="ca">—</div></div>
+      <div class="stat"><div class="k">adjoint speedup</div><div class="v a" id="csp">—</div></div>
+    </div>
+    <p class="callout" id="c2"></p>
+  </div>
+  <p class="step">And bumping carries a second, quieter cost: a finite difference is an <i>approximation</i> with an unavoidable error floor. Bump spot by a fraction h — the desk's percentage bump — and shrink it: truncation error falls like h², until subtracting two nearly identical prices amplifies floating-point roundoff like ε/h. The two regimes meet in a V. The curve below is measured live on this page's own delta (pinned at S = 105, σ = 0.20, T = 1):</p>
+  <div class="panel">
+    <svg id="vc" viewBox="0 0 660 240" role="img" aria-label="Central finite difference error versus bump size, log-log"></svg>
+    <div class="ctrls" style="grid-template-columns:1fr">
+      <div class="field"><label>relative bump h · fraction of spot (log slider) <b id="hhO">—</b></label><input type="range" id="hh" min="0" max="44" value="24" step="1"></div>
+    </div>
+    <div class="tally">
+      <div class="stat"><div class="k">bump h</div><div class="v" id="vH">—</div></div>
+      <div class="stat"><div class="k">|FD Δ − exact Δ|</div><div class="v" id="vFD">—</div></div>
+      <div class="stat"><div class="k">adjoint error (no h)</div><div class="v g" id="vAD">—</div></div>
+    </div>
+    <p class="callout" id="c3"></p>
   </div>
 
   <div class="twist">
-    <p class="lbl">The twist — this is exactly how you'd compute every Greek at once</p>
-    <p>Reverse-mode's whole advantage is direction: <b>one output, many inputs</b>, all sensitivities in a single backward pass. That's precisely the shape of a Greeks calculation — one price V, and you want ∂V/∂S, ∂V/∂σ, ∂V/∂r, ∂V/∂t all together. Bump-and-revalue (finite differences) costs one extra revaluation <i>per</i> input and adds truncation error; reverse-mode AD — "adjoint algorithmic differentiation," now standard in derivatives libraries — gets the entire gradient for roughly the price of one valuation, exactly. The mirror image also matters: if you have <b>one input and many outputs</b> (how a single shock propagates through a whole book), <b>forward</b> mode is the efficient one. Same chain rule, two sweep directions; which is cheaper depends only on the shape of the Jacobian — tall (many outputs) favours forward, wide (many inputs, scalar loss) favours reverse. Deep learning is the extreme wide case, which is why backprop won.</p>
+    <p class="lbl">The twist — cheap in time, expensive in memory</p>
+    <p>The cheap-gradient theorem buys time with <b>memory</b>: the backward sweep reads the tape, so <i>every</i> forward intermediate must stay alive until the sweep returns. In deep learning that means training memory — not compute — is what caps batch size and context length, and it is why <b>gradient checkpointing</b> exists: keep only some checkpoints, recompute the forward chunks between them during the sweep, deliberately trading FLOPs back for memory. The identical constraint runs adjoint AAD on a Monte-Carlo book: one adjoint sweep per simulation gives every Greek, but only if the whole simulated path is stored (or regenerated) for the reverse pass. Forward mode needs no tape at all — it just pays its k passes. The tape asymmetry, not the chain rule, is what shapes the economics of both deep learning and production risk systems.</p>
   </div>
 
   <div class="vol">
     <p class="lbl">Why this matters · volarixs</p>
-    <p>The graph above is the literal gradient step from Lesson 9, now itemised: change a loading w₁ and the backward pass tells you ∂L/∂w₁ = (tanh′·x₁)·2(p−y) — the number your optimizer subtracts. Any gradient-trained model you build (a neural forecaster, a logistic direction signal, a calibration objective) is differentiated exactly this way, and every framework — PyTorch, JAX — is just a graph builder plus this reverse sweep.</p>
-    <p>The transferable instinct for your derivatives work: when you need many sensitivities of a single quantity — a book's Greeks, a portfolio's exposures to every factor — reach for <b>adjoint/reverse-mode</b>, not per-input bumping. It's exact and it's one pass. And note ∂L/∂x is computed too: the model hands you the sensitivity of its loss to the <i>inputs</i>, not just the weights — useful for attribution and for adversarial/robustness checks.</p>
+    <p>A bucketed-vega report built the traditional way bumps one pillar at a time and reprices — the tall blue bar in the cost chart, growing with every pillar you add. Adjoint AD is the order-of-magnitude upgrade: one sweep per revaluation yields <b>every pillar vega on the surface at once</b>, exact to machine precision, for a constant ~4 pricings. The k-factor cost bars above <i>are</i> that trade, stated honestly — including the small-k regime where bumping is perfectly fine.</p>
+    <p>The graph habit transfers beyond Greeks: any gradient-calibrated object — a smile fit, a P&amp;L-attribution regression, a neural forecaster feeding a Cross-Matrix cell — is trained by exactly this sweep, and the FD V-curve is the reason a "just bump it" gradient check needs its h chosen near ∛ε rather than "something small."</p>
   </div>
 
   <div class="sec">Check yourself</div>
-  <div class="q" id="q1"><p class="stem">Backpropagation is fundamentally:</p><div class="opts"></div><p class="fb"></p></div>
-  <div class="q" id="q2"><p class="stem">In the backward pass, the adjoint of a node that feeds several downstream nodes is:</p><div class="opts"></div><p class="fb"></p></div>
-  <div class="q" id="q3"><p class="stem">Reverse-mode AD is preferred over forward-mode when:</p><div class="opts"></div><p class="fb"></p></div>
-  <div class="q" id="q4"><p class="stem">Computing the gradient of a scalar loss w.r.t. all parameters by reverse-mode costs, per step, roughly:</p><div class="opts"></div><p class="fb"></p></div>
-  <div class="q" id="q5"><p class="stem">To get all Greeks (∂V/∂S, ∂V/∂σ, …) of a single price efficiently and exactly, the natural tool is:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q1"><p class="stem">A risk system needs all k = 300 pillar vegas of one book value (f: ℝ³⁰⁰ → ℝ). Which AD mode, and why?</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q2"><p class="stem">The cheap-gradient (Baur–Strassen) principle says the full gradient of a straight-line program of cost C is computable for at most:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q3"><p class="stem">In the backward sweep, the adjoint of a node v that feeds several downstream nodes is:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q4"><p class="stem">Why does the central-difference error form a V against bump size h, and where is the bottom?</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q5"><p class="stem">The sweep lands on the S node with S̄ = Φ(d₁) while d̄₁ ≈ 0. Reading delta off the graph:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q6"><p class="stem">Reverse mode's gradient is cheap in time. What is the price, and how is it paid down?</p><div class="opts"></div><p class="fb"></p></div>
 
-  <div class="checkRow"><button class="primary" id="check">Check answers</button><span class="scoreOut" id="scoreOut"></span><span class="hint" id="hint">Answer all five first.</span></div>
-  <div class="done" id="done">Gradients demystified. Next in Wing II: convexity, saddle points & the reparameterization trick.</div>
+  <div class="checkRow"><button class="primary" id="check">Check answers</button><span class="scoreOut" id="scoreOut"></span><span class="hint" id="hint">Answer all six first.</span></div>
+  <div class="done" id="done">Every Greek in one sweep. Next in Wing II: convexity, saddle points &amp; the reparameterization trick.</div>
 </div>
 
 <script>
@@ -140,73 +205,157 @@
 if(!window.storage){window.storage={async get(k){const v=localStorage.getItem(k);if(v==null)throw new Error('missing');return{key:k,value:v}},async set(k,v){localStorage.setItem(k,v);return{key:k,value:v}},async delete(k){localStorage.removeItem(k);return{key:k,deleted:true}},async list(p){const ks=[];for(let i=0;i<localStorage.length;i++){const kk=localStorage.key(i);if(!p||kk.startsWith(p))ks.push(kk)}return{keys:ks}}};}
 function renderMath(){document.querySelectorAll('.math').forEach(el=>{const tex=el.getAttribute('data-tex');if(!tex||el.dataset.done)return;try{if(window.katex){katex.render(tex,el,{displayMode:el.dataset.display==='1',throwOnError:false});el.dataset.done='1';}else el.textContent=tex;}catch(e){el.textContent=tex;}});}
 
-let mode='both';
-const NODES={
-  x1:{x:55,y:38,label:'x₁'}, w1:{x:55,y:96,label:'w₁'},
-  x2:{x:55,y:158,label:'x₂'}, w2:{x:55,y:216,label:'w₂'},
-  b:{x:55,y:278,label:'b'},  y:{x:55,y:340,label:'y'},
-  m1:{x:210,y:67,label:'w₁·x₁'}, m2:{x:210,y:187,label:'w₂·x₂'},
-  h:{x:355,y:150,label:'Σ  (h)'}, p:{x:475,y:150,label:'tanh (p)'},
-  r:{x:585,y:245,label:'p − y'}, L:{x:640,y:245,label:'L = r²'}
-};
-const EDGES=[['x1','m1'],['w1','m1'],['x2','m2'],['w2','m2'],['m1','h'],['m2','h'],['b','h'],['h','p'],['p','r'],['y','r'],['r','L']];
-function compute(){
-  const g=id=>+document.getElementById(id).value;
-  const x1=g('x1'),x2=g('x2'),w1=g('w1'),w2=g('w2'),b=g('b'),y=g('y');
-  const m1=w1*x1,m2=w2*x2,h=m1+m2+b,p=Math.tanh(h),r=p-y,L=r*r;
-  const val={x1,x2,w1,w2,b,y,m1,m2,h,p,r,L};
-  // backward
-  const Lb=1,rb=2*r,pb=rb*1,hb=pb*(1-p*p),m1b=hb,m2b=hb,bb=hb;
-  const w1b=m1b*x1,x1b=m1b*w1,w2b=m2b*x2,x2b=m2b*w2,yb=rb*(-1);
-  const grad={L:Lb,r:rb,p:pb,h:hb,m1:m1b,m2:m2b,b:bb,w1:w1b,x1:x1b,w2:w2b,x2:x2b,y:yb};
-  return {val,grad};
-}
-function nodeSVG(id,n,val,grad){
-  const w=id.length>2?66:46,hh=val!==undefined&&grad!==undefined&&mode==='both'?44:32;
-  const x=n.x,y=n.y;let s=`<rect x="${x}" y="${y}" width="${w}" height="${hh}" rx="8" fill="var(--panel)" stroke="var(--hair2)"/>`;
-  s+=`<text x="${x+w/2}" y="${y+13}" text-anchor="middle" font-family="var(--mono)" font-size="10.5" fill="var(--muted)">${n.label}</text>`;
-  if(mode!=='bwd')s+=`<text x="${x+w/2}" y="${y+(mode==='both'?26:27)}" text-anchor="middle" font-family="var(--mono)" font-size="11" fill="var(--ink)" font-weight="600">${val.toFixed(2)}</text>`;
-  if(mode!=='fwd'&&grad!==undefined)s+=`<text x="${x+w/2}" y="${y+(mode==='both'?39:27)}" text-anchor="middle" font-family="var(--mono)" font-size="10.5" fill="var(--grad)">${(grad>=0?'+':'')+grad.toFixed(2)}</text>`;
-  return s;
-}
-function render(){
-  const {val,grad}=compute();
-  ['x1','x2','w1','w2','b','y'].forEach(id=>document.getElementById(id+'O').textContent=(+document.getElementById(id).value).toFixed(2));
-  let s='';
-  // edges
-  EDGES.forEach(([a,c])=>{const na=NODES[a],nc=NODES[c];const wa=a.length>2?66:46;
-    const x1=na.x+wa,y1=na.y+16,x2=nc.x,y2=nc.y+16;
-    const mx=(x1+x2)/2;s+=`<path d="M${x1} ${y1} C ${mx} ${y1}, ${mx} ${y2}, ${x2} ${y2}" fill="none" stroke="var(--hair2)" stroke-width="1.3"/>`;});
-  Object.keys(NODES).forEach(id=>{s+=nodeSVG(id,NODES[id],val[id],grad[id]);});
-  document.getElementById('graph').innerHTML=s;
-  document.getElementById('cnote').innerHTML = `Prediction p = <b>${val.p.toFixed(3)}</b>, actual y = ${val.y.toFixed(2)}, so loss = <b>${val.L.toFixed(4)}</b>. Reading the gradients: ∂L/∂w₁ = <b style="color:var(--grad)">${grad.w1.toFixed(3)}</b> and ∂L/∂w₂ = <b style="color:var(--grad)">${grad.w2.toFixed(3)}</b> — the numbers the optimizer subtracts. Notice the tanh node damps everything by (1−p²) = ${(1-val.p*val.p).toFixed(3)} on the way back.`;
-}
-document.querySelectorAll('#mode button').forEach(b=>b.onclick=()=>{mode=b.dataset.m;document.querySelectorAll('#mode button').forEach(x=>x.classList.toggle('on',x===b));render();});
-['x1','x2','w1','w2','b','y'].forEach(id=>document.getElementById(id).addEventListener('input',render));
+/* atlas determinism contract: any randomness must flow through this seeded generator.
+   This lesson's numerics are fully closed-form; rng is instantiated (seed 113) and unused. */
+function mulberry32(seed){let a=seed>>>0;return function(){a|=0;a=(a+0x6D2B79F5)|0;let t=Math.imul(a^(a>>>15),1|a);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296;}}
+function randn(rng){let u=0,v=0;while(!u)u=rng();while(!v)v=rng();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+const rng=mulberry32(113);
 
+/* Φ: Hart (1968) double-precision rational approximation (|err|≈1e-15); φ exact */
+const SQ2PI=2.5066282746310002;
+function phi(x){return Math.exp(-x*x/2)/SQ2PI;}
+function Phi(x){const ax=Math.abs(x);let c;if(ax>37)c=0;else{const e=Math.exp(-ax*ax/2);if(ax<7.07106781186547){let n=3.52624965998911e-2*ax+0.700383064443688;n=n*ax+6.37396220353165;n=n*ax+33.912866078383;n=n*ax+112.079291497871;n=n*ax+221.213596169931;n=n*ax+220.206867912376;let d=8.83883476483184e-2*ax+1.75566716318264;d=d*ax+16.064177579207;d=d*ax+86.7807322029461;d=d*ax+296.564248779674;d=d*ax+637.333633378831;d=d*ax+793.826512519948;d=d*ax+440.413735824752;c=e*n/d;}else{let b=ax+0.65;b=ax+4/b;b=ax+3/b;b=ax+2/b;b=ax+1/b;c=e/(b*SQ2PI);}}return x>0?1-c:c;}
+
+const Kf=100, rf=0.03; /* strike and rate, pinned */
+/* forward pass + backward sweep through the BS graph */
+function bs(S,sig,T,r){
+  const a=Math.log(S/Kf), q=Math.sqrt(T), vt=sig*q, b=(r+sig*sig/2)*T;
+  const d1=(a+b)/vt, d2=d1-vt, N1=Phi(d1), N2=Phi(d2), df=Math.exp(-r*T);
+  const C=S*N1-Kf*df*N2;
+  const Cb=1;                                   /* seed: C̄ = 1 */
+  const N1b=Cb*S, N2b=-Cb*Kf*df, dfb=-Cb*Kf*N2; /* C = S·N1 − K·df·N2 */
+  let Sb=Cb*N1, Kb=-Cb*df*N2;
+  const d2b=N2b*phi(d2);                        /* N2 = Φ(d2) */
+  const d1b=N1b*phi(d1)+d2b;                    /* N1 = Φ(d1); d2 = d1 − vt */
+  let vtb=-d2b-d1b*(a+b)/(vt*vt);               /* d1 = (a+b)/vt */
+  const ab=d1b/vt, bb=d1b/vt;
+  const qb=vtb*sig;                             /* vt = σ·q */
+  const sigb=vtb*q+bb*sig*T;                    /* b = (r+σ²/2)T */
+  const rb=bb*T+dfb*(-T*df);                    /* df = e^{−rT} */
+  const Tb=bb*(r+sig*sig/2)+dfb*(-r*df)+qb/(2*q); /* q = √T */
+  Sb+=ab/S; Kb+=-ab/Kf;                         /* a = ln(S/K) */
+  return {a,q,vt,b,d1,d2,N1,N2,df,C,adj:{S:Sb,Kn:Kb,sig:sigb,T:Tb,r:rb,a:ab,b:bb,q:qb,vt:vtb,d1:d1b,d2:d2b,N1:N1b,N2:N2b,df:dfb,C:Cb}};
+}
+function closed(S,sig,T,r){const g=bs(S,sig,T,r);return {delta:g.N1,vega:S*g.q*phi(g.d1),rho:Kf*T*g.df*g.N2,dT:S*sig*phi(g.d1)/(2*g.q)+r*Kf*g.df*g.N2};}
+function price(S,sig,T,r){return bs(S,sig,T,r).C;}
+function fdG(S,sig,T,r,h){return {delta:(price(S+h,sig,T,r)-price(S-h,sig,T,r))/(2*h),vega:(price(S,sig+h,T,r)-price(S,sig-h,T,r))/(2*h),rho:(price(S,sig,T,r+h)-price(S,sig,T,r-h))/(2*h),dT:(price(S,sig,T+h,r)-price(S,sig,T-h,r))/(2*h)};}
+
+/* ---------- interactive 1: the live DAG ---------- */
+const ND={S:{x:14,y:16,w:44,l:'S'},Kn:{x:14,y:78,w:44,l:'K'},sig:{x:14,y:140,w:44,l:'σ'},T:{x:14,y:202,w:44,l:'T'},r:{x:14,y:264,w:44,l:'r'},
+a:{x:112,y:42,w:78,l:'ln(S/K)'},q:{x:112,y:140,w:56,l:'√T'},b:{x:112,y:236,w:94,l:'(r+σ²/2)T'},
+vt:{x:238,y:104,w:60,l:'σ√T'},df:{x:238,y:266,w:70,l:'e^(−rT)'},
+d1:{x:346,y:56,w:50,l:'d₁'},d2:{x:346,y:150,w:50,l:'d₂'},
+N1:{x:438,y:56,w:62,l:'Φ(d₁)'},N2:{x:438,y:150,w:62,l:'Φ(d₂)'},C:{x:562,y:104,w:94,l:'C (price)'}};
+const ED=[['S','a'],['Kn','a'],['sig','vt'],['T','q'],['q','vt'],['sig','b'],['r','b'],['T','b'],['r','df'],['T','df'],['a','d1'],['b','d1'],['vt','d1'],['d1','d2','1'],['vt','d2','−1'],['d1','N1','φ(d₁)'],['d2','N2','φ(d₂)'],['S','C','Φ(d₁)'],['Kn','C'],['df','C'],['N1','C','S'],['N2','C','−K·e⁻ʳᵀ']];
+let sweepMode='fwd';
+const fV=v=>Math.abs(v)>=100?v.toFixed(1):Math.abs(v)>=10?v.toFixed(2):v.toFixed(3);
+const fA=v=>(v>=0?'+':'')+(Math.abs(v)>=100?v.toFixed(0):Math.abs(v)>=10?v.toFixed(1):v.toFixed(2));
+const p4=v=>Math.abs(v)>=100?v.toFixed(2):Math.abs(v)>=10?v.toFixed(3):v.toFixed(4);
+function render1(){
+  const S=+document.getElementById('sS').value,sig=+document.getElementById('sV').value,T=+document.getElementById('sT').value;
+  document.getElementById('sSO').textContent=S;document.getElementById('sVO').textContent=sig.toFixed(2);document.getElementById('sTO').textContent=T.toFixed(2);
+  const g=bs(S,sig,T,rf),cg=closed(S,sig,T,rf),fg=fdG(S,sig,T,rf,1e-5);
+  const val={S:S,Kn:Kf,sig:sig,T:T,r:rf,a:g.a,q:g.q,b:g.b,vt:g.vt,df:g.df,d1:g.d1,d2:g.d2,N1:g.N1,N2:g.N2,C:g.C};
+  const bwd=sweepMode==='bwd';let s='';
+  ED.forEach(e=>{const na=ND[e[0]],nc=ND[e[1]];const x1=na.x+na.w,y1=na.y+15,x2=nc.x,y2=nc.y+15,mx=(x1+x2)/2;
+    s+=`<path d="M${x1} ${y1} C ${mx} ${y1}, ${mx} ${y2}, ${x2} ${y2}" fill="none" stroke="${bwd?'var(--grad)':'var(--hair2)'}" stroke-width="1.3" opacity="${bwd?0.55:1}"/>`;
+    if(bwd&&e[2])s+=`<text x="${(x1+x2)/2}" y="${(y1+y2)/2-4}" text-anchor="middle" font-family="var(--mono)" font-size="9" fill="var(--grad)">${e[2]}</text>`;});
+  Object.keys(ND).forEach(id=>{const n=ND[id],hh=bwd?44:31;
+    s+=`<rect x="${n.x}" y="${n.y}" width="${n.w}" height="${hh}" rx="8" fill="var(--panel)" stroke="var(--hair2)"/>`;
+    s+=`<text x="${n.x+n.w/2}" y="${n.y+12}" text-anchor="middle" font-family="var(--mono)" font-size="9.5" fill="var(--muted)">${n.l}</text>`;
+    s+=`<text x="${n.x+n.w/2}" y="${n.y+26}" text-anchor="middle" font-family="var(--mono)" font-size="10.5" fill="var(--ink)" font-weight="600">${fV(val[id])}</text>`;
+    if(bwd)s+=`<text x="${n.x+n.w/2}" y="${n.y+39}" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--grad)">${fA(g.adj[id])}</text>`;});
+  document.getElementById('graph').innerHTML=s;
+  const A={delta:g.adj.S,vega:g.adj.sig,rho:g.adj.r,dT:g.adj.T};
+  [['gD','delta'],['gV','vega'],['gR','rho'],['gT','dT']].forEach(([el,k])=>{
+    document.getElementById(el).textContent=p4(A[k]);
+    document.getElementById(el+'s').textContent='closed '+p4(cg[k])+' · fd '+p4(fg[k]);});
+  const mC=Math.max(...Object.keys(A).map(k=>Math.abs(A[k]-cg[k]))),mF=Math.max(...Object.keys(A).map(k=>Math.abs(A[k]-fg[k])));
+  document.getElementById('c1').innerHTML = bwd
+    ? `One backward sweep, every Greek at once: Δ = <b>${p4(A.delta)}</b>, vega = <b>${p4(A.vega)}</b>, ρ = <b>${p4(A.rho)}</b>, ∂C/∂T = <b>${p4(A.dT)}</b>. Against the closed forms: max gap <b>${mC.toExponential(1)}</b> — machine precision. Against central FD (h = 10⁻⁵): max gap <b>${mF.toExponential(1)}</b> — that residual is the FD's error, not the sweep's. And read d̄₁ = ${g.adj.d1.toExponential(1)} ≈ 0 off the graph: the identity Sφ(d₁) = Ke⁻ʳᵀφ(d₂) cancels the indirect path through ln(S/K), so delta rides the direct S→C edge alone — which is <i>why</i> Δ = Φ(d₁) exactly.`
+    : `One forward pass — ten cached elementary steps — prices the call: C = <b>${g.C.toFixed(4)}</b>. Those cached values are the tape. Now run the backward sweep: it walks the same edges once, output→inputs, and deposits ∂C/∂(everything).`;
+}
+document.querySelectorAll('#sweep button').forEach(b=>b.onclick=()=>{sweepMode=b.dataset.m;document.querySelectorAll('#sweep button').forEach(x=>x.classList.toggle('on',x===b));render1();});
+['sS','sV','sT'].forEach(id=>document.getElementById(id).addEventListener('input',render1));
+
+/* ---------- interactive 2a: cost bars ---------- */
+function render2a(){
+  const k=+document.getElementById('kk').value;document.getElementById('kkO').textContent=k;
+  const rows=[['central bump · 2k',2*k,'var(--accent)'],['forward mode · k',k,'var(--series)'],['adjoint · ~4',4,'var(--ok)']];
+  const L=168,BW=380;let s='';
+  rows.forEach((rw,i)=>{const y=12+i*38,w=Math.max(6,BW*Math.log10(Math.max(rw[1],1))/3);
+    s+=`<text x="${L-10}" y="${y+16}" text-anchor="end" font-family="var(--mono)" font-size="11" fill="var(--muted)">${rw[0]}</text>`;
+    s+=`<rect x="${L}" y="${y}" width="${w.toFixed(1)}" height="23" rx="4" fill="${rw[2]}" opacity="0.85"/>`;
+    s+=`<text x="${(L+w+8).toFixed(1)}" y="${y+16}" font-family="var(--mono)" font-size="11.5" font-weight="600" fill="var(--ink)">${rw[1]} pricing${rw[1]===1?'':'s'}</text>`;});
+  s+=`<text x="${L}" y="128" font-family="var(--mono)" font-size="10" fill="var(--faint)">bar length: log₁₀ scale</text>`;
+  document.getElementById('bars').innerHTML=s;
+  document.getElementById('cb').textContent=2*k;document.getElementById('cf').textContent=k;document.getElementById('ca').textContent='~4';
+  const sp=k/2;document.getElementById('csp').textContent='×'+(k%2?sp.toFixed(1):sp);
+  document.getElementById('c2').innerHTML = k<8
+    ? `k = ${k}: at this size bumping is honest work — 2k = ${2*k} central repricings (${k+1} one-sided) against the adjoint's constant ~4. The cheap-gradient constant only starts to dominate as k grows. Drag right.`
+    : `k = ${k} pillar vegas: central bumping reprices <b>${2*k}</b> times (one-sided: ${k+1}), forward mode pays <b>${k}</b> tangent passes, and the adjoint pays <b>≈ 4</b> pricings total — ×${k%2?sp.toFixed(1):sp} cheaper than central bumping, a gap that grows linearly in k while the green bar never moves. That is Baur–Strassen, priced.`;
+}
+document.getElementById('kk').addEventListener('input',render2a);
+
+/* ---------- interactive 2b: the FD V-curve (measured live) ---------- */
+const P0={S:105,sig:0.20,T:1.00};
+const exact0=closed(P0.S,P0.sig,P0.T,rf).delta;
+const adjErr0=Math.abs(bs(P0.S,P0.sig,P0.T,rf).adj.S-exact0);
+const EX=[];for(let i=0;i<=44;i++)EX.push(-12+0.25*i);
+const ERR=EX.map(e=>{const h=Math.pow(10,e);return Math.abs((price(P0.S*(1+h),P0.sig,P0.T,rf)-price(P0.S*(1-h),P0.sig,P0.T,rf))/(2*P0.S*h)-exact0);});
+let minI=0;ERR.forEach((v,i)=>{if(v<ERR[minI])minI=i;});
+function render2b(){
+  const idx=+document.getElementById('hh').value,W=660,H=240,L=48,R=12,Tp=12,B=30,iw=W-L-R,ih=H-Tp-B;
+  const X=e=>L+iw*(e+12)/11, Y=le=>Tp+ih*(-2-le)/(-2-(-17));
+  const lg=v=>Math.log10(Math.max(v,1e-17));
+  let s='';
+  [[-12,'10⁻¹²'],[-9,'10⁻⁹'],[-6,'10⁻⁶'],[-3,'10⁻³']].forEach(([e,t])=>{s+=`<line x1="${X(e)}" y1="${Tp}" x2="${X(e)}" y2="${Tp+ih}" stroke="var(--hair)" stroke-width="1"/><text x="${X(e)}" y="${H-8}" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--faint)">${t}</text>`;});
+  [[-2,'10⁻²'],[-6,'10⁻⁶'],[-10,'10⁻¹⁰'],[-14,'10⁻¹⁴']].forEach(([le,t])=>{s+=`<line x1="${L}" y1="${Y(le)}" x2="${W-R}" y2="${Y(le)}" stroke="var(--hair)" stroke-width="1"/><text x="${L-6}" y="${Y(le)+3}" text-anchor="end" font-family="var(--mono)" font-size="10" fill="var(--faint)">${t}</text>`;});
+  /* guide slopes: truncation ∝ h² (anchored at h=1e-2), roundoff ∝ ε/h (anchored at h=1e-11) */
+  const a40=lg(ERR[40]),a4=lg(ERR[4]);
+  s+=`<line x1="${X(-5.5)}" y1="${Y(a40+2*(-5.5+2))}" x2="${X(-1)}" y2="${Y(a40+2*(-1+2))}" stroke="var(--series)" stroke-dasharray="5 4" stroke-width="1.3"/><text x="${X(-2.4)}" y="${Y(a40+2*(-2.4+2))-7}" font-family="var(--mono)" font-size="10" fill="var(--series)">truncation ∝ h²</text>`;
+  s+=`<line x1="${X(-12)}" y1="${Y(a4-(-12+11))}" x2="${X(-7.5)}" y2="${Y(a4-(-7.5+11))}" stroke="var(--miss)" stroke-dasharray="5 4" stroke-width="1.3"/><text x="${X(-11.8)}" y="${Y(a4-(-11.8+11))-8}" font-family="var(--mono)" font-size="10" fill="var(--miss)">roundoff ∝ ε/h</text>`;
+  const eStar=Math.log10(Math.cbrt(Number.EPSILON));
+  s+=`<line x1="${X(eStar)}" y1="${Tp}" x2="${X(eStar)}" y2="${Tp+ih}" stroke="var(--grad)" stroke-dasharray="2 4" stroke-width="1.2"/><text x="${X(eStar)+5}" y="${Tp+12}" font-family="var(--mono)" font-size="10" fill="var(--grad)">h* ≈ ∛ε</text>`;
+  s+=`<line x1="${L}" y1="${Y(lg(adjErr0))}" x2="${W-R}" y2="${Y(lg(adjErr0))}" stroke="var(--ok)" stroke-dasharray="6 4" stroke-width="1.4"/><text x="${W-R-4}" y="${Y(lg(adjErr0))-6}" text-anchor="end" font-family="var(--mono)" font-size="10" fill="var(--ok)">adjoint (no h to choose)</text>`;
+  s+=`<polyline points="${EX.map((e,i)=>X(e).toFixed(1)+','+Y(lg(ERR[i])).toFixed(1)).join(' ')}" fill="none" stroke="var(--accent)" stroke-width="1.8"/>`;
+  s+=`<circle cx="${X(EX[idx])}" cy="${Y(lg(ERR[idx]))}" r="5" fill="var(--accent)" stroke="var(--paper)" stroke-width="2"/>`;
+  document.getElementById('vc').innerHTML=s;
+  const h=Math.pow(10,EX[idx]);
+  document.getElementById('hhO').textContent=h.toExponential(1);
+  document.getElementById('vH').textContent=h.toExponential(1);
+  document.getElementById('vFD').textContent=ERR[idx].toExponential(2);
+  document.getElementById('vAD').textContent=adjErr0>0?adjErr0.toExponential(1):'0 (exact)';
+  document.getElementById('c3').innerHTML=`Truncation ∝ h² falls as the bump shrinks; roundoff ∝ ε/h rises as two near-equal prices are subtracted. With ε = ${Number.EPSILON.toExponential(2)}, the crossover sits at h* ≈ ∛ε ≈ <b>${Math.cbrt(Number.EPSILON).toExponential(1)}</b>; this measured curve bottoms out at h = <b>${Math.pow(10,EX[minI]).toExponential(1)}</b> (error ${ERR[minI].toExponential(1)}). At your h = ${h.toExponential(1)} the FD delta is off by <b>${ERR[idx].toExponential(1)}</b>. The adjoint never chooses an h: its error sits at ${adjErr0.toExponential(1)} regardless.`;
+}
+document.getElementById('hh').addEventListener('input',render2b);
+
+/* ---------- retrieval ---------- */
 const QS={
-  q1:{opts:["a heuristic special to neural networks","the chain rule applied in reverse over a computation graph (reverse-mode AD)","a finite-difference approximation of the gradient","a way to initialize weights"],a:1,
-    fb:"Backprop is exactly reverse-mode automatic differentiation: build the graph, cache forward values, then accumulate exact derivatives backward via the chain rule. Nothing network-specific about it."},
-  q2:{opts:["the maximum over its branches","the sum of the contributions from every node it feeds","only the first branch's contribution","its local derivative alone"],a:1,
-    fb:"A shared node influences the loss through each path it feeds, so its adjoint sums those contributions: v̄ = Σ_children c̄·∂c/∂v. Forgetting to add is the classic backprop bug."},
-  q3:{opts:["there are many outputs and few inputs","there is a scalar (or few) output and many inputs — e.g. a loss over millions of weights","the function is linear","gradients aren't needed"],a:1,
-    fb:"Reverse mode gets all input-gradients of one output in a single backward pass, so it wins when outputs ≪ inputs. Forward mode is better for one input → many outputs."},
-  q4:{opts:["much more than the forward pass (quadratic in parameters)","about the same as one forward evaluation (a small constant times)","exponential in network depth","one revaluation per parameter"],a:1,
-    fb:"That's the key efficiency result: reverse-mode AD costs O(1) forward passes regardless of the number of parameters — which is why training billion-parameter models is even feasible."},
-  q5:{opts:["bump-and-revalue each input separately","reverse-mode (adjoint) automatic differentiation","forward-mode AD","a lookup table"],a:1,
-    fb:"One output (price), many inputs (S, σ, r, t) is the wide-Jacobian case reverse mode is built for — 'adjoint algorithmic differentiation' returns all Greeks exactly for ~one valuation, versus bumping's per-input cost and truncation error."}
+  q1:{opts:["Forward mode — it propagates all 300 tangents in one pass","Either — both cost the same k passes","Reverse mode — one output, many inputs: a single adjoint sweep returns the whole gradient","Neither — finite differences are exact here"],a:2,
+    fb:"f: ℝᵏ→ℝ with k large is the wide-Jacobian shape reverse mode is built for: one VJP sweep yields all k sensitivities. Forward mode pays k tangent passes (one per input); central FD pays 2k pricings and adds truncation error on top."},
+  q2:{opts:["≤ 5·C — a constant multiple of one evaluation, independent of the number of inputs k","≤ k·C — one pass per input","≤ C·log k","≤ C² — quadratic in the program"],a:0,
+    fb:"The Baur–Strassen bound is a constant multiple of one evaluation — ≤ 5C in the classic statement, and 2–4× in practice — with no k anywhere. That k-independence is the entire economics of backprop and of adjoint AAD."},
+  q3:{opts:["its local partial alone","the SUM over its children of (child's adjoint × local partial ∂child/∂v)","the largest single child contribution","the product of its children's adjoints"],a:1,
+    fb:"v̄ = Σ_{j∈ch(v)} v̄ⱼ·∂vⱼ/∂v. Fan-out means the output feels v through every path, and those effects add — forgetting the sum is the classic hand-rolled-backprop bug. In the BS graph, T feeds √T, (r+σ²/2)T and e⁻ʳᵀ, so T̄ collects three terms."},
+  q4:{opts:["Truncation ∝ h and roundoff ∝ ε·h; bottom at h = ε","Both errors fall as h→0, so smaller is always better","Truncation ∝ h² and roundoff is constant at ε; bottom at h = √ε","Truncation ∝ h² falls while roundoff ∝ ε/h rises as h shrinks; they cross near h* ≈ ∛ε ≈ 6×10⁻⁶"],a:3,
+    fb:"A central difference has O(h²) Taylor truncation, and subtracting two nearly equal prices leaves roundoff ~ ε/h. Minimizing h² + ε/h gives h* ~ ∛ε ≈ 6×10⁻⁶ — the bottom of the V you traced. The adjoint has no h and sits at ε regardless."},
+  q5:{opts:["delta = φ(d₁), the density at d₁","delta = Φ(d₂), the risk-neutral exercise probability","delta = Φ(d₁): the identity Sφ(d₁) = Ke⁻ʳᵀφ(d₂) zeroes the indirect ln(S/K) path, leaving only the direct S→C edge","delta = 1 − Φ(d₁)"],a:2,
+    fb:"S̄ collects Φ(d₁) from the direct edge S→C plus (Sφ(d₁) − Ke⁻ʳᵀφ(d₂))/(Sσ√T) from the path through ln(S/K) — and the classic identity makes that second term exactly zero. So Δ = Φ(d₁), and the sweep shows you why, not just that."},
+  q6:{opts:["Memory — the tape of forward intermediates must live until the sweep returns; checkpointing recomputes forward chunks to trade FLOPs back for memory","Accuracy — adjoints accumulate truncation error like finite differences","Time after all — it secretly needs k backward sweeps","Nothing — reverse mode dominates forward mode everywhere"],a:0,
+    fb:"Every intermediate is re-read on the way back, so peak memory scales with the tape — which is what caps batch size in training and forces path storage in Monte-Carlo AAD. Gradient checkpointing keeps a few checkpoints and recomputes between them; forward mode carries no tape but pays k passes."}
 };
-const sel={q1:null,q2:null,q3:null,q4:null,q5:null};let revealed=false;
+const sel={q1:null,q2:null,q3:null,q4:null,q5:null,q6:null};let revealed=false;
 Object.keys(QS).forEach(id=>{const holder=document.querySelector('#'+id+' .opts');QS[id].opts.forEach((txt,i)=>{const b=document.createElement('button');b.className='opt';b.textContent=String.fromCharCode(65+i)+'.  '+txt;b.onclick=()=>{if(revealed)return;sel[id]=i;[...holder.children].forEach((c,ci)=>c.classList.toggle('sel',ci===i));document.getElementById('hint').style.display='none';};holder.appendChild(b);});});
 document.getElementById('check').onclick=async()=>{
   if(revealed)return;if(Object.values(sel).some(v=>v===null)){document.getElementById('hint').style.display='inline';return;}
   revealed=true;let score=0;
   Object.keys(QS).forEach(id=>{const a=QS[id].a,holder=document.querySelector('#'+id+' .opts'),fb=document.querySelector('#'+id+' .fb');[...holder.children].forEach((c,ci)=>{c.style.cursor='default';c.classList.remove('sel');if(ci===a)c.classList.add('correct');else if(ci===sel[id])c.classList.add('wrong');});if(sel[id]===a)score++;fb.textContent=QS[id].fb;fb.classList.add('show');});
   document.getElementById('check').style.opacity='0.5';document.getElementById('check').textContent='Checked';
-  document.getElementById('scoreOut').textContent=score+' / 5';document.getElementById('done').classList.add('show');
-  try{await window.storage.set('mfs:lesson13',JSON.stringify({done:true,retrieval:score+'/5',ts:Date.now()}),false);}catch(e){}
+  document.getElementById('scoreOut').textContent=score+' / 6';document.getElementById('done').classList.add('show');
+  try{await window.storage.set('mfs:lesson13',JSON.stringify({done:true,retrieval:score+'/6',ts:Date.now()}),false);}catch(e){}
 };
-function boot(){renderMath();render();}
+function boot(){renderMath();render1();render2a();render2b();}
 if(window.katex)boot();else window.addEventListener('load',boot);
 (async()=>{try{const r=await window.storage.get('mfs:lesson13',false);if(r&&r.value){const v=JSON.parse(r.value);if(v.done){const c=document.getElementById('chip');c.classList.add('show');c.textContent='completed · '+v.retrieval;}}}catch(e){}})();
 </script>
