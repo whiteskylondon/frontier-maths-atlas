@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lesson 17 — Scaled dot-product attention</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<style>
+  :root{
+    --paper:#FAFAF6;--ink:#1A1C22;--muted:#63676E;--faint:#9A9EA4;--hair:#E4E3DB;--hair2:#D4D3CA;--panel:#FFFFFF;
+    --accent:#24507A;--accent-bg:#EAF0F6;--series:#B07A2E;--miss:#B23A3A;--ok:#2F6B4F;--ok-bg:#E9F1EC;
+    --vol:#8A5A2B;--vol-bg:#F6EFE6;--serif:Iowan Old Style,Palatino,Georgia,serif;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme:dark){:root{--paper:#15161A;--ink:#E9E8E2;--muted:#A2A6AC;--faint:#71757B;--hair:#2A2C31;--hair2:#3A3C42;--panel:#1B1D22;--accent:#7FB0E0;--accent-bg:#1E2A38;--series:#D9A85E;--miss:#E07A7A;--ok:#7FC49F;--ok-bg:#1C2A22;--vol:#D9A066;--vol-bg:#2A2115;}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.62;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:750px;margin:0 auto;padding:32px 24px 60px}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 6px}
+  h1{font-family:var(--serif);font-weight:600;font-size:27px;line-height:1.22;margin:0 0 6px;letter-spacing:-.01em}
+  .chip{display:none;font-family:var(--mono);font-size:11px;letter-spacing:.05em;color:var(--ok);border:1px solid var(--ok);border-radius:20px;padding:3px 10px;vertical-align:middle;margin-left:10px}
+  .chip.show{display:inline-block}
+  .sub{color:var(--muted);font-size:15px;margin:0 0 18px}
+  .levels{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 26px}
+  .levels .lk{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+  .levels .pill{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-family:var(--mono);color:var(--muted);background:var(--panel);border:1px solid var(--hair2);border-radius:20px;padding:4px 11px}
+  .levels .pill b{color:var(--accent);font-weight:700;letter-spacing:.03em}
+  p.lead{font-size:16px;margin:0 0 22px}
+  p.lead b{font-weight:600}
+  .sec{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:36px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--hair)}
+  .mblock{margin:16px 0;overflow-x:auto}
+  .glo{list-style:none;padding:0;margin:14px 0 0}
+  .glo li{display:flex;gap:14px;padding:9px 0;border-top:1px solid var(--hair);align-items:baseline}
+  .glo li:first-child{border-top:none}
+  .glo .sym{flex:0 0 92px;text-align:right;padding-top:2px}
+  .glo .sym.w{font-weight:600;font-size:13.5px}
+  .glo .def{font-size:14.5px}
+  .glo .def .n{color:var(--muted)}
+  .step{font-size:14.5px;color:var(--muted);margin:10px 0}
+  .panel{background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:20px;margin:14px 0}
+  .imgs{display:flex;flex-wrap:wrap;gap:22px;align-items:flex-start}
+  .imgs figure{margin:0;display:flex;flex-direction:column;gap:6px}
+  .imgs figcaption{font-family:var(--mono);font-size:12px;color:var(--muted)}
+  canvas{image-rendering:pixelated;border:1px solid var(--hair2);border-radius:6px;width:196px;height:196px;background:var(--panel)}
+  .ctrls{display:flex;flex-wrap:wrap;gap:16px 26px;align-items:flex-end;margin:16px 0 6px}
+  .field{display:flex;flex-direction:column;gap:6px;min-width:180px;flex:1}
+  .field label{font-size:12px;color:var(--muted);font-family:var(--mono);letter-spacing:.03em;display:flex;justify-content:space-between}
+  .field label b{color:var(--ink);font-weight:600}
+  input[type=range]{width:100%;accent-color:var(--accent);height:20px}
+  svg{max-width:100%;height:auto;display:block}
+  .tally{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 2px}
+  .stat{flex:1;min-width:110px;background:var(--paper);border-radius:9px;padding:9px 12px}
+  .stat .k{font-size:11px;font-family:var(--mono);letter-spacing:.04em;color:var(--muted);text-transform:uppercase}
+  .stat .v{font-size:18px;font-weight:600;font-family:var(--mono);margin-top:2px}
+  .stat .v.a{color:var(--accent)}.stat .v.g{color:var(--ok)}
+  .callout{font-size:14px;color:var(--muted);border-left:2px solid var(--accent);padding:2px 0 2px 14px;margin:16px 0 2px;min-height:1.4em}
+  .theorem{background:var(--accent-bg);border-radius:12px;padding:18px 20px;margin:16px 0}
+  .theorem .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
+  .theorem p{font-family:var(--serif);font-size:16px;line-height:1.55;margin:0}
+  .twist{border:1px dashed var(--hair2);border-radius:12px;padding:16px 18px;margin:16px 0;background:var(--panel)}
+  .twist .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+  .twist p{margin:0;font-size:14.6px}
+  .vol{background:var(--vol-bg);border:1px solid var(--vol);border-radius:12px;padding:18px 20px;margin:16px 0}
+  .vol .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:var(--vol);margin:0 0 8px}
+  .vol p{margin:0 0 10px;font-size:14.8px}.vol p:last-child{margin-bottom:0}
+  .vol code{font-family:var(--mono);font-size:13px;background:rgba(138,90,43,.12);padding:1px 5px;border-radius:4px}
+  .q{border:1px solid var(--hair);border-radius:12px;padding:16px 18px;margin:12px 0;background:var(--panel)}
+  .q .stem{font-size:15px;font-weight:500;margin:0 0 12px}
+  .opt{display:block;width:100%;text-align:left;font-size:14px;padding:10px 12px;margin:0 0 8px;border:1px solid var(--hair2);border-radius:8px;background:transparent;color:var(--ink);cursor:pointer;line-height:1.45}
+  .opt:last-child{margin-bottom:0}
+  .opt:hover{border-color:var(--accent)}
+  .opt.sel{border-color:var(--accent);background:var(--accent-bg)}
+  .opt.correct{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+  .opt.wrong{background:#F7ECEC;border-color:var(--miss);color:var(--miss)}
+  @media (prefers-color-scheme:dark){.opt.wrong{background:#2E1E1E}}
+  .fb{font-size:13.5px;color:var(--muted);margin:10px 0 0;line-height:1.5;display:none}
+  .fb.show{display:block}
+  .checkRow{display:flex;align-items:center;gap:14px;margin:18px 0 0;flex-wrap:wrap}
+  .hint{font-size:13px;color:var(--miss);display:none}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-family:var(--sans);font-size:14px;padding:8px 14px;border-radius:8px;border:1px solid var(--accent);cursor:pointer}
+  .scoreOut{font-family:var(--mono);font-size:14px;font-weight:600}
+  .done{display:none;align-items:center;gap:10px;background:var(--ok-bg);color:var(--ok);border-radius:10px;padding:12px 16px;font-size:14px;margin:14px 0 0}
+  .done.show{display:flex}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">Lesson 17 · Wing IV — inside the transformer</p>
+  <h1>Scaled dot-product attention — softmax, Q/K/V mechanics<span class="chip" id="chip"></span></h1>
+  <p class="sub">Every token asks a question, every token advertises what it holds, and the answer is a probability-weighted average of payloads — kernel regression with a learned metric.</p>
+  <div class="levels">
+    <span class="lk">Level</span>
+    <span class="pill"><b>US</b> Graduate · ML</span>
+    <span class="pill"><b>FR</b> M2 · ENSAE 3A</span>
+  </div>
+
+  <p class="lead">Attention is a <b>soft dictionary lookup</b>. A hard dictionary takes a query, finds the one key that matches, and returns that key's value. Attention softens every step: the query is compared to <i>all</i> keys at once by inner product (Lesson 6: inner product = similarity), the softmax turns those similarity scores into a probability row, and the output is the probability-weighted average of <i>all</i> the values. Nothing more is happening inside the layer that reads this page's tokens — but because every step is smooth, the whole lookup is differentiable end to end, so gradient descent (Lesson 13) can learn <i>what to ask</i>, <i>what to advertise</i>, and <i>what to hand back</i>.</p>
+
+  <div class="sec">The vocabulary, in plain words</div>
+  <ul class="glo">
+    <li><span class="sym w">query</span><span class="def">the question a token asks: <i>"who out there is relevant to me?"</i> — a vector. <span class="n">In this lesson's market toy: today's state, summarized as (vol level, trend).</span></span></li>
+    <li><span class="sym w">key</span><span class="def">what each token advertises: <i>"this is what I hold."</i> <span class="n">Each historical day's own (vol, trend) state.</span></span></li>
+    <li><span class="sym w">value</span><span class="def">the payload actually retrieved when a key wins attention. <span class="n">That historical day's <b>next-day</b> return — what happened after the market looked like that.</span></span></li>
+    <li><span class="sym w">score</span><span class="def">query·key — one similarity number per (query, key) pair. <span class="n">Lesson 6's inner product; Lesson 10 told us how such numbers behave in high dimension, and that fact returns below as the √d<sub>k</sub>.</span></span></li>
+    <li><span class="sym w">softmax</span><span class="def">the machine that turns any row of scores into positive weights summing to 1 — a probability row. <span class="n">Exponentiate, then normalize. Big scores win disproportionately.</span></span></li>
+    <li><span class="sym w">temperature</span><span class="def">the sharpness dial τ: scores are divided by τ before the softmax. Small τ → winner-take-all; large τ → everyone-equal. <span class="n">Attention hard-wires τ = √d<sub>k</sub>, and proving why is this lesson's centrepiece.</span></span></li>
+    <li><span class="sym w">head</span><span class="def">one complete query–key–value lookup. <span class="n">A transformer runs many in parallel, each with its own learned notion of "similar".</span></span></li>
+    <li><span class="sym w">causal mask</span><span class="def">the rule "no looking at the future": scores of not-yet-seen tokens are set to −∞, so after the softmax their weights are exactly 0.</span></li>
+  </ul>
+
+  <div class="sec">The machinery — one line</div>
+  <div class="mblock math" data-tex="\mathrm{Attention}(Q,K,V)\;=\;\mathrm{softmax}\!\Big(\frac{QK^{\top}}{\sqrt{d_k}}\Big)\,V,\qquad \mathrm{out}_i\;=\;\sum_{j=1}^{n} w_{ij}\,v_j" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="Q"></span><span class="def">the <b>queries</b>, n×d<sub>k</sub> — one row per token: what each position is looking for.</span></li>
+    <li><span class="sym math" data-tex="QK^{\top}"></span><span class="def">the <b>score matrix</b> S, n×n: S<sub>ij</sub> = ⟨q<sub>i</sub>, k<sub>j</sub>⟩. In einsum this is <code>nd,md-&gt;nm</code> (Lesson 11). <span class="n">Lesson 11's twist, restated: softmax normalizes each <i>row</i> of S, and that nonlinearity blocks reassociation — the n×n intermediate must exist, so one head costs O(n²d<sub>k</sub>). At n = 4,096 that is 4,096² = 16,777,216 scores per head.</span></span></li>
+    <li><span class="sym math" data-tex="\sqrt{d_k}"></span><span class="def">the one magic constant, proved two sections down: it pins the score standard deviation at 1 at every head width.</span></li>
+    <li><span class="sym math" data-tex="\mathrm{softmax}"></span><span class="def">applied <b>row-wise</b>: each row of scores becomes a probability row w<sub>i·</sub> — non-negative, summing to 1, a point on the simplex. <span class="n">Shift-invariant: adding a constant to a whole row changes nothing. That is why −∞ masking and subtract-the-max numerics are both clean.</span></span></li>
+    <li><span class="sym math" data-tex="V"></span><span class="def">the <b>values</b>, n×d<sub>v</sub> — the payloads. Output row i is Σ<sub>j</sub> w<sub>ij</sub>v<sub>j</sub>: a <b>convex combination</b> (Lesson 14) of value rows.</span></li>
+  </ul>
+  <p class="step">The softmax deserves its own line, because the temperature reading of the √d<sub>k</sub> is the key to everything below:</p>
+  <div class="mblock math" data-tex="\mathrm{softmax}_{\tau}(s)_i\;=\;\frac{e^{s_i/\tau}}{\sum_{j=1}^{n} e^{s_j/\tau}},\qquad \tau\to 0^{+}\!:\ \text{argmax},\qquad \tau\to\infty:\ \text{uniform}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="s"></span><span class="def">a row of n scores, one per key.</span></li>
+    <li><span class="sym math" data-tex="\tau"></span><span class="def"><b>temperature</b>. Dividing by small τ stretches score gaps → the weight row's entropy (Lesson 15) falls toward 0 bits; large τ erases gaps → entropy rises toward log₂n bits. <span class="n">Attention is softmax at temperature τ = √d<sub>k</sub> applied to raw dot products.</span></span></li>
+    <li><span class="sym math" data-tex="e^{s_i/\tau}"></span><span class="def">why the exponential? It is the choice that makes weights depend only on score <i>differences</i> — and it is the Gibbs distribution of statistical mechanics with energy −s<sub>i</sub>, which is where the word "temperature" comes from.</span></li>
+  </ul>
+
+  <div class="sec">See it — analog days: attention over market history</div>
+  <p class="step">The oldest question on any desk: <i>"what happened the last times the market looked like this?"</i> That question <b>is</b> attention. Today's state is the query; each historical day's state is a key; that day's <b>next</b>-day return is the value. Below, 12 seeded historical days sit in a 2-D feature plane (vol level, trend, both in σ-units); their next-day returns span −81 to +47 bp with mean +5.8 bp. The object being estimated is Lesson 4's conditional expectation E[r<sub>t+1</sub> | state ≈ query]. Here d<sub>k</sub> = 2, so the canonical temperature is √2 = 1.414, and the τ slider opens there (1.41). Move the query pin with the two σ sliders and watch the attention row re-vote; at the default pin (vol +0.8σ, trend −0.4σ — stressed and drifting down) the head's top analog is D8 at 22% of the weight, a −81 bp day, and the forecast is −12.0 bp.</p>
+  <div class="panel">
+    <div class="imgs">
+      <figure style="flex:1.3;min-width:300px"><svg id="scat" viewBox="0 0 340 250" role="img" aria-label="12 historical days in the trend-vol plane with attention weights"></svg><figcaption>the dictionary — circle area ∝ attention weight (plus a floor, so a zero-weight day stays visible) · label = next-day return (bp)</figcaption></figure>
+      <figure style="flex:1;min-width:250px"><svg id="bars" viewBox="0 0 340 110" role="img" aria-label="attention weight per day"></svg><figcaption>the attention row — 12 weights summing to 1</figcaption></figure>
+    </div>
+    <div class="ctrls">
+      <div class="field"><label>query · vol level (σ) <b id="qvOut">0.80</b></label><input type="range" id="qv" min="-2.5" max="2.5" value="0.8" step="0.05" /></div>
+      <div class="field"><label>query · trend (σ) <b id="qtOut">-0.40</b></label><input type="range" id="qt" min="-2.5" max="2.5" value="-0.4" step="0.05" /></div>
+      <div class="field"><label>temperature τ <b id="tauOut">1.41</b></label><input type="range" id="tau" min="-100" max="100" value="15" step="5" /></div>
+    </div>
+    <div class="tally">
+      <div class="stat"><div class="k">top analog</div><div class="v a" id="topOut">—</div></div>
+      <div class="stat"><div class="k">weight entropy</div><div class="v" id="entOut">—</div></div>
+      <div class="stat"><div class="k">forecast</div><div class="v g" id="predOut">—</div></div>
+    </div>
+    <p class="callout" id="c1"></p>
+  </div>
+
+  <div class="sec">The magic constant — why √d<sub>k</sub></div>
+  <p class="step">Take a query and a key drawn <i>independently of each other</i>, each with independent components of mean 0 and variance 1 — roughly what a normalization layer hands the attention block (LayerNorm rescales every token vector to zero mean and unit variance before it is projected; that is Lesson 19's business). Their dot product is then a sum of d<sub>k</sub> independent zero-mean products, so the variances add:</p>
+  <div class="mblock math" data-tex="q^{\top}k=\sum_{i=1}^{d_k} q_i k_i,\qquad \mathbb{E}\big[q^{\top}k\big]=0,\qquad \operatorname{Var}\big(q^{\top}k\big)=\sum_{i=1}^{d_k}\operatorname{Var}(q_i k_i)=d_k" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="q_i k_i"></span><span class="def">one product term: mean 0, and variance E[q<sub>i</sub>²]·E[k<sub>i</sub>²] = 1·1 = 1 by independence.</span></li>
+    <li><span class="sym math" data-tex="d_k"></span><span class="def">the whole one-line proof: d<sub>k</sub> independent unit-variance terms ⇒ variance d<sub>k</sub>, std √d<sub>k</sub>. Raw scores <b>grow with width</b>: std 2 at d = 4, std 8 at d = 64, std 32 at d = 1024. <span class="n">This is Lesson 10's concentration read backwards: cosines shrink like 1/√d exactly because raw inner products grow like √d while the norms grow like √d each.</span></span></li>
+    <li><span class="sym math" data-tex="\div\sqrt{d_k}"></span><span class="def">dividing a random variable by c divides its std by c — so scores/√d<sub>k</sub> have std 1 at <b>every</b> width. One constant, and softmax sees the same score scale whether the head is 4-dimensional or 4,096-dimensional.</span></li>
+  </ul>
+  <p class="step">Why saturation kills learning: at d<sub>k</sub> = 64 (GPT-2's head width) unscaled scores have std 8, so a routine 2-σ gap between the top two scores is 16 — and softmax turns a gap of 16 into a weight ratio of e¹⁶ ≈ 8.9 million. The row is one-hot, one-hot rows have (near-)zero gradient through the softmax, and nothing upstream learns. The demo watches both the cause (score spread, left) and the victim (softmax-row entropy over 16 keys, max log₂16 = 4 bits) as you sweep the width.</p>
+  <div class="panel">
+    <div class="imgs">
+      <figure style="flex:1;min-width:250px"><svg id="histRaw" viewBox="0 0 300 150" role="img" aria-label="histogram of raw dot products"></svg><figcaption>raw scores q·k — axis fixed at ±100</figcaption></figure>
+      <figure style="flex:1;min-width:250px"><svg id="histSc" viewBox="0 0 300 150" role="img" aria-label="histogram of scaled dot products"></svg><figcaption>scaled scores q·k / √d — axis fixed at ±4</figcaption></figure>
+    </div>
+    <div class="ctrls">
+      <div class="field"><label>head width d <b id="dOut">64</b></label><input type="range" id="dExp" min="2" max="10" value="6" step="1" /></div>
+    </div>
+    <div class="tally">
+      <div class="stat"><div class="k">std raw</div><div class="v" id="sRaw">—</div></div>
+      <div class="stat"><div class="k">theory √d</div><div class="v a" id="sTh">—</div></div>
+      <div class="stat"><div class="k">std scaled</div><div class="v g" id="sSc">—</div></div>
+      <div class="stat"><div class="k">row entropy · raw</div><div class="v" id="eU">—</div></div>
+      <div class="stat"><div class="k">row entropy · scaled</div><div class="v g" id="eS">—</div></div>
+    </div>
+    <p class="callout" id="c2"></p>
+  </div>
+
+  <div class="sec">Many heads, and no peeking</div>
+  <div class="mblock math" data-tex="\mathrm{head}_h=\mathrm{Attention}\big(XW_h^{Q},\,XW_h^{K},\,XW_h^{V}\big),\qquad \mathrm{MHA}(X)=\big[\mathrm{head}_1;\cdots;\mathrm{head}_H\big]\,W^{O}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="X"></span><span class="def">the token stream, n×d<sub>model</sub> — every head reads the same input.</span></li>
+    <li><span class="sym math" data-tex="W_h^{Q},W_h^{K}"></span><span class="def">head h's learned projections into its own d<sub>k</sub> = d<sub>model</sub>/H dimensional subspace. Head h's score is ⟨W<sub>h</sub><sup>Q</sup>x, W<sub>h</sub><sup>K</sup>x′⟩ — <b>its own metric</b>: one head can score "similar trend" while a sibling scores "similar vol". <span class="n">Splitting d<sub>model</sub> keeps the total cost equal to one full-width head.</span></span></li>
+    <li><span class="sym math" data-tex="[\,;\,]\,W^{O}"></span><span class="def">concatenate the H verdicts and mix them back to n×d<sub>model</sub> with one learned matrix.</span></li>
+    <li><span class="sym w">mask</span><span class="def">causal attention sets S<sub>ij</sub> ← −∞ for j &gt; i <b>before</b> the softmax. Then e<sup>−∞</sup> = 0: future tokens get exactly zero weight and each row renormalizes over positions ≤ i — still a probability row, now over the past only. <span class="n">Masking after the softmax would break sum-to-1; before, it is exact.</span></span></li>
+  </ul>
+
+  <div class="theorem">
+    <p class="lbl">The precise statement</p>
+    <p>Let Q ∈ ℝ<sup>n×d<sub>k</sub></sup>, K ∈ ℝ<sup>m×d<sub>k</sub></sup>, V ∈ ℝ<sup>m×d<sub>v</sub></sup> and W = softmax(QKᵀ/√d<sub>k</sub>) row-wise. (i) Every row of W lies on the simplex Δ<sup>m−1</sup>, so each output row (WV)<sub>i</sub> = Σ<sub>j</sub> w<sub>ij</sub>v<sub>j</sub> is a convex combination of the rows of V: attention outputs live in the convex hull of the values — the layer interpolates, never extrapolates. (ii) If q, k ∈ ℝ<sup>d<sub>k</sub></sup> are independent of each other and each has independent components of mean 0 and variance 1, then E[qᵀk] = 0 and Var(qᵀk) = d<sub>k</sub>; hence scores divided by √d<sub>k</sub> have variance exactly 1 for every d<sub>k</sub>. (iii) For any m×m permutation matrix P, softmax(Q(PK)ᵀ/√d<sub>k</sub>)(PV) = softmax(QKᵀ/√d<sub>k</sub>)V: jointly permuting key/value rows changes nothing but the labels. Unmasked attention is a set operation — token order is invisible to it and must be injected separately (Lesson 18).</p>
+  </div>
+
+  <div class="twist">
+    <p class="lbl">The twist — sixty-year-old statistics wearing new weights</p>
+    <p>Freeze the metric and attention is <b>exactly</b> Nadaraya–Watson kernel regression (1964): m̂(x) = Σᵢ K(x,xᵢ)yᵢ / Σⱼ K(x,xⱼ) — the analog-days panel above is the estimator every nonparametric statistics course teaches, with kernel <code>K(x,x′) = exp(⟨W_Q x, W_K x′⟩/√d_k)</code>. The revolution is not the estimator. It is that the <b>metric is learned</b>: W<sub>Q</sub>, W<sub>K</sub> are trained end-to-end by gradient descent (Lesson 13), jointly across dozens of layers and heads, so each head discovers which notion of "similar" makes its predictions cheap — something no 1964 statistician could fit. Second barrel: the theorem's convexity is a cage. A head's output can never leave the convex hull of its values, so a stack of pure attention layers can only re-mix what the dictionary already contains. Breaking out of the hull is the MLP block's job — and how attention and MLPs share one residual stream is Lesson 19.</p>
+  </div>
+
+  <div class="vol">
+    <p class="lbl">Why this matters · volarixs</p>
+    <p>A similarity-weighted "analog days" forecaster over regime features is, literally, one attention head with a hand-chosen metric: today's feature vector is the query, history's are the keys, next-day outcomes are the values — Interactive 1 <i>is</i> exactly that estimator, and the temperature slider is the dial between nearest-neighbour brittleness and global-mean blandness. If volarixs ever scores "days like today", this is its mathematics.</p>
+    <p>The regime HMM already runs softmax weights: its filtered state probabilities are a softmax over per-state scores (log prior + log likelihood) — a soft lookup over regimes instead of days. And the convexity theorem is a risk statement: any such forecaster is bounded by the best and worst outcomes in its own history. It will never predict a move it has never seen — stress scenarios must come from somewhere else.</p>
+  </div>
+
+  <div class="sec">Check yourself</div>
+  <div class="q" id="q1"><p class="stem">A head has d<sub>k</sub> = 64, with query and key independent of each other and each having iid components of mean 0 and variance 1. Before scaling, the score q·k has:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q2"><p class="stem">You lower the temperature τ on a fixed score row. The attention-weight row:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q3"><p class="stem">One attention head over n tokens at width d costs:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q4"><p class="stem">Your analog-days head attends over 12 historical days whose next-day returns run from −81 bp to +47 bp. A client wants a −120 bp forecast. Attention alone can output:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q5"><p class="stem">Multi-head attention (H heads on a d<sub>model</sub> stream) buys you:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q6"><p class="stem">The causal mask sets S<sub>ij</sub> = −∞ for j &gt; i before the softmax. After the softmax, the weight on a future token is:</p><div class="opts"></div><p class="fb"></p></div>
+
+  <div class="checkRow">
+    <button class="primary" id="check">Check answers</button>
+    <span class="scoreOut" id="scoreOut"></span>
+    <span class="hint" id="hint">Answer all six first.</span>
+  </div>
+  <div class="done" id="done">Head assembled. Next in Wing IV: rotary positional encodings — where order comes from.</div>
+</div>
+
+<script>
+/* storage shim: window.storage (Claude artifacts) or localStorage (web) */
+if(!window.storage){window.storage={async get(k){const v=localStorage.getItem(k);if(v==null)throw new Error('missing');return{key:k,value:v}},async set(k,v){localStorage.setItem(k,v);return{key:k,value:v}},async delete(k){localStorage.removeItem(k);return{key:k,deleted:true}},async list(p){const ks=[];for(let i=0;i<localStorage.length;i++){const kk=localStorage.key(i);if(!p||kk.startsWith(p))ks.push(kk)}return{keys:ks}}};}
+function renderMath(){document.querySelectorAll('.math').forEach(el=>{const tex=el.getAttribute('data-tex');if(!tex||el.dataset.done)return;try{if(window.katex){katex.render(tex,el,{displayMode:el.dataset.display==='1',throwOnError:false});el.dataset.done='1';}else el.textContent=tex;}catch(e){el.textContent=tex;}});}
+const $=id=>document.getElementById(id);
+
+/* ---------- deterministic RNG ---------- */
+function mulberry32(seed){let a=seed>>>0;return function(){a|=0;a=(a+0x6D2B79F5)|0;let t=Math.imul(a^(a>>>15),1|a);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296;}}
+function randn(rng){let u=0,v=0;while(!u)u=rng();while(!v)v=rng();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+
+/* ---------- the dictionary: 12 seeded analog days ---------- */
+const DAYS=(function(){const rng=mulberry32(117);const out=[];for(let i=0;i<12;i++){const v=randn(rng),t=randn(rng),e=randn(rng);out.push({v,t,ret:Math.round(-25*v+35*t+12*e)});}return out;})();
+const RETMEAN=DAYS.reduce((a,d)=>a+d.ret,0)/12;
+function softmaxT(s,tau){const m=Math.max(...s.map(x=>x/tau));const e=s.map(x=>Math.exp(x/tau-m));const Z=e.reduce((a,b)=>a+b,0);return e.map(x=>x/Z);}
+function entBits(p){let h=0;for(const x of p)if(x>0)h-=x*Math.log2(x);return h;}
+function attn(qv,qt,tau){const s=DAYS.map(d=>qv*d.v+qt*d.t);const w=softmaxT(s,tau);const pred=w.reduce((a,x,i)=>a+x*DAYS[i].ret,0);let top=0;for(let i=1;i<12;i++)if(w[i]>w[top])top=i;return{w,pred,top,ent:entBits(w)};}
+
+/* ---------- interactive 1: analog-days lookup ---------- */
+const L=2.6;
+function sx(t){return 24+(t+L)/(2*L)*304;}
+function sy(v){return 226-(v+L)/(2*L)*214;}
+function drawScatter(qv,qt,w){
+  let s='';
+  s+=`<line x1="${sx(-L)}" y1="${sy(0)}" x2="${sx(L)}" y2="${sy(0)}" stroke="var(--hair)"/><line x1="${sx(0)}" y1="${sy(-L)}" x2="${sx(0)}" y2="${sy(L)}" stroke="var(--hair)"/>`;
+  s+=`<text x="${sx(L)-2}" y="${sy(0)-5}" text-anchor="end" font-family="var(--mono)" font-size="9" fill="var(--faint)">trend →</text>`;
+  s+=`<text x="${sx(0)+5}" y="${sy(L)+9}" font-family="var(--mono)" font-size="9" fill="var(--faint)">vol ↑</text>`;
+  DAYS.forEach((d,i)=>{const x=sx(d.t),y=sy(d.v),r=Math.sqrt(16+560*w[i]); /* area ∝ weight, plus a floor of r=4 so a zero-weight day stays visible */
+    s+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}" fill="${d.ret>=0?'var(--ok)':'var(--miss)'}" opacity="0.5"/>`;
+    s+=`<text x="${x.toFixed(1)}" y="${(y-r-4).toFixed(1)}" text-anchor="middle" font-family="var(--mono)" font-size="9.5" fill="var(--muted)">D${i+1}·${d.ret>0?'+':''}${d.ret}</text>`;});
+  const qx=sx(qt),qy=sy(qv);
+  s+=`<line x1="${(qx-9).toFixed(1)}" y1="${qy.toFixed(1)}" x2="${(qx+9).toFixed(1)}" y2="${qy.toFixed(1)}" stroke="var(--accent)" stroke-width="2"/><line x1="${qx.toFixed(1)}" y1="${(qy-9).toFixed(1)}" x2="${qx.toFixed(1)}" y2="${(qy+9).toFixed(1)}" stroke="var(--accent)" stroke-width="2"/>`;
+  s+=`<circle cx="${qx.toFixed(1)}" cy="${qy.toFixed(1)}" r="5.5" fill="none" stroke="var(--accent)" stroke-width="2"/>`;
+  s+=`<text x="${qx.toFixed(1)}" y="${(qy+22).toFixed(1)}" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--accent)" font-weight="700">query</text>`;
+  $('scat').innerHTML=s;
+}
+function drawBars(w,top){
+  const bw=340/12,wmax=Math.max(...w);let s='';
+  s+=`<line x1="0" y1="92" x2="340" y2="92" stroke="var(--hair2)"/>`;
+  w.forEach((x,i)=>{const h=(x/wmax)*70;
+    s+=`<rect x="${(i*bw+4).toFixed(1)}" y="${(92-h).toFixed(1)}" width="${(bw-8).toFixed(1)}" height="${h.toFixed(1)}" fill="${i===top?'var(--accent)':'var(--hair2)'}"/>`;
+    if(x>=0.03)s+=`<text x="${(i*bw+bw/2).toFixed(1)}" y="${(88-h).toFixed(1)}" text-anchor="middle" font-family="var(--mono)" font-size="8.5" fill="var(--muted)">${Math.round(100*x)}</text>`;
+    s+=`<text x="${(i*bw+bw/2).toFixed(1)}" y="105" text-anchor="middle" font-family="var(--mono)" font-size="9" fill="var(--faint)">D${i+1}</text>`;});
+  $('bars').innerHTML=s;
+}
+function upd1(){
+  const qv=+$('qv').value,qt=+$('qt').value,tau=Math.pow(10,+$('tau').value/100);
+  $('qvOut').textContent=qv.toFixed(2);$('qtOut').textContent=qt.toFixed(2);$('tauOut').textContent=tau.toFixed(2);
+  const{w,pred,top,ent}=attn(qv,qt,tau);
+  drawScatter(qv,qt,w);drawBars(w,top);
+  $('topOut').textContent='D'+(top+1)+' · '+(100*w[top]).toFixed(0)+'%';
+  $('entOut').textContent=ent.toFixed(2)+' bits';
+  $('predOut').textContent=(pred>=0?'+':'')+pred.toFixed(1)+' bp';
+  const c=$('c1');
+  if(tau<=0.32)c.textContent=`τ = ${tau.toFixed(2)}: near-argmax — a nearest-neighbour lookup. D${top+1} takes ${(100*w[top]).toFixed(0)}% of the weight, so the forecast (${pred.toFixed(1)} bp) is essentially that one day's next-day return (${DAYS[top].ret} bp). Sharp, and brittle: one analog decides everything.`;
+  else if(tau>=5)c.textContent=`τ = ${tau.toFixed(2)}: near-uniform — entropy ${ent.toFixed(2)} bits of a possible log₂12 = 3.58. The forecast collapses toward the global mean of all 12 next-day returns (${RETMEAN>=0?'+':''}${RETMEAN.toFixed(1)} bp): attention that has stopped attending.`;
+  else c.textContent=`τ = ${tau.toFixed(2)}: kernel regression. The similar days share the vote (entropy ${ent.toFixed(2)} bits, top analog D${top+1} at ${(100*w[top]).toFixed(0)}%), and the ${pred>=0?'+':''}${pred.toFixed(1)} bp forecast is a similarity-weighted average of what followed days like this — Nadaraya–Watson with metric ⟨q,k⟩.`;
+}
+
+/* ---------- interactive 2: the √d demonstration ---------- */
+const MDRAW=1200,RROW=100;
+function demo2(d){
+  const rng=mulberry32(117+d);
+  const M=MDRAW,dots=new Float64Array(M);
+  for(let m=0;m<M;m++){const q=new Float64Array(d);for(let i=0;i<d;i++)q[i]=randn(rng);let s=0;for(let i=0;i<d;i++)s+=q[i]*randn(rng);dots[m]=s;}
+  let mu=0;for(const x of dots)mu+=x;mu/=M;
+  let va=0;for(const x of dots)va+=(x-mu)*(x-mu);
+  const stdRaw=Math.sqrt(va/M);
+  const R=RROW,NK=16;let eU=0,eS=0;
+  for(let r=0;r<R;r++){
+    const q=new Float64Array(d);for(let i=0;i<d;i++)q[i]=randn(rng);
+    const sc=new Array(NK);
+    for(let k2=0;k2<NK;k2++){let s=0;for(let i=0;i<d;i++)s+=q[i]*randn(rng);sc[k2]=s;}
+    eU+=entBits(softmaxT(sc,1));eS+=entBits(softmaxT(sc,Math.sqrt(d)));
+  }
+  return{dots,stdRaw,eU:eU/R,eS:eS/R};
+}
+function hist(svgId,vals,lo,hi,color){
+  const B=41,cnt=new Array(B).fill(0);
+  for(const v of vals){let b=Math.floor((v-lo)/(hi-lo)*B);if(b<0)b=0;if(b>=B)b=B-1;cnt[b]++;}
+  const W=300,H=150,padB=20,padT=8,iw=W-12,ih=H-padT-padB,mx=Math.max(...cnt),bw=iw/B;
+  let s=`<line x1="6" y1="${H-padB}" x2="${W-6}" y2="${H-padB}" stroke="var(--hair2)"/>`;
+  cnt.forEach((c2,i)=>{const h=(c2/mx)*ih;if(h>0)s+=`<rect x="${(6+i*bw+0.5).toFixed(1)}" y="${(H-padB-h).toFixed(1)}" width="${(bw-1).toFixed(1)}" height="${h.toFixed(1)}" fill="${color}" opacity="0.85"/>`;});
+  s+=`<text x="6" y="${H-6}" font-family="var(--mono)" font-size="10" fill="var(--faint)">${lo}</text>`;
+  s+=`<text x="${W/2}" y="${H-6}" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--faint)">0</text>`;
+  s+=`<text x="${W-6}" y="${H-6}" text-anchor="end" font-family="var(--mono)" font-size="10" fill="var(--faint)">+${hi}</text>`;
+  $(svgId).innerHTML=s;
+}
+function upd2(){
+  const d=1<<(+$('dExp').value);
+  $('dOut').textContent=d;
+  const{dots,stdRaw,eU,eS}=demo2(d);
+  hist('histRaw',dots,-100,100,'var(--series)');
+  hist('histSc',Array.from(dots,x=>x/Math.sqrt(d)),-4,4,'var(--accent)');
+  $('sRaw').textContent=stdRaw.toFixed(2);
+  $('sTh').textContent=Math.sqrt(d).toFixed(2);
+  $('sSc').textContent=(stdRaw/Math.sqrt(d)).toFixed(3);
+  $('eU').textContent=eU.toFixed(2)+' b';
+  $('eS').textContent=eS.toFixed(2)+' b';
+  $('c2').textContent=`d = ${d}: raw scores spread with measured std ${stdRaw.toFixed(2)} over ${MDRAW.toLocaleString()} draws against theory √d = ${Math.sqrt(d).toFixed(2)}; after ÷√d the std is ${(stdRaw/Math.sqrt(d)).toFixed(3)} — pinned at ≈1 at every width. Downstream, averaged over ${RROW} rows of 16 keys: unscaled softmax rows hold ${eU.toFixed(2)} bits of entropy${eU<0.75?' (already saturated — the leader takes nearly all of the weight, and a saturated softmax passes almost no gradient)':''}, while scaled rows hold ${eS.toFixed(2)} bits at every width. One constant keeps attention trainable however wide the head.`;
+}
+['qv','qt','tau'].forEach(id=>$(id).addEventListener('input',upd1));
+$('dExp').addEventListener('input',upd2);
+
+/* ---------- retrieval ---------- */
+const QS={
+  q1:{opts:["mean 8 — but softmax's shift-invariance makes that harmless","std 1 already — the √d_k division is only an overflow guard","variance 64, std 8 — dividing by √64 = 8 pins the score std at 1","std 64 — which is why the divisor should be d_k, not √d_k"],a:2,
+    fb:"q·k is a sum of 64 independent zero-mean products, each with variance E[qᵢ²]E[kᵢ²] = 1. Independent variances add: Var = 64, std = √64 = 8. Dividing by √d_k = 8 restores std 1 at every width — the same budget argument that gave Lesson 10 its 1/√d cosine."},
+  q2:{opts:["sharpens toward one-hot on the argmax — its entropy (Lesson 15) falls toward 0 bits","flattens toward uniform — its entropy rises toward log₂ n","is unchanged — softmax is invariant to rescaling scores","keeps its entropy but can change which key wins"],a:0,
+    fb:"Dividing by a smaller τ stretches the gaps between scores, and softmax exponentiates gaps: the leader's weight grows toward 1 (τ→0⁺ is argmax, 0 bits; τ→∞ is uniform, log₂ n bits). Softmax is invariant to SHIFTING all scores by a constant — not to rescaling them, which is the whole point of temperature."},
+  q3:{opts:["O(nd) — a clever ordering avoids materializing the score matrix","O(n²d) time with an unavoidable n×n score matrix — softmax's row nonlinearity blocks Lesson 11's reassociation","O(n log n) via the FFT","O(d²) — independent of sequence length"],a:1,
+    fb:"QKᵀ is the einsum 'nd,md->nm': n² entries, each an O(d) dot product. Softmax normalizes each row of that matrix before V can touch it, so the n×n intermediate must exist (Lesson 11's twist) — at 4,096 tokens that is 16,777,216 scores per head. 'Linear attention' deletes the softmax precisely so the product can reassociate."},
+  q4:{opts:["−120 bp, if the query is extreme enough","any real number — the weights are unconstrained","at most ±128 bp — weights can amplify values slightly","only values in [−81, +47] bp — softmax weights are non-negative and sum to 1, so the output is a convex combination of the stored returns"],a:3,
+    fb:"Each output is Σwᵢvᵢ with the weight row on the simplex (Lesson 14): a convex combination, trapped in [min V, max V] = [−81, +47] bp. Attention interpolates its dictionary and cannot extrapolate beyond it — the client's −120 bp is structurally unreachable, and that confinement is why transformers also need MLP blocks (Lesson 19)."},
+  q5:{opts:["a larger score matrix per head — Hn×Hn","H attentions in parallel learned subspaces — H different similarity metrics voting at once","a lower asymptotic cost than one full-width head","outputs outside the convex hull of the values"],a:1,
+    fb:"Each head projects the stream into its own d_model/H-dimensional subspace with its own W_h^Q, W_h^K — its own learned metric — and attends there. One head can track trend-similarity while another tracks vol-similarity. Concatenation + W^O mixes the verdicts; the total cost matches one full-width head, and every head's output is still a convex combination of ITS values."},
+  q6:{opts:["a small negative number","1/n — masked entries fall back to the uniform weight","exactly 0 — e^(−∞) = 0, and the surviving weights renormalize over positions ≤ i","undefined — which is why real implementations mask after the softmax"],a:2,
+    fb:"e^(−∞) = 0 kills the future's numerator, and the row's denominator sums only the past — each row is still an exact probability vector, now over positions ≤ i. Masking AFTER the softmax would break sum-to-1. One additive mask before the nonlinearity is how a parallel n×n computation stays causal for next-token prediction."}
+};
+const sel={q1:null,q2:null,q3:null,q4:null,q5:null,q6:null};let revealed=false;
+Object.keys(QS).forEach(id=>{const holder=document.querySelector('#'+id+' .opts');QS[id].opts.forEach((txt,i)=>{const b=document.createElement('button');b.className='opt';b.textContent=String.fromCharCode(65+i)+'.  '+txt;b.onclick=()=>{if(revealed)return;sel[id]=i;[...holder.children].forEach((c,ci)=>c.classList.toggle('sel',ci===i));$('hint').style.display='none';};holder.appendChild(b);});});
+$('check').onclick=async()=>{
+  if(revealed)return;if(Object.values(sel).some(v=>v===null)){$('hint').style.display='inline';return;}
+  revealed=true;let score=0;
+  Object.keys(QS).forEach(id=>{const a=QS[id].a,holder=document.querySelector('#'+id+' .opts'),fb=document.querySelector('#'+id+' .fb');[...holder.children].forEach((c,ci)=>{c.style.cursor='default';c.classList.remove('sel');if(ci===a)c.classList.add('correct');else if(ci===sel[id])c.classList.add('wrong');});if(sel[id]===a)score++;fb.textContent=QS[id].fb;fb.classList.add('show');});
+  $('check').style.opacity='0.5';$('check').textContent='Checked';
+  $('scoreOut').textContent=score+' / 6';$('done').classList.add('show');
+  try{await window.storage.set('mfs:lesson17',JSON.stringify({done:true,retrieval:score+'/6',ts:Date.now()}),false);}catch(e){}
+};
+function boot(){renderMath();upd1();upd2();}
+if(window.katex)boot();else window.addEventListener('load',boot);
+(async()=>{try{const r=await window.storage.get('mfs:lesson17',false);if(r&&r.value){const v=JSON.parse(r.value);if(v.done){const c=$('chip');c.classList.add('show');c.textContent='completed · '+v.retrieval;}}}catch(e){}})();
+</script>
+</body>
+</html>
