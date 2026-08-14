@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lesson 24 — Emergence as phase transitions</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<style>
+  :root{
+    --paper:#FAFAF6;--ink:#1A1C22;--muted:#63676E;--faint:#9A9EA4;--hair:#E4E3DB;--hair2:#D4D3CA;--panel:#FFFFFF;
+    --accent:#24507A;--accent-bg:#EAF0F6;--series:#B07A2E;--miss:#B23A3A;--ok:#2F6B4F;--ok-bg:#E9F1EC;
+    --vol:#8A5A2B;--vol-bg:#F6EFE6;--serif:Iowan Old Style,Palatino,Georgia,serif;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme:dark){:root{--paper:#15161A;--ink:#E9E8E2;--muted:#A2A6AC;--faint:#71757B;--hair:#2A2C31;--hair2:#3A3C42;--panel:#1B1D22;--accent:#7FB0E0;--accent-bg:#1E2A38;--series:#D9A85E;--miss:#E07A7A;--ok:#7FC49F;--ok-bg:#1C2A22;--vol:#D9A066;--vol-bg:#2A2115;}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.62;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:750px;margin:0 auto;padding:32px 24px 60px}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 6px}
+  h1{font-family:var(--serif);font-weight:600;font-size:27px;line-height:1.22;margin:0 0 6px;letter-spacing:-.01em}
+  .chip{display:none;font-family:var(--mono);font-size:11px;letter-spacing:.05em;color:var(--ok);border:1px solid var(--ok);border-radius:20px;padding:3px 10px;vertical-align:middle;margin-left:10px}
+  .chip.show{display:inline-block}
+  .sub{color:var(--muted);font-size:15px;margin:0 0 18px}
+  .levels{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 26px}
+  .levels .lk{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+  .levels .pill{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-family:var(--mono);color:var(--muted);background:var(--panel);border:1px solid var(--hair2);border-radius:20px;padding:4px 11px}
+  .levels .pill b{color:var(--accent);font-weight:700;letter-spacing:.03em}
+  p.lead{font-size:16px;margin:0 0 22px}
+  p.lead b{font-weight:600}
+  .sec{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:36px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--hair)}
+  .mblock{margin:16px 0;overflow-x:auto}
+  .glo{list-style:none;padding:0;margin:14px 0 0}
+  .glo li{display:flex;gap:14px;padding:9px 0;border-top:1px solid var(--hair);align-items:baseline}
+  .glo li:first-child{border-top:none}
+  .glo .sym{flex:0 0 92px;text-align:right;padding-top:2px}
+  .glo .sym.w{font-family:var(--mono);font-size:12.5px;color:var(--accent)}
+  .glo .def{font-size:14.5px}
+  .glo .def .n{color:var(--muted)}
+  .step{font-size:14.5px;color:var(--muted);margin:10px 0}
+  .panel{background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:20px;margin:14px 0}
+  .imgs{display:flex;flex-wrap:wrap;gap:22px;align-items:flex-start}
+  .imgs figure{margin:0;display:flex;flex-direction:column;gap:6px}
+  .imgs figcaption{font-family:var(--mono);font-size:12px;color:var(--muted)}
+  canvas{image-rendering:pixelated;border:1px solid var(--hair2);border-radius:6px;width:196px;height:196px;background:var(--panel)}
+  .figcap{font-family:var(--mono);font-size:12px;color:var(--muted);margin:2px 0 12px}
+  .leg{display:flex;flex-wrap:wrap;gap:8px 18px;font-family:var(--mono);font-size:11px;color:var(--muted);margin:4px 0 0}
+  .leg i{display:inline-block;width:18px;height:0;border-top:2px solid var(--accent);vertical-align:middle;margin-right:5px}
+  .ctrls{display:flex;flex-wrap:wrap;gap:16px 26px;align-items:flex-end;margin:16px 0 6px}
+  .field{display:flex;flex-direction:column;gap:6px;min-width:210px;flex:1}
+  .field label{font-size:12px;color:var(--muted);font-family:var(--mono);letter-spacing:.03em;display:flex;justify-content:space-between}
+  .field label b{color:var(--ink);font-weight:600}
+  input[type=range]{width:100%;accent-color:var(--accent);height:20px}
+  svg{max-width:100%;height:auto;display:block}
+  .tally{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 2px}
+  .stat{flex:1;min-width:120px;background:var(--paper);border-radius:9px;padding:9px 12px}
+  .stat .k{font-size:11px;font-family:var(--mono);letter-spacing:.04em;color:var(--muted);text-transform:uppercase}
+  .stat .v{font-size:19px;font-weight:600;font-family:var(--mono);margin-top:2px}
+  .stat .v.sm{font-size:15px}
+  .stat .v.a{color:var(--accent)}.stat .v.g{color:var(--ok)}.stat .v.s{color:var(--series)}.stat .v.m{color:var(--miss)}
+  .callout{font-size:14px;color:var(--muted);border-left:2px solid var(--accent);padding:2px 0 2px 14px;margin:16px 0 2px;min-height:1.4em}
+  .theorem{background:var(--accent-bg);border-radius:12px;padding:18px 20px;margin:16px 0}
+  .theorem .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
+  .theorem p{font-family:var(--serif);font-size:16px;line-height:1.55;margin:0}
+  .twist{border:1px dashed var(--hair2);border-radius:12px;padding:16px 18px;margin:16px 0;background:var(--panel)}
+  .twist .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+  .twist p{margin:0 0 10px;font-size:14.6px}.twist p:last-child{margin-bottom:0}
+  .vol{background:var(--vol-bg);border:1px solid var(--vol);border-radius:12px;padding:18px 20px;margin:16px 0}
+  .vol .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:var(--vol);margin:0 0 8px}
+  .vol p{margin:0 0 10px;font-size:14.8px}.vol p:last-child{margin-bottom:0}
+  .vol code{font-family:var(--mono);font-size:13px;background:rgba(138,90,43,.12);padding:1px 5px;border-radius:4px}
+  .q{border:1px solid var(--hair);border-radius:12px;padding:16px 18px;margin:12px 0;background:var(--panel)}
+  .q .stem{font-size:15px;font-weight:500;margin:0 0 12px}
+  .opt{display:block;width:100%;text-align:left;font-size:14px;padding:10px 12px;margin:0 0 8px;border:1px solid var(--hair2);border-radius:8px;background:transparent;color:var(--ink);cursor:pointer;line-height:1.45}
+  .opt:last-child{margin-bottom:0}
+  .opt:hover{border-color:var(--accent)}
+  .opt.sel{border-color:var(--accent);background:var(--accent-bg)}
+  .opt.correct{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+  .opt.wrong{background:#F7ECEC;border-color:var(--miss);color:var(--miss)}
+  @media (prefers-color-scheme:dark){.opt.wrong{background:#2E1E1E}}
+  .fb{font-size:13.5px;color:var(--muted);margin:10px 0 0;line-height:1.5;display:none}
+  .fb.show{display:block}
+  .checkRow{display:flex;align-items:center;gap:14px;margin:18px 0 0;flex-wrap:wrap}
+  .hint{font-size:13px;color:var(--miss);display:none}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-family:var(--sans);font-size:14px;padding:8px 14px;border-radius:8px;border:1px solid var(--accent);cursor:pointer}
+  .scoreOut{font-family:var(--mono);font-size:14px;font-weight:600}
+  .done{display:none;align-items:center;gap:10px;background:var(--ok-bg);color:var(--ok);border-radius:10px;padding:12px 16px;font-size:14px;margin:14px 0 0}
+  .done.show{display:flex}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">Lesson 24 · Wing V — training-dynamics mysteries</p>
+  <h1>Emergence as phase transitions<span class="chip" id="chip"></span></h1>
+  <p class="sub">A capability that is absent at 10<sup>10</sup> parameters and present at 10<sup>11</sup> — or a ruler with no gradations below its own smallest one.</p>
+  <div class="levels">
+    <span class="lk">Level</span>
+    <span class="pill"><b>US</b> Graduate</span>
+    <span class="pill"><b>FR</b> Master 2 – PhD</span>
+  </div>
+
+  <p class="lead">Plot exact-match accuracy on multi-digit arithmetic against model size and you see a flat line at zero across two orders of magnitude, and then a rise to something you would call working. Wei et al. (2022) named this pattern an <b>emergent ability</b>: absent in small models, present in large ones, and not extrapolable from the small ones. Taken at face value it is the most consequential claim in the field, because it says you cannot know what your next run can do until you have paid for it — and Lesson&nbsp;21's smooth, boring, forecastable loss curve would tell you nothing about capability. This lesson asks the only question a plot like that can settle: <b>is the jump in the model, or in the ruler?</b> Two lines of probability, one about composing a metric and one about counting a test set, do most of the work. They do not do all of it, and being exact about the remainder is the point.</p>
+
+  <div class="sec">The words, before the machinery</div>
+  <ul class="glo">
+    <li><span class="sym w">emergent ability</span><span class="def">Wei et al.'s definition: a capability <b>not present</b> in smaller models and <b>present</b> in larger ones, whose appearance could not have been predicted by extrapolating the smaller ones. <span class="n">Note that the definition is about a <i>measured curve</i>, not about the network. That gap is the whole lesson.</span></span></li>
+    <li><span class="sym w">metric</span><span class="def">the function turning a model's output into a score. <b>Exact match</b> (also called exact string match) gives 1 only if every token of the answer is right; <b>multiple-choice grade</b> gives 1 only if the argmax option is right. <span class="n">Both are <i>thresholded</i>: they throw away how close you were. Schaeffer et al. observed that the emergent-looking tasks in BIG-Bench cluster overwhelmingly on this small family of metrics.</span></span></li>
+    <li><span class="sym w">p, per-token success</span><span class="def">the probability the model produces the correct token at a given position — the quantity that actually improves with scale. <span class="n">Written p(N) with N the parameter count. We will always plot against x = log<sub>10</sub>N, because that is the axis every scaling plot uses.</span></span></li>
+    <li><span class="sym w">L</span><span class="def">the number of tokens that must <b>all</b> be right for the answer to count. <span class="n">Five-digit addition needs ~6; a proof step needs dozens. L is a property of the task and of your answer format, not of the model.</span></span></li>
+    <li><span class="sym w">continuous metric</span><span class="def">one that moves a little when the output gets a little better: <b>per-token log-loss</b> in nats (Lesson 15's cross-entropy, the same units as Lesson 21's scaling curves), or <b>1 − normalized edit distance</b>, which in expectation is just p. <span class="n">A <i>nat</i> is a natural-log unit of surprise; divide by ln 2 ≈ 0.693 for bits.</span></span></li>
+    <li><span class="sym w">resolution</span><span class="def">the smallest non-zero score a test set of n items can report: <b>1/n</b>. <span class="n">With 200 items, nothing below 0.5% exists. A capability with true success rate 10<sup>−3</sup> is not "weak" on such a test set; it is <i>unrepresentable</i>.</span></span></li>
+    <li><span class="sym w">sharpness</span><span class="def">how fast a curve rises, measured here as its <b>maximum slope in accuracy per decade of N</b>. <span class="n">The one number that can be compared between two metrics plotted on the same axis. We will compute it in closed form and it will be less impressive than you expect.</span></span></li>
+    <li><span class="sym w">phase transition</span><span class="def">in physics, a point where a derivative of the free energy fails to exist <b>in the infinite-size limit</b> — a genuine non-analyticity. <span class="n">Nothing in the LLM literature has demonstrated non-analyticity in anything. "Phase transition" is used loosely for "sharp on a log axis", and the loose usage is doing rhetorical work the maths has not paid for.</span></span></li>
+  </ul>
+
+  <div class="sec">A metric that multiplies</div>
+  <p class="step">Suppose the answer needs L tokens and the model gets each one right independently with probability p, which improves <b>smoothly</b> with scale. Take p logistic in x = log<sub>10</sub>N — a clean stand-in for "rises steadily, no knee anywhere", with steepness s measured per decade. The exact-match score is then the probability of an unbroken run:</p>
+  <div class="mblock math" data-tex="\mathrm{EM}(N)\;=\;\Pr\big[\text{all }L\text{ tokens correct}\big]\;=\;p(N)^{L},\qquad p(N)=\frac{1}{1+e^{-s\,(x-x_0)}},\quad x=\log_{10}N" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="p^{L}"></span><span class="def">the <b>composition</b>: independence turns a per-token probability into a product. <span class="n">Independence is an idealization — real errors are correlated along a sequence, which makes EM <i>higher</i> than p<sup>L</sup> but does not change the shape argument.</span></span></li>
+    <li><span class="sym math" data-tex="s"></span><span class="def">the <b>steepness</b> of the underlying improvement, in units of per decade of N. <span class="n">The only thing that could plausibly be called a property of the model. s is what a scaling law (Lesson 21) would pin down; it is a slider here because nobody measures p directly.</span></span></li>
+    <li><span class="sym math" data-tex="x_0"></span><span class="def">the scale at which per-token success passes one half. <span class="n">Fixed at 10<sup>9.5</sup> parameters throughout, so that changing L moves only the <i>metric</i> and never the model.</span></span></li>
+  </ul>
+  <p class="step">Differentiate. The chain rule gives the identity the whole debate turns on, and for the logistic p it closes in one line:</p>
+  <div class="mblock math" data-tex="\frac{d\,\mathrm{EM}}{dx}\;=\;L\,p^{L}\,\frac{d\ln p}{dx}\;=\;s\,L\,p^{L}(1-p),\qquad \max_{x}\frac{d\,\mathrm{EM}}{dx}\;=\;s\Big(\tfrac{L}{L+1}\Big)^{L+1}\ \ \text{at}\ \ p^{\star}=\tfrac{L}{L+1}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="L\,p^{L}\,\tfrac{d\ln p}{dx}"></span><span class="def">the <b>general</b> form: no logistic assumed. <span class="n">Read it as: the benchmark's slope is L times the relative rate of improvement of p, weighted by how much of the benchmark is already won. The L in front is why people expect the composed metric to be dramatically sharper.</span></span></li>
+    <li><span class="sym math" data-tex="p^{\star}=\tfrac{L}{L+1}"></span><span class="def">where the benchmark curve is <b>steepest</b>: at per-token accuracy L/(L+1), i.e. at x = x<sub>0</sub> + (ln L)/s. <span class="n">For L = 10 that is p = 0.909 — the visible jump happens when the model is <i>already right nine times in ten</i> per token.</span></span></li>
+    <li><span class="sym math" data-tex="s\big(\tfrac{L}{L+1}\big)^{L+1}"></span><span class="def">the maximum slope itself, against s/4 for p alone (a logistic's own maximum). <span class="n">The ratio is 4(L/(L+1))<sup>L+1</sup>, which <b>increases with L to a hard ceiling of 4/e ≈ 1.4715</b>: 1.402 at L = 10, 1.436 at L = 20, never more. Composition buys under 50% extra steepness — ever.</span></span></li>
+  </ul>
+  <p class="step">So the sharpness is <i>not</i> where the illusion lives. Here is where it lives. The benchmark stays under any threshold ε until p has climbed past the L-th root of ε:</p>
+  <div class="mblock math" data-tex="\mathrm{EM}<\varepsilon\iff p<\varepsilon^{1/L};\qquad \varepsilon=0.05,\;L=10:\;\;p<0.05^{1/10}=0.741" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="\varepsilon^{1/L}"></span><span class="def">the <b>hidden fraction</b>: how far the continuous metric has travelled while the benchmark still reads under ε. <span class="n">At L = 10 and ε = 5%, three quarters of the per-token improvement happens below the benchmark's own 5% line. At L = 20 it is 86%. The metric is not sharpening the curve; it is <b>deleting the first three quarters of it</b>.</span></span></li>
+    <li><span class="sym math" data-tex="\varepsilon"></span><span class="def">the threshold at which you would say "the model can't do this". <span class="n">On a real benchmark ε is not chosen by you — it is set by the test set's resolution 1/n, which is the second half of this lesson.</span></span></li>
+  </ul>
+
+  <div class="sec">See it — the mirage, computed live</div>
+  <p class="step">One underlying model, three rulers. The <b>blue</b> curve is exact match p<sup>L</sup>; the <b>gold</b> curve is per-token accuracy p — equivalently 1 − normalized edit distance, in expectation; the <b>faint dashed</b> curve is per-token log-loss −ln p in nats, on the right axis — for a logistic p that is the <b>softplus</b> curve −ln p = ln(1 + e<sup>−s(x−x₀)</sup>), meaning a smooth bend with a derivative everywhere, no kink and no knee. Move L and the blue curve transforms while <i>the gold and dashed curves do not move at all</i>: they cannot, because L is a property of the metric. The short blue segment is the tangent at the steepest point.</p>
+  <div class="panel">
+    <svg id="p1" viewBox="0 0 680 300" role="img" aria-label="Exact-match accuracy, per-token accuracy and per-token log-loss against model size on a log axis"></svg>
+    <div class="leg"><span><i></i>exact match p<sup>L</sup></span><span><i style="border-color:var(--series)"></i>per-token accuracy p</span><span><i style="border-color:var(--faint);border-top-style:dashed"></i>per-token log-loss, nats (right axis)</span></div>
+    <div class="ctrls">
+      <div class="field"><label>tokens that must all be right, L <b id="sLOut">—</b></label><input type="range" id="sL" min="1" max="20" value="10" step="1" /></div>
+      <div class="field"><label>steepness s of the underlying p(N) <b id="sSOut">—</b></label><input type="range" id="sS" min="0.8" max="2.4" value="1.2" step="0.05" /></div>
+    </div>
+    <div class="tally">
+      <div class="stat"><div class="k">EM crosses 5% at</div><div class="v a sm" id="s1a">—</div></div>
+      <div class="stat"><div class="k">EM crosses 50% at</div><div class="v a sm" id="s1b">—</div></div>
+      <div class="stat"><div class="k">p when EM hits 5%</div><div class="v s" id="s1c">—</div></div>
+      <div class="stat"><div class="k">max slope, p</div><div class="v s sm" id="s1d">—</div></div>
+      <div class="stat"><div class="k">max slope, EM</div><div class="v a sm" id="s1e">—</div></div>
+      <div class="stat"><div class="k">sharpness ratio</div><div class="v g" id="s1f">—</div></div>
+    </div>
+    <p class="callout" id="c1"></p>
+  </div>
+
+  <div class="sec">The other half — what n items can resolve</div>
+  <p class="step">The first panel left the benchmark pinned <i>near</i> zero over most of the range. A real benchmark does something stronger: it reports <b>exactly</b> zero, because it has finitely many items. Let the model's true success rate on the task be q — the sequence-level rate, so q = p<sup>L</sup> if you like, but the argument needs nothing about where q came from. Score n independent items:</p>
+  <div class="mblock math" data-tex="k\sim\mathrm{Binomial}(n,q),\qquad \widehat{\mathrm{acc}}=\frac{k}{n},\qquad \Pr[k=0]=(1-q)^{n}=e^{\,n\ln(1-q)}\approx e^{-nq}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="q"></span><span class="def">the <b>true</b> success probability — the thing that exists whether or not you can see it. <span class="n">This is Lesson 1's fixed parameter: the estimate is random, the parameter is not.</span></span></li>
+    <li><span class="sym math" data-tex="\widehat{\mathrm{acc}}"></span><span class="def">the <b>measured</b> accuracy, with standard error √(q(1−q)/n) — Lesson 1's binomial noise. <span class="n">At q = 10<sup>−3</sup> and n = 200 the standard error is 0.22%, <i>larger than q itself</i>: the estimator's noise dwarfs the quantity it estimates, exactly as ±12.4 bp dwarfed a +5 bp edge there.</span></span></li>
+    <li><span class="sym math" data-tex="(1-q)^{n}"></span><span class="def">the probability the benchmark reports a <b>flat zero</b>. <span class="n">Not "approximately zero" — the literal integer 0, which is what "the model cannot do this" looks like in a table. The approximation e<sup>−nq</sup> says the only thing that matters is the product nq, the expected number of hits.</span></span></li>
+  </ul>
+  <p class="step">Invert it. Demand that the capability show up — at least one success — with probability 0.9, and the required test-set size follows immediately, along with the smallest capability a given n can see:</p>
+  <div class="mblock math" data-tex="n_{90}=\frac{\ln 0.1}{\ln(1-q)}=\frac{\ln 10}{-\ln(1-q)}=\frac{2.3026}{q}\Big(1-\frac{q}{2}+O(q^{2})\Big),\qquad q^{\star}(n)=1-0.1^{1/n}\approx\frac{2.3026}{n}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="n_{90}"></span><span class="def">items needed to see the capability at least once, 90% of the time. <span class="n">Derivation: (1−q)<sup>n</sup> ≤ 0.1 ⟺ n ln(1−q) ≤ ln 0.1 ⟺ n ≥ ln(0.1)/ln(1−q), the inequality flipping because ln(1−q) &lt; 0. Then round up.</span></span></li>
+    <li><span class="sym math" data-tex="2.3026/q"></span><span class="def">the folk form, <b>ln 10 over q</b>. <span class="n">It <i>overestimates</i> by about q/2 in relative terms, since −ln(1−q) = q + q²/2 + …: under 0.05% error at q = 10<sup>−3</sup>, about 5% at q = 0.1. Cheap and safe in the regime that matters, which is small q.</span></span></li>
+    <li><span class="sym math" data-tex="q^{\star}(n)"></span><span class="def">the <b>apparent threshold</b>: the weakest capability your test set can detect 90% of the time. <span class="n">Everything below q★ reads zero and therefore reads "absent". Scale a model until q crosses q★ and the benchmark switches on — a threshold that lives entirely in n.</span></span></li>
+  </ul>
+
+  <div class="sec">See it — resolution and the flat zero</div>
+  <p class="step">Bars are the exact binomial distribution of the <i>measured</i> accuracy (the red bar is a literal zero reading); the grid on the right is 60 seeded replicate test sets, filled when that replicate found at least one success. Drag q down or n down and watch a capability that is genuinely present become genuinely invisible.</p>
+  <div class="panel">
+    <svg id="p2" viewBox="0 0 680 250" role="img" aria-label="Binomial distribution of measured accuracy with the probability of a zero reading, and sixty seeded replicate test sets"></svg>
+    <div class="ctrls">
+      <div class="field"><label>true success rate q <b id="sQOut">—</b></label><input type="range" id="sQ" min="-4" max="-1" value="-3" step="0.01" /></div>
+      <div class="field"><label>test-set size n <b id="sNOut">—</b></label><input type="range" id="sN" min="1.3" max="3.3" value="2.3" step="0.01" /></div>
+    </div>
+    <div class="tally">
+      <div class="stat"><div class="k">P(measured = 0)</div><div class="v m" id="s2a">—</div></div>
+      <div class="stat"><div class="k">seeded: zero readings</div><div class="v m sm" id="s2b">—</div></div>
+      <div class="stat"><div class="k">expected hits nq</div><div class="v a" id="s2c">—</div></div>
+      <div class="stat"><div class="k">n for 90% detection</div><div class="v g sm" id="s2d">—</div></div>
+      <div class="stat"><div class="k">folk 2.3026/q</div><div class="v sm" id="s2e">—</div></div>
+      <div class="stat"><div class="k">apparent threshold q★</div><div class="v s sm" id="s2f">—</div></div>
+    </div>
+    <p class="callout" id="c2"></p>
+  </div>
+
+  <div class="theorem">
+    <p class="lbl">The precise statement</p>
+    <p>(i) <i>Metric composition.</i> Let p(x) ∈ (0,1) be differentiable and increasing in x = log<sub>10</sub>N, and let L tokens be independent, so that EM(x) = p(x)<sup>L</sup>. Then d EM/dx = L·p<sup>L</sup>·d(ln p)/dx exactly. If p is logistic with steepness s, d EM/dx = s L p<sup>L</sup>(1−p), whose unique stationary point is p<sup>⋆</sup> = L/(L+1), i.e. x<sup>⋆</sup> = x<sub>0</sub> + (ln L)/s, with maximum value s(L/(L+1))<sup>L+1</sup>. Since (1+1/L)<sup>L+1</sup> decreases in L to e, the ratio of that maximum to the maximum slope of p itself (s/4) is 4(L/(L+1))<sup>L+1</sup>, which increases monotonically in L to 4/e ≈ 1.4715 and never attains it. Composition therefore <b>cannot</b> make the curve 47.2% steeper, and for the L ≤ 20 of the panel above it does not reach 44%. But EM &lt; ε ⟺ p &lt; ε<sup>1/L</sup>, so the fraction ε<sup>1/L</sup> of p's range is spent below the visible threshold, and that fraction → 1 as L grows. A sharp-looking benchmark curve is thus produced by a perfectly smooth p through delay and suppression, not through steepening.</p>
+    <p>(ii) <i>Resolution.</i> If k ~ Binomial(n, q) then Pr[k = 0] = (1−q)<sup>n</sup> exactly, so a capability with q ≪ 1/n reads as a literal zero with probability ≈ e<sup>−nq</sup> ≈ 1. Detection with probability ≥ 0.9 requires n ≥ ln(0.1)/ln(1−q) = ln 10/(−ln(1−q)) = (2.3026/q)(1 − q/2 + O(q²)); equivalently, a test set of size n cannot 90%-detect any q below q<sup>⋆</sup> = 1 − 0.1<sup>1/n</sup> ≈ 2.3026/n. Since q<sup>⋆</sup> depends on n alone, the scale at which a benchmark "switches on" is a property of the evaluation, not of the model.</p>
+    <p>(iii) <i>Scope.</i> (i) and (ii) show that a sharp benchmark curve is <b>consistent</b> with smooth underlying improvement — so sharpness under a thresholded metric at coarse resolution is not evidence of a discontinuity in the model. Neither result shows the converse: they do not prove that no capability changes sharply with scale, and they say nothing about tasks measured with continuous metrics at adequate resolution.</p>
+  </div>
+
+  <div class="sec">Re-applied — the backtest that switches on</div>
+  <p class="step">Both failures are native to performance reporting, and neither needs a language model. Take the composition first. A tear sheet's favourite line is <b>"all 12 months profitable"</b>. If m is the probability a given month closes green, that headline is m<sup>12</sup> — the same power, for exactly the same reason:</p>
+  <div class="mblock math" data-tex="\Pr[\text{all 12 months green}]=m^{12}:\qquad m=0.50\;\Rightarrow\;0.024\%,\qquad m=0.80\;\Rightarrow\;6.87\%" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="m^{12}"></span><span class="def">the thresholded headline. <span class="n">The underlying skill moves 1.6× (0.50 → 0.80); the reported quantity moves <b>281×</b> — exactly (8/5)<sup>12</sup>. Anyone reading the headline across a series of ever-larger capital allocations sees a strategy that "starts working" at some size.</span></span></li>
+    <li><span class="sym w">the fix</span><span class="def">score the continuous thing. <span class="n">Mean monthly return, or the log-loss of the directional call (Lesson 15's strictly proper score), instead of hit-rate-above-a-bar or months-green. The information was always there; the metric threw it away.</span></span></li>
+  </ul>
+  <p class="step">Then resolution. Lesson&nbsp;1's world had a genuine +5 bp/day edge against σ = 100 bp of daily noise, and one year of data gave a 95% half-width of <b>±12.4 bp</b> — two and a half times the effect. Run that backtest at n = 60, 250, 1 000 and 3 200 days and report the binary "significant positive edge at 5%: yes/no". The probability of a yes is <b>6%, 12%, 35%, 81%</b> — that is Φ(μ√n/σ − 1.96), where <b>Φ</b> is the standard normal CDF, Φ(z) = P(Z ≤ z) for Z ~ N(0,1), the same object that supplied Lesson 1's 1.96. A perfectly smooth function of √n, reported through a threshold. Four data points, and you have manufactured an emergence curve: no, no, no, yes. Nothing switched on. You bought resolution. The discipline is the same in both halves: <b>pick a continuous metric, then size the sample to the effect you are hunting</b> — and if the effect is 10<sup>−3</sup>, budget the 2 302 trials that implies before concluding it is not there.</p>
+
+  <div class="twist">
+    <p class="lbl">The twist — three of the four ingredients are yours</p>
+    <p>An emergence claim is a claim about the <b>derivative</b> of a curve. But you never had the curve: you had a handful of points on it. Count what produced those points — the <b>metric</b> (you chose exact match), the <b>test-set size</b> (you chose 200 items), the <b>scale spacing</b> (you trained at whatever sizes the budget allowed, typically one point per half-decade), and the <b>model family</b>. Only the last belongs to nature. A derivative estimated from four points, thresholded by a metric of your choosing and floored by a resolution of your choosing, is a statement about your evaluation protocol wearing the costume of a discovery. Schaeffer, Miranda &amp; Koyejo (2023) made this concrete in the strongest possible way: they induced emergent-looking curves <b>in vision models on tasks nobody calls emergent</b>, purely by swapping in a discontinuous metric, and made the published emergent curves disappear by swapping the metric back.</p>
+    <p>Second barrel, and it cuts the other way. None of this shows capabilities cannot genuinely jump. Phase transitions are real in physics; and in training dynamics we have at least one well-documented sharp change that is <b>not</b> a metric artifact — the formation of induction heads, which Olsson et al. (2022) found as a visible bump in the <i>loss curve itself</i>, a continuous metric at full resolution. Lesson&nbsp;23's grokking is another: there the transition is in training time at fixed scale, and the evidence is in the weights — a memorizing solution is replaced by a generalizing circuit — so it is a claim about the network's internals rather than about a benchmark's shape. (Even there, honesty: Nanda et al. showed the circuit forms <i>gradually</i> underneath the jump, so the sharpness of the accuracy curve is again partly the metric's.) The lesson is not "emergence is fake". It is that the <b>burden of proof</b> sits on continuous metrics and adequate resolution — and once you meet that burden, whatever sharpness survives is real and worth studying.</p>
+  </div>
+
+  <div class="vol">
+    <p class="lbl">Why this matters · volarixs</p>
+    <p><code>sign_stability</code> is a thresholded metric of exactly the kind this lesson is about: the share of subperiods in which a cell's β̂ keeps its sign, gated at some bar. Model a cell as having a true t-ratio t = β/SE(β̂) with independent subperiods; then the share is Φ(t), and the gate is a step applied to it. As data quality improves and t drifts smoothly from 0.5 to 1.5, the underlying share moves 0.691 → 0.933 — perfectly smooth — while a gate at 0.8 flips at the single point t = 0.842. A cell that "comes alive" between two rebuilds may have crossed a threshold you set, not a threshold in the market.</p>
+    <p>The resolution half is the more expensive one. A Cross-Matrix cell (Lesson 7) conditioned finely enough has few observations, and Lesson 21's panel already priced the split; this lesson adds the sharper version — below a cell's own resolution, a real relationship reports as <i>nothing</i>, and nothing is indistinguishable from absent. Two habits follow: keep and plot the continuous diagnostic (the β̂ and its standard error, the elasticity itself) alongside any gated flag, and record each cell's n so that "no signal here" can be read as "not resolvable at this n". The honest boundary: the Φ(t) model above assumes independent subperiods with a stable β, which is exactly what a regime-conditioned panel violates — treat it as the right shape of argument, not a calibration.</p>
+  </div>
+
+  <div class="sec">Check yourself</div>
+  <div class="q" id="q1"><p class="stem">A task needs L = 10 tokens all correct; per-token success p rises smoothly with scale and the benchmark is exact match. Why does the benchmark curve look like a phase transition?</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q2"><p class="stem">You want to know whether the underlying capability is improving smoothly. What is the right change to the measurement?</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q3"><p class="stem">A capability succeeds on a fraction q = 0.002 of items; the benchmark has n = 300 items. The probability it reports exactly zero is:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q4"><p class="stem">Grokking (Lesson 23) and emergence are often lumped together. The precise difference is:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q5"><p class="stem">Which statement about the mirage argument is correct?</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q6"><p class="stem">A strategy's monthly win probability m improves smoothly from 0.50 to 0.80 as more capital and data arrive. Your tear sheet reports "all 12 months profitable". What does that headline do?</p><div class="opts"></div><p class="fb"></p></div>
+
+  <div class="checkRow">
+    <button class="primary" id="check">Check answers</button>
+    <span class="scoreOut" id="scoreOut"></span>
+    <span class="hint" id="hint">Answer all six first.</span>
+  </div>
+  <div class="done" id="done">Ruler audited. Next in Wing V: the neural tangent kernel &amp; the lazy regime.</div>
+</div>
+
+<script>
+/* storage shim: window.storage (Claude artifacts) or localStorage (web) */
+if(!window.storage){window.storage={async get(k){const v=localStorage.getItem(k);if(v==null)throw new Error('missing');return{key:k,value:v}},async set(k,v){localStorage.setItem(k,v);return{key:k,value:v}},async delete(k){localStorage.removeItem(k);return{key:k,deleted:true}},async list(p){const ks=[];for(let i=0;i<localStorage.length;i++){const kk=localStorage.key(i);if(!p||kk.startsWith(p))ks.push(kk)}return{keys:ks}}};}
+function renderMath(){document.querySelectorAll('.math').forEach(el=>{const tex=el.getAttribute('data-tex');if(!tex||el.dataset.done)return;try{if(window.katex){katex.render(tex,el,{displayMode:el.dataset.display==='1',throwOnError:false});el.dataset.done='1';}else el.textContent=tex;}catch(e){el.textContent=tex;}});}
+const id=x=>document.getElementById(x);
+
+/* ---------- deterministic randomness (seed 124) ---------- */
+function mulberry32(seed){let a=seed>>>0;return function(){a|=0;a=(a+0x6D2B79F5)|0;let t=Math.imul(a^(a>>>15),1|a);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296;}}
+function randn(rng){let u=0,v=0;while(!u)u=rng();while(!v)v=rng();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+const SEED=124,NREP=60;
+
+/* ---------- formatting ---------- */
+const SUP={'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
+const supr=s=>String(s).split('').map(c=>SUP[c]||c).join('');
+const pw10=k=>'10'+supr(k);
+function norm(m,e){if(m>=10){m/=10;e++;}if(m<1){m*=10;e--;}return[m,e];}
+/* round the mantissa, THEN renormalize: 9.999 must print as 1.00×10ᵏ⁺¹, never 10.00×10ᵏ */
+function mant(m,e,dp){let r=norm(m,e);if(+r[0].toFixed(dp)>=10)r=[r[0]/10,r[1]+1];return r[0].toFixed(dp)+'×'+pw10(r[1]);}
+function fmtSci(x,dp){const e=Math.floor(Math.log10(x));return mant(x/Math.pow(10,e),e,dp===undefined?2:dp);}
+function fmtPow(x10){const e=Math.floor(x10);return mant(Math.pow(10,x10-e),e,2);}
+/* percentage of a probability given as (value, natural log of value) so tiny values survive */
+function fmtPct(P,logP){
+  if(P>=1e-4)return (100*P).toFixed(2)+'%';
+  const l10=logP/Math.LN10+2,e=Math.floor(l10);
+  return mant(Math.pow(10,l10-e),e,1)+'%';
+}
+const grp=x=>x.toLocaleString('en-US');
+
+/* ---------- interactive 1: the metric mirage ---------- */
+const X0=9.5,XLO=5.5,XHI=14.0;
+const W1=680,H1=300,AL=52,AR=54,AT=16,AB=34,IW1=W1-AL-AR,IH1=H1-AT-AB;
+const logi=(x,s)=>1/(1+Math.exp(-s*(x-X0)));
+function ceOf(x,s){const t=-s*(x-X0);return t>30?t:Math.log1p(Math.exp(t));}
+const xAt=(p,s)=>X0+Math.log(p/(1-p))/s;
+function upd1(){
+  const L=+id('sL').value,s=+id('sS').value;
+  const p5=Math.pow(0.05,1/L),p50=Math.pow(0.5,1/L);
+  const x5=xAt(p5,s),x50=xAt(p50,s);
+  const slopeP=s/4,slopeEM=s*Math.pow(L/(L+1),L+1),ratio=slopeEM/slopeP;
+  const xstar=X0+Math.log(L)/s,emstar=Math.pow(L/(L+1),L);
+  const ceTop=ceOf(XLO,s);
+  const X=x=>AL+(x-XLO)/(XHI-XLO)*IW1,Y=v=>AT+(1-v)*IH1,YC=v=>AT+(1-v/ceTop)*IH1;
+  let g='';
+  for(let k=6;k<=14;k++)g+='<line x1="'+X(k).toFixed(1)+'" y1="'+AT+'" x2="'+X(k).toFixed(1)+'" y2="'+(AT+IH1)+'" stroke="var(--hair)"/>'
+    +'<text x="'+X(k).toFixed(1)+'" y="'+(H1-12)+'" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--faint)">'+pw10(k)+'</text>';
+  for(let t=0;t<=4;t++){const v=t/4;
+    g+='<line x1="'+AL+'" y1="'+Y(v).toFixed(1)+'" x2="'+(W1-AR)+'" y2="'+Y(v).toFixed(1)+'" stroke="var(--hair)"/>'
+      +'<text x="'+(AL-6)+'" y="'+(Y(v)+3.5).toFixed(1)+'" text-anchor="end" font-family="var(--mono)" font-size="10" fill="var(--faint)">'+(100*v).toFixed(0)+'%</text>'
+      +'<text x="'+(W1-AR+6)+'" y="'+(YC(ceTop*v)+3.5).toFixed(1)+'" font-family="var(--mono)" font-size="10" fill="var(--faint)">'+(ceTop*v).toFixed(1)+'</text>';}
+  const M=240;let pe='',pp='',pc='';
+  for(let i=0;i<=M;i++){const x=XLO+(XHI-XLO)*i/M,p=logi(x,s);
+    pe+=X(x).toFixed(1)+','+Y(Math.pow(p,L)).toFixed(1)+' ';
+    pp+=X(x).toFixed(1)+','+Y(p).toFixed(1)+' ';
+    pc+=X(x).toFixed(1)+','+YC(ceOf(x,s)).toFixed(1)+' ';}
+  g+='<polyline points="'+pc+'" fill="none" stroke="var(--faint)" stroke-width="1.3" stroke-dasharray="4 3"/>';
+  g+='<polyline points="'+pp+'" fill="none" stroke="var(--series)" stroke-width="2.4"/>';
+  g+='<polyline points="'+pe+'" fill="none" stroke="var(--accent)" stroke-width="1.9"/>';
+  [[x5,'5%',0.05],[x50,'50%',0.5]].forEach(m=>{
+    g+='<line x1="'+X(m[0]).toFixed(1)+'" y1="'+Y(m[2]).toFixed(1)+'" x2="'+X(m[0]).toFixed(1)+'" y2="'+(AT+IH1)+'" stroke="var(--accent)" stroke-dasharray="3 3" opacity="0.65"/>'
+      +'<circle cx="'+X(m[0]).toFixed(1)+'" cy="'+Y(m[2]).toFixed(1)+'" r="3.4" fill="var(--accent)"/>'
+      +'<text x="'+X(m[0]).toFixed(1)+'" y="'+(AT+IH1-6)+'" text-anchor="'+(m[0]>XHI-1.4?'end':'start')+'" font-family="var(--mono)" font-size="10" fill="var(--accent)">'+(m[0]>XHI-1.4?'':' ')+'EM '+m[1]+'</text>';});
+  /* keep the segment a genuine tangent: shrink its half-width instead of clamping its ends */
+  const dx=Math.min(0.7,emstar/slopeEM,(1-emstar)/slopeEM),y0t=emstar-dx*slopeEM,y1t=emstar+dx*slopeEM;
+  g+='<line x1="'+X(xstar-dx).toFixed(1)+'" y1="'+Y(y0t).toFixed(1)+'" x2="'+X(xstar+dx).toFixed(1)+'" y2="'+Y(y1t).toFixed(1)+'" stroke="var(--accent)" stroke-width="3" opacity="0.35"/>';
+  g+='<text x="'+(AL+6)+'" y="'+(AT+11)+'" font-family="var(--mono)" font-size="10" fill="var(--faint)">accuracy</text>';
+  g+='<text x="'+(W1-AR+6)+'" y="'+(AT+11)+'" font-family="var(--mono)" font-size="10" fill="var(--faint)">nats</text>';
+  g+='<text x="'+(W1-AR-4)+'" y="'+(H1-12)+'" text-anchor="end" font-family="var(--mono)" font-size="10" fill="var(--faint)">parameters N</text>';
+  id('p1').innerHTML=g;
+  id('sLOut').textContent=L+(L===1?' token':' tokens');
+  id('sSOut').textContent=s.toFixed(2)+' / decade';
+  id('s1a').textContent=fmtPow(x5);id('s1b').textContent=fmtPow(x50);
+  id('s1c').textContent=p5.toFixed(3);
+  id('s1d').textContent=slopeP.toFixed(3)+' /dec';
+  id('s1e').textContent=slopeEM.toFixed(3)+' /dec';
+  id('s1f').textContent='×'+ratio.toFixed(3);
+  let m='Per-token success rises smoothly across the whole window — a logistic of steepness '+s.toFixed(2)+' per decade about 10⁹˙⁵ parameters — and the per-token log-loss on the right axis falls as a smooth softplus from '+ceTop.toFixed(2)+' nats, with no knee anywhere. Exact match over L = '+L+' token'+(L===1?'':'s')+' is that same curve raised to the power '+L+'. ';
+  if(L===1)m+='At L = 1 the power is trivial: the blue and gold curves are the same curve, both crossing 5% at N = '+fmtPow(x5)+' and 50% at N = '+fmtPow(x50)+', and the sharpness ratio is exactly ×1.000. Nothing is hidden and nothing is delayed — this is the control condition. Raise L and only the metric changes.';
+  else m+='It first clears 5% at N = '+fmtPow(x5)+', by which point per-token accuracy has already reached '+p5.toFixed(3)+': '+(100*p5).toFixed(0)+'% of the underlying range happened below the benchmark’s own 5% line, invisible. It reaches 50% at N = '+fmtPow(x50)+', '+(x50-x5).toFixed(2)+' decades later, while p crawls from '+p5.toFixed(3)+' to '+p50.toFixed(3)+' — '+(100*(p50-p5)).toFixed(0)+' points. Now the deflating part: the steepest the exact-match curve ever gets is '+slopeEM.toFixed(3)+' accuracy per decade against '+slopeP.toFixed(3)+' for p, a ratio of ×'+ratio.toFixed(3)+' that depends only on L and can never exceed 4/e = 1.472. Composing the metric does not make the curve steep. It makes it late, and it buries '+(100*p5).toFixed(0)+'% of the progress under a floor — the floor the next panel puts a number on.';
+  id('c1').textContent=m;
+}
+
+/* ---------- interactive 2: resolution ---------- */
+const W2=680,H2=250,BL=50,BT=18,BB=42,BW=430,BH=H2-BT-BB;
+function binomPmf(n,q,k1){const out=new Float64Array(k1+1);let v=Math.exp(n*Math.log(1-q));out[0]=v;const r=q/(1-q);
+  for(let k=0;k<k1;k++){v=v*((n-k)/(k+1))*r;out[k+1]=v;}return out;}
+function binomSample(n,q,rng){let k=0,pos=0;const lq=Math.log(1-q);
+  for(;;){const u=rng(),g=Math.floor(Math.log(u>0?u:1e-12)/lq)+1;pos+=g;if(pos>n)break;k++;}return k;}
+function zeroProb(n,q){const lp=n*Math.log(1-q);return{P:Math.exp(lp),log:lp};}
+/* keep the 3-dp form strictly below 10 — 9.9996 must print as 10, never "10.000" */
+const fmtMu=m=>m<0.01?fmtSci(m):(m<10&&+m.toFixed(3)<10?m.toFixed(3):m.toFixed(0));
+/* truncate and mark the dropped digits, so "186.00… → 187" never reads as an off-by-one */
+const trunc2=v=>(Math.floor(v*100)/100).toFixed(2)+'…';
+function upd2(){
+  const q=Math.pow(10,+id('sQ').value),n=Math.round(Math.pow(10,+id('sN').value));
+  const z=zeroProb(n,q),mu=n*q,sd=Math.sqrt(n*q*(1-q)),muS=fmtMu(mu);
+  const exact=Math.log(0.1)/Math.log(1-q),n90=Math.ceil(exact),folk=Math.LN10/q,err=100*(folk-exact)/exact;
+  const qstar=1-Math.pow(0.1,1/n);
+  const rng=mulberry32(SEED),reps=[];for(let i=0;i<NREP;i++)reps.push(binomSample(n,q,rng));
+  const zeros=reps.reduce((a,v)=>a+(v===0?1:0),0);
+  const k1=Math.min(n,Math.max(5,Math.ceil(mu+4*sd)));
+  const w=Math.max(1,Math.ceil(k1/78)),pmf=binomPmf(n,q,k1);
+  const bins=[{a:0,b:0}];for(let a=1;a<=k1;a+=w)bins.push({a:a,b:Math.min(k1,a+w-1)});
+  bins.forEach(b=>{let sm=0;for(let k=b.a;k<=b.b;k++)sm+=pmf[k];b.p=sm;});
+  const hmax=Math.max.apply(null,bins.map(b=>b.p))||1;
+  const XK=k=>BL+(k/(k1+1))*BW,YB=p=>BT+BH-(p/hmax)*BH;
+  let g='<line x1="'+BL+'" y1="'+(BT+BH)+'" x2="'+(BL+BW)+'" y2="'+(BT+BH)+'" stroke="var(--hair2)"/>';
+  bins.forEach(b=>{const x=XK(b.a),wd=Math.max(1.2,XK(b.b+1)-x-1),h=(b.p/hmax)*BH;
+    g+='<rect x="'+x.toFixed(1)+'" y="'+YB(b.p).toFixed(1)+'" width="'+wd.toFixed(1)+'" height="'+h.toFixed(1)+'" fill="'+(b.a===0?'var(--miss)':'var(--accent)')+'" opacity="'+(b.a===0?0.85:0.7)+'"/>';});
+  let prev=-1;[0,Math.round(k1/3),Math.round(2*k1/3),k1].forEach(k=>{if(k===prev)return;prev=k;const acc=100*k/n;
+    g+='<text x="'+(XK(k)+0.5).toFixed(1)+'" y="'+(BT+BH+15)+'" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--faint)">'+(acc>=1?acc.toFixed(1):acc.toFixed(2))+'%</text>';});
+  g+='<text x="'+(BL+BW/2)+'" y="'+(BT+BH+31)+'" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--faint)">measured accuracy k / n</text>';
+  if(mu<=k1)g+='<line x1="'+XK(mu).toFixed(1)+'" y1="'+BT+'" x2="'+XK(mu).toFixed(1)+'" y2="'+(BT+BH)+'" stroke="var(--series)" stroke-width="1.4" stroke-dasharray="5 3"/>'
+    +'<text x="'+(XK(mu)+5).toFixed(1)+'" y="'+(BT+11)+'" font-family="var(--mono)" font-size="10" fill="var(--series)">true q</text>';
+  g+='<text x="'+(BL+2)+'" y="'+(BT+11)+'" font-family="var(--mono)" font-size="10" fill="var(--faint)">P(k)</text>';
+  g+='<text x="512" y="36" font-family="var(--mono)" font-size="10" fill="var(--faint)">60 replicate test sets</text>';
+  for(let i=0;i<NREP;i++){const cx=512+(i%10)*16,cy=44+Math.floor(i/10)*16,hit=reps[i]>0;
+    g+='<rect x="'+cx+'" y="'+cy+'" width="14" height="14" rx="3" fill="'+(hit?'var(--accent)':'var(--miss)')+'" opacity="'+(hit?0.85:0.22)+'" stroke="'+(hit?'none':'var(--miss)')+'" stroke-opacity="0.5"/>';}
+  g+='<text x="512" y="156" font-family="var(--mono)" font-size="10" fill="var(--faint)">filled = found ≥ 1 success</text>';
+  g+='<text x="512" y="172" font-family="var(--mono)" font-size="10" fill="var(--miss)">pale = reported a flat zero</text>';
+  id('p2').innerHTML=g;
+  id('sQOut').textContent=fmtSci(q)+' · 1 in '+grp(Math.round(1/q));
+  id('sNOut').textContent=grp(n)+' items · resolution '+(100/n).toFixed(100/n<1?2:1)+'%';
+  id('s2a').textContent=fmtPct(z.P,z.log);
+  id('s2b').textContent=zeros+' / '+NREP;
+  id('s2c').textContent=muS;
+  id('s2d').textContent=grp(n90)+' items';
+  id('s2e').textContent=grp(Math.round(folk))+' · +'+err.toFixed(2)+'%';
+  id('s2f').textContent=(100*qstar).toFixed(3)+'%';
+  const sweep=[1e-4,1e-3,1e-2].map(qq=>100*Math.exp(n*Math.log(1-qq)));
+  const cnt=sweep.filter(v=>v>50).length;
+  let m='The capability is really there — it succeeds on q = '+fmtSci(q)+' of items, one in '+grp(Math.round(1/q))+' — and you measure it on n = '+grp(n)+' items, whose smallest non-zero reading is '+(100/n).toFixed(2)+'%. Expected hits nq = '+muS+', and P(k = 0) = (1−q)ⁿ = '+fmtPct(z.P,z.log)+'; '+zeros+' of the 60 seeded replicates on the right reported a flat zero. ';
+  m+=z.P>0.5?'More often than not this benchmark returns a literal zero for a model that has the ability — and a literal zero is exactly what "absent" looks like in a results table. '
+    :z.P>0.01?'A zero reading is no longer the rule, but it still happens '+(100*z.P).toFixed(1)+'% of the time — enough to plant a spurious flat stretch in a curve sampled at four or five scales. '
+    :'At this resolution the capability is unmissable: a zero reading has probability '+fmtPct(z.P,z.log)+', so the benchmark tracks q honestly. This is the regime you have to buy. ';
+  m+='Seeing it 90% of the time needs n ≥ ln(0.1)/ln(1−q) = '+trunc2(exact)+' → '+grp(n90)+' items; the folk form 2.3026/q says '+grp(Math.round(folk))+', high by '+err.toFixed(2)+'%. At the n you actually have, the weakest capability detectable 90% of the time is q★ = 1 − 0.1^(1/n) = '+(100*qstar).toFixed(3)+'%. ';
+  m+='Now sweep the true rate across two decades at this same n: P(flat zero) = '+sweep[0].toFixed(1)+'%, '+sweep[1].toFixed(1)+'%, '+sweep[2].toFixed(1)+'% at q = 10⁻⁴, 10⁻³, 10⁻². ';
+  m+=cnt===3?'Every one of them reads zero more often than not: the whole sweep is invisible here, because the smallest rate this test set resolves is q★ = '+(100*qstar).toFixed(3)+'%, above the entire sweep.'
+    :cnt===2?'The first two read zero more often than not and the third does not — a flat stretch, then a benchmark that abruptly "has" the capability, with nothing discontinuous anywhere in q.'
+    :cnt===1?'Only the weakest of the three still reads zero more often than not: the apparent threshold has dropped to q★ = '+(100*qstar).toFixed(3)+'%.'
+    :'None of the three reads zero more often than not — at this n the benchmark tracks q across the whole sweep, which is precisely what adequate resolution buys.';
+  id('c2').textContent=m;
+}
+id('sL').addEventListener('input',upd1);id('sS').addEventListener('input',upd1);
+id('sQ').addEventListener('input',upd2);id('sN').addEventListener('input',upd2);
+
+/* ---------- retrieval ---------- */
+const QS={
+  q1:{opts:[
+    "The model acquires a new circuit at that scale, and the per-token metric is too coarse to resolve it.",
+    "Because p^L is a discontinuous function of p, and discontinuous functions produce jumps.",
+    "Because exact match is p¹⁰, which stays under 5% until p reaches 0.05^(1/10) = 0.741 — three quarters of the underlying improvement happens while the benchmark still reads about zero, and the rest is compressed into the top of p's range.",
+    "Because averaging over L tokens multiplies the variance of the measured accuracy by L, and noise looks like a jump."],a:2,
+    fb:"The mechanism is suppression, not steepening. EM < ε ⟺ p < ε^(1/L), so with L = 10 and ε = 5% the metric hides everything below p = 0.741. Option B is the common misstatement: p^L is perfectly smooth — analytic, in fact — in p and in scale; nothing discontinuous appears anywhere. Option D confuses noise with shape (and the variance of the mean of L Bernoullis falls, it does not rise). Option A is the claim under test, not an explanation: note the panel changes only L, never the model, and the maximum slope of the composed curve is at most 4/e ≈ 1.47 times p's own — under 50% extra steepness, ever."},
+  q2:{opts:[
+    "Re-score the same runs with a continuous metric — per-token log-loss in nats (Lesson 15), or 1 − normalized edit distance, which in expectation is just p and does not compose over L.",
+    "Fit a sigmoid to the exact-match points and report its inflection scale as the emergence threshold.",
+    "Train at more scales but keep the same metric and the same test set, since the metric is not where the problem is.",
+    "Report best-of-k sampled accuracy instead, which is higher and therefore less flat."],a:0,
+    fb:"The whole point of the mirage argument is that the information was never lost — it is in the same runs, under a metric that moves when the output gets a little better. Per-token log-loss and edit distance are functions of p alone, so they are L-free and smooth. B accepts the artifact and gives it a name; C denies the mechanism; D is another composition — best-of-k accuracy is 1 − (1 − p^L)^k, still a thresholded, L-dependent transform, just shifted upward."},
+  q3:{opts:[
+    "About zero — with 300 items you will certainly see at least one success.",
+    "q^n = 0.002³⁰⁰, astronomically small.",
+    "1 − nq = 40%, the first-order approximation.",
+    "(1 − q)ⁿ = 0.998³⁰⁰ = 54.9% — more likely than not, the benchmark reports a flat zero for a capability that is genuinely there."],a:3,
+    fb:"P(k = 0) = (1 − q)ⁿ exactly, and 0.998³⁰⁰ = e^(300 ln 0.998) = 0.549. A is the intuition the arithmetic destroys: nq = 0.6, so you expect well under one hit. B computes the probability that all 300 items succeed. C is the linear approximation 1 − nq, which is only valid for nq ≪ 1 and here is off by 15 points; the right small-q approximation is e^(−nq) = e^(−0.6) = 54.9%, which happens to be excellent."},
+  q4:{opts:[
+    "Grokking is the same p^L artifact seen on the time axis — test accuracy is thresholded, so the mirage argument disposes of it too.",
+    "Grokking is a transition in training time at fixed scale, in which the network's internal algorithm changes from memorization to a generalizing circuit — a claim about the weights, supported by weights-level evidence; the mirage argument here is about a scale-indexed benchmark curve, where nothing internal need change at the reported threshold.",
+    "Grokking occurs only on real data and emergence only on synthetic tasks, so only the latter is measurable.",
+    "They are the same phenomenon on two axes: grokking is emergence in time, so a continuous metric removes both."],a:1,
+    fb:"Two different axes and two different kinds of claim. Grokking: fixed model, training time, and an identified change in what the network computes — mechanistic work traced the memorizing solution being replaced by a generalizing circuit. Emergence-as-mirage: a curve across scales, under a metric of your choosing, at a resolution of your choosing, where the maths shows no internal change is required to produce the shape. The honest qualifier — the one that makes A tempting but still wrong — is that grokking's accuracy jump is also partly metric-sharpened, since continuous progress measures show the circuit forming gradually underneath it; that softens the sharpness, it does not turn a documented change in the weights into an artifact of scoring."},
+  q5:{opts:[
+    "It proves that no capability changes sharply with scale: every apparent jump is a metric artifact.",
+    "It applies only to arithmetic tasks, where the token decomposition is explicit.",
+    "It shows that continuous metrics never exhibit sharp changes, so any sharp curve is by definition an artifact.",
+    "It shows a sharp benchmark curve is consistent with smooth underlying improvement — so a jump under a thresholded metric at coarse resolution is not evidence of a jump in the model. It does not show every reported emergence is an artifact: some transitions appear under continuous metrics at full resolution, and \"explainable in hindsight\" is not \"predictable in advance\"."],a:3,
+    fb:"The results are consistency results, and consistency runs one way. C is refuted by a documented counterexample: the formation of induction heads shows up as a bump in the loss curve itself — continuous, full resolution. A is the overclaim the paper's own authors avoid. B is false: the argument needs only that a score be thresholded and a test set finite, which covers multiple-choice grade, pass@1, and any all-steps-correct criterion. The correct reading is the burden-of-proof one: demonstrate the jump under a continuous metric with n large enough to resolve the effect, and then it counts."},
+  q6:{opts:[
+    "It goes from 0.024% to 6.87% — a 281× move in the headline from a 1.6× move in the underlying, because the metric is m¹²: exactly the composition that makes exact match look emergent.",
+    "It rises by 1.6×, in proportion to m.",
+    "It is unaffected: aggregating to months removes the dependence on m.",
+    "It falls, because a longer track record gives more opportunities to lose."],a:0,
+    fb:"0.50¹² = 0.0244% and 0.80¹² = 6.87%, a ratio of (8/5)¹² = 281.5 from an underlying that improved 1.6×. The all-months-green line is exact match with L = 12, and it behaves the same way: pinned at nothing while the real edge improves, then apparently switching on. B is the linear intuition the power destroys; C is wrong because the composition is precisely over months; D confuses a fixed 12-month window with an ever-lengthening one. The fix is the same as for benchmarks — score the continuous quantity (mean monthly return, or the log-loss of the directional call, Lesson 15) and size the sample to the effect (Lesson 1)."}
+};
+const sel={q1:null,q2:null,q3:null,q4:null,q5:null,q6:null};let revealed=false;
+Object.keys(QS).forEach(qid=>{const holder=document.querySelector('#'+qid+' .opts');QS[qid].opts.forEach((txt,i)=>{const b=document.createElement('button');b.className='opt';b.textContent=String.fromCharCode(65+i)+'.  '+txt;b.onclick=()=>{if(revealed)return;sel[qid]=i;[...holder.children].forEach((c,ci)=>c.classList.toggle('sel',ci===i));id('hint').style.display='none';};holder.appendChild(b);});});
+id('check').onclick=async()=>{
+  if(revealed)return;if(Object.values(sel).some(v=>v===null)){id('hint').style.display='inline';return;}
+  revealed=true;let score=0;
+  Object.keys(QS).forEach(qid=>{const a=QS[qid].a,holder=document.querySelector('#'+qid+' .opts'),fb=document.querySelector('#'+qid+' .fb');[...holder.children].forEach((c,ci)=>{c.style.cursor='default';c.classList.remove('sel');if(ci===a)c.classList.add('correct');else if(ci===sel[qid])c.classList.add('wrong');});if(sel[qid]===a)score++;fb.textContent=QS[qid].fb;fb.classList.add('show');});
+  id('check').style.opacity='0.5';id('check').textContent='Checked';
+  id('scoreOut').textContent=score+' / 6';id('done').classList.add('show');
+  try{await window.storage.set('mfs:lesson24',JSON.stringify({done:true,retrieval:score+'/6',ts:Date.now()}),false);}catch(e){}
+};
+function boot(){renderMath();upd1();upd2();}
+if(window.katex)boot();else window.addEventListener('load',boot);
+(async()=>{try{const r=await window.storage.get('mfs:lesson24',false);if(r&&r.value){const v=JSON.parse(r.value);if(v.done){const c=id('chip');c.classList.add('show');c.textContent='completed · '+v.retrieval;}}}catch(e){}})();
+</script>
+</body>
+</html>
