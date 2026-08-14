@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lesson 20 — Embeddings as directions &amp; superposition</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<style>
+  :root{
+    --paper:#FAFAF6;--ink:#1A1C22;--muted:#63676E;--faint:#9A9EA4;--hair:#E4E3DB;--hair2:#D4D3CA;--panel:#FFFFFF;
+    --accent:#24507A;--accent-bg:#EAF0F6;--series:#B07A2E;--miss:#B23A3A;--ok:#2F6B4F;--ok-bg:#E9F1EC;
+    --vol:#8A5A2B;--vol-bg:#F6EFE6;--serif:Iowan Old Style,Palatino,Georgia,serif;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme:dark){:root{--paper:#15161A;--ink:#E9E8E2;--muted:#A2A6AC;--faint:#71757B;--hair:#2A2C31;--hair2:#3A3C42;--panel:#1B1D22;--accent:#7FB0E0;--accent-bg:#1E2A38;--series:#D9A85E;--miss:#E07A7A;--ok:#7FC49F;--ok-bg:#1C2A22;--vol:#D9A066;--vol-bg:#2A2115;}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.62;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:750px;margin:0 auto;padding:32px 24px 60px}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 6px}
+  h1{font-family:var(--serif);font-weight:600;font-size:27px;line-height:1.22;margin:0 0 6px;letter-spacing:-.01em}
+  .chip{display:none;font-family:var(--mono);font-size:11px;letter-spacing:.05em;color:var(--ok);border:1px solid var(--ok);border-radius:20px;padding:3px 10px;vertical-align:middle;margin-left:10px}
+  .chip.show{display:inline-block}
+  .sub{color:var(--muted);font-size:15px;margin:0 0 18px}
+  .levels{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 26px}
+  .levels .lk{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+  .levels .pill{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-family:var(--mono);color:var(--muted);background:var(--panel);border:1px solid var(--hair2);border-radius:20px;padding:4px 11px}
+  .levels .pill b{color:var(--accent);font-weight:700;letter-spacing:.03em}
+  p.lead{font-size:16px;margin:0 0 22px}
+  p.lead b{font-weight:600}
+  .sec{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:36px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--hair)}
+  .mblock{margin:16px 0;overflow-x:auto}
+  .glo{list-style:none;padding:0;margin:14px 0 0}
+  .glo li{display:flex;gap:14px;padding:9px 0;border-top:1px solid var(--hair);align-items:baseline}
+  .glo li:first-child{border-top:none}
+  .glo .sym{flex:0 0 92px;text-align:right;padding-top:2px}
+  .glo .sym.w{font-family:var(--mono);font-size:12.5px;color:var(--accent)}
+  .glo .def{font-size:14.5px}
+  .glo .def .n{color:var(--muted)}
+  .step{font-size:14.5px;color:var(--muted);margin:10px 0}
+  .panel{background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:20px;margin:14px 0}
+  .imgs{display:flex;flex-wrap:wrap;gap:22px;align-items:flex-start}
+  .imgs figure{margin:0;display:flex;flex-direction:column;gap:6px}
+  .imgs figcaption{font-family:var(--mono);font-size:12px;color:var(--muted)}
+  canvas{image-rendering:pixelated;border:1px solid var(--hair2);border-radius:6px;width:196px;height:196px;background:var(--panel)}
+  .hintline{font-size:13px;color:var(--faint);font-family:var(--mono);margin:0 0 8px}
+  .figcap{font-family:var(--mono);font-size:12px;color:var(--muted);margin:2px 0 12px}
+  .ctrls{display:flex;flex-wrap:wrap;gap:16px 26px;align-items:flex-end;margin:16px 0 6px}
+  .field{display:flex;flex-direction:column;gap:6px;min-width:180px;flex:1}
+  .field label{font-size:12px;color:var(--muted);font-family:var(--mono);letter-spacing:.03em;display:flex;justify-content:space-between}
+  .field label b{color:var(--ink);font-weight:600}
+  input[type=range]{width:100%;accent-color:var(--accent);height:20px}
+  svg{max-width:100%;height:auto;display:block}
+  .btnrow{display:flex;gap:8px;margin:12px 0 0;flex-wrap:wrap}
+  button.ghost{background:var(--panel);border:1px solid var(--hair2);color:var(--ink);font-family:var(--mono);font-size:12.5px;padding:7px 12px;border-radius:8px;cursor:pointer}
+  button.ghost:hover{border-color:var(--accent)}
+  .tally{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 2px}
+  .stat{flex:1;min-width:120px;background:var(--paper);border-radius:9px;padding:9px 12px}
+  .stat .k{font-size:11px;font-family:var(--mono);letter-spacing:.04em;color:var(--muted);text-transform:uppercase}
+  .stat .v{font-size:19px;font-weight:600;font-family:var(--mono);margin-top:2px}
+  .stat .v.a{color:var(--accent)}.stat .v.g{color:var(--ok)}
+  .callout{font-size:14px;color:var(--muted);border-left:2px solid var(--accent);padding:2px 0 2px 14px;margin:16px 0 2px;min-height:1.4em}
+  .theorem{background:var(--accent-bg);border-radius:12px;padding:18px 20px;margin:16px 0}
+  .theorem .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
+  .theorem p{font-family:var(--serif);font-size:16px;line-height:1.55;margin:0}
+  .twist{border:1px dashed var(--hair2);border-radius:12px;padding:16px 18px;margin:16px 0;background:var(--panel)}
+  .twist .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+  .twist p{margin:0;font-size:14.6px}
+  .vol{background:var(--vol-bg);border:1px solid var(--vol);border-radius:12px;padding:18px 20px;margin:16px 0}
+  .vol .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:var(--vol);margin:0 0 8px}
+  .vol p{margin:0 0 10px;font-size:14.8px}.vol p:last-child{margin-bottom:0}
+  .vol code{font-family:var(--mono);font-size:13px;background:rgba(138,90,43,.12);padding:1px 5px;border-radius:4px}
+  .q{border:1px solid var(--hair);border-radius:12px;padding:16px 18px;margin:12px 0;background:var(--panel)}
+  .q .stem{font-size:15px;font-weight:500;margin:0 0 12px}
+  .opt{display:block;width:100%;text-align:left;font-size:14px;padding:10px 12px;margin:0 0 8px;border:1px solid var(--hair2);border-radius:8px;background:transparent;color:var(--ink);cursor:pointer;line-height:1.45}
+  .opt:last-child{margin-bottom:0}
+  .opt:hover{border-color:var(--accent)}
+  .opt.sel{border-color:var(--accent);background:var(--accent-bg)}
+  .opt.correct{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+  .opt.wrong{background:#F7ECEC;border-color:var(--miss);color:var(--miss)}
+  @media (prefers-color-scheme:dark){.opt.wrong{background:#2E1E1E}}
+  .fb{font-size:13.5px;color:var(--muted);margin:10px 0 0;line-height:1.5;display:none}
+  .fb.show{display:block}
+  .checkRow{display:flex;align-items:center;gap:14px;margin:18px 0 0;flex-wrap:wrap}
+  .hint{font-size:13px;color:var(--miss);display:none}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-family:var(--sans);font-size:14px;padding:8px 14px;border-radius:8px;border:1px solid var(--accent);cursor:pointer}
+  .scoreOut{font-family:var(--mono);font-size:14px;font-weight:600}
+  .done{display:none;align-items:center;gap:10px;background:var(--ok-bg);color:var(--ok);border-radius:10px;padding:12px 16px;font-size:14px;margin:14px 0 0}
+  .done.show{display:flex}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">Lesson 20 · Wing IV — inside the transformer</p>
+  <h1>Embeddings as directions &amp; superposition<span class="chip" id="chip"></span></h1>
+  <p class="sub">d dimensions, m ≫ d things to represent — and it works, because almost nothing is happening at once.</p>
+  <div class="levels">
+    <span class="lk">Level</span>
+    <span class="pill"><b>US</b> Graduate · ML</span>
+    <span class="pill"><b>FR</b> M2 · ENSAE 3A</span>
+  </div>
+
+  <p class="lead">A layer of a network carries a vector of some fixed width d. The things it might want to track — is this a legal citation, is the speaker angry, is the vol regime stressed — number in the tens of thousands. The naive encoding gives each thing its own coordinate and runs out of room at d. The trick the network actually uses: give each thing its own <b>direction</b>, let the directions be <i>almost</i> perpendicular instead of exactly perpendicular, and lean on the fact that at any moment almost every thing is <b>off</b>. Non-perpendicular directions bleed into each other — but a bleed only costs you when two of them are on together, and under sparsity that is rare. That trade is <b>superposition</b>. Lesson 10 already paid for it: near-orthogonal directions are exponentially cheap in d. This lesson spends the money, in a toy model small enough to train live and watch.</p>
+
+  <div class="sec">1 · The words, before the machinery</div>
+  <p class="step">Nothing below is a theorem yet. These are the nine words the rest of the lesson is written in, in plain English first.</p>
+  <ul class="glo">
+    <li><span class="sym w">feature</span><span class="def">one <b>thing the network tracks</b>, with a strength: off, or on at some intensity. <span class="n">"Mentions a French place-name" (0 or 1), "how bullish the sentence is" (a magnitude). We will index features by i and call the strength x<sub>i</sub> ≥ 0.</span></span></li>
+    <li><span class="sym w">direction</span><span class="def">a fixed <b>vector in the layer's space</b> assigned to a feature. <span class="n">"Feature i is present at strength x<sub>i</sub>" is written into the layer by adding x<sub>i</sub> times that vector. Nothing else about the vector matters — its meaning is entirely which feature it is bookkeeping for.</span></span></li>
+    <li><span class="sym w">linear representation</span><span class="def">the <b>hypothesis</b> that features get directions and that several features present at once are stored by <b>addition</b>. <span class="n">Two claims, both empirical: one direction per feature, and composition = sum. Everything in this lesson assumes it; the twist says what happens if it is only approximately true.</span></span></li>
+    <li><span class="sym w">residual stream</span><span class="def">the <b>d-dimensional vector</b> every transformer block reads from and adds to — the space these directions live in (Lesson 19). <span class="n">d = 4096 in a mid-size model; the vocabulary alone is ~10⁵ items, before any abstract feature.</span></span></li>
+    <li><span class="sym w">sparse</span><span class="def">at any moment <b>almost all features are off</b>. <span class="n">We write S for the probability a given feature is active, so sparsity is 1 − S. (Elhage et al. name the sparsity itself S; the slider below is labelled with the activity rate to keep "left = dense" honest.) Sparsity is a statement about <i>bits</i>: the on/off pattern of m independent features is m Bernoulli(S) draws, so saying which ones are live costs m·H₂(S) bits, where H₂(S) = −S log₂S − (1−S)log₂(1−S) is Lesson 15's entropy H(p) specialised to two outcomes and read in bits rather than nats — for m = 5 that is 5 bits at S = 0.5 but only 0.71 bits at S = 0.02. Almost no information in the pattern is exactly what makes the overbooking affordable.</span></span></li>
+    <li><span class="sym w">interference</span><span class="def">the <b>dot product between two feature directions</b> — the crosstalk. <span class="n">Zero means reading one tells you nothing about the other. Non-zero means the read-out of feature i picks up a smear of feature j whenever j is on.</span></span></li>
+    <li><span class="sym w">superposition</span><span class="def">storing <b>m &gt; d features on m non-orthogonal directions</b> in d dimensions, paying interference and relying on sparsity to make collisions rare. <span class="n">The whole lesson in one line. Not compression of the features into fewer features — overbooking of the space.</span></span></li>
+    <li><span class="sym w">polysemantic</span><span class="def">a <b>single coordinate (neuron) that responds to several unrelated features</b>. <span class="n">If directions are not axis-aligned, every axis is a mixture. This is a prediction of superposition, not a symptom of sloppy training.</span></span></li>
+    <li><span class="sym w">overcomplete dictionary</span><span class="def">a set of <b>more than d directions</b> in ℝᵈ, used as if it were a basis. <span class="n">It cannot be a basis — it is linearly dependent by counting. It can still be an almost-basis for vectors that only ever use a few entries at a time, which is what sparse dictionary learning exploits.</span></span></li>
+  </ul>
+
+  <div class="sec">2 · The budget being spent (Lesson 10)</div>
+  <p class="step">ℝᵈ holds exactly d mutually perpendicular directions — a hard ceiling, and the reason one-feature-per-neuron caps a model at d features. Lesson 10 showed that relaxing <i>perpendicular</i> to <i>almost perpendicular</i> blows that ceiling open. Two random unit vectors have cosine spread 1/√d about zero, so exceeding a tolerance ε is exponentially unlikely, and a random collection of that size stays pairwise within tolerance:</p>
+  <div class="mblock math" data-tex="\operatorname{std}(\cos\theta)=\tfrac{1}{\sqrt d},\qquad \mathbb{P}\big(|\cos\theta|&gt;\varepsilon\big)\;\approx\;2e^{-d\varepsilon^{2}/2},\qquad N_{\varepsilon}(d)\;\sim\;e^{\,\varepsilon^{2}d/2}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="\varepsilon"></span><span class="def">the <b>interference tolerance</b> — how much crosstalk between two directions you are willing to carry. <span class="n">It appears squared, so tolerating twice the bleed buys four times the exponent.</span></span></li>
+    <li><span class="sym math" data-tex="2e^{-d\varepsilon^{2}/2}"></span><span class="def">the chance a <b>random pair violates</b> the tolerance. <span class="n">Lesson 10's Gaussian cosine law, integrated in its tails; the 2 is the two signs of the cosine.</span></span></li>
+    <li><span class="sym math" data-tex="N_{\varepsilon}(d)"></span><span class="def">how many directions can coexist at tolerance ε — <b>exponential in d</b>. <span class="n">Read the exponent, not the constant. What is solid is that the count grows like e^{c ε²d} for a positive c: Lesson 10 quotes c = ½ from the pair-violation probability, while a strict union bound over all N(N−1)/2 pairs — requiring N²e^{−dε²/2} ≲ 1 — only licenses c = ¼. The constant depends on the construction and on whether you demand <i>every</i> pair in tolerance; the exponential in ε²d does not. This is why capacity figures here are order-of-magnitude readings.</span></span></li>
+    <li><span class="sym math" data-tex="d=4096"></span><span class="def">a real residual stream. <span class="n">At ε = 0.1 the count is e^{20.48} ≈ 8×10⁸ — Lesson 10's figure. Hundreds of millions of usable slots in a space with 4,096 exact ones. Superposition is the mechanism that draws on that account.</span></span></li>
+  </ul>
+
+  <div class="sec">3 · The toy model (Elhage et al., 2022)</div>
+  <p class="step">The cleanest way to see a network choose superposition is to build the smallest problem in which it has to. m features go in, a d-dimensional bottleneck with d &lt; m sits in the middle, and the same weights are used to read back out. Features are non-negative and sparse; the reconstruction is rectified so the model can threshold small crosstalk away; and features are unequally <b>important</b>, so the model has a reason to prefer some over others.</p>
+  <div class="mblock math" data-tex="x_i=\begin{cases}0,&amp;\text{w.p. } 1-S\\ \mathrm{Unif}[0,1],&amp;\text{w.p. } S\end{cases}\qquad h=Wx\in\mathbb{R}^{d},\qquad \hat x=\mathrm{ReLU}\!\big(W^{\top}h+b\big)\in\mathbb{R}^{m}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="x\in\mathbb{R}^{m}"></span><span class="def">the <b>true feature vector</b> — m independent switches, each on with probability S and then uniform in [0,1]. <span class="n">Non-negative on purpose: real features are "present by this much", not signed. Independence is a simplification the twist returns to.</span></span></li>
+    <li><span class="sym math" data-tex="W\in\mathbb{R}^{d\times m}"></span><span class="def">the <b>encoder</b>; its i-th column W<sub>i</sub> ∈ ℝᵈ <i>is</i> feature i's direction. <span class="n">The entire object of study. A feature is "represented" exactly when ‖W<sub>i</sub>‖ is not ≈ 0.</span></span></li>
+    <li><span class="sym math" data-tex="h=Wx"></span><span class="def">the <b>bottleneck</b> — the residual stream in miniature. <span class="n">h = Σ<sub>i</sub> x<sub>i</sub>W<sub>i</sub>: the linear-representation hypothesis, imposed by construction rather than discovered.</span></span></li>
+    <li><span class="sym math" data-tex="W^{\top}h+b"></span><span class="def">the <b>read-out</b>, tied to the encoder (same W) plus a learned bias. <span class="n">Weight-tying is what makes the geometry legible: one direction per feature, used to write and to read.</span></span></li>
+    <li><span class="sym math" data-tex="\mathrm{ReLU}"></span><span class="def">the <b>rectifier</b>. <span class="n">Not decoration: with b &lt; 0 it lets the model discard crosstalk that lands below threshold, which is precisely what makes negative interference cheap.</span></span></li>
+  </ul>
+  <p class="step">Training minimizes importance-weighted squared reconstruction error over the feature draw:</p>
+  <div class="mblock math" data-tex="\mathcal{L}(W,b)\;=\;\mathbb{E}_{x}\Big[\sum_{i=1}^{m} I_i\,\big(x_i-\hat x_i\big)^{2}\Big],\qquad I_i=\gamma^{\,i-1},\ \gamma=0.8" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="I_i"></span><span class="def">feature i's <b>importance</b> — how much its error costs. <span class="n">Geometrically decaying, I = (1, 0.8, 0.64, 0.512, 0.4096) for m = 5. Without a ranking the dense limit would have no reason to prefer one feature over another.</span></span></li>
+    <li><span class="sym math" data-tex="\mathbb{E}_{x}"></span><span class="def">expectation over <b>fresh feature draws</b>. <span class="n">Estimated in the panel by a seeded mini-batch of 512 per step — this is Lesson 9's SGD, with Adam doing the rescaling.</span></span></li>
+    <li><span class="sym math" data-tex="(x_i-\hat x_i)^2"></span><span class="def">plain squared error. <span class="n">Note what the model may do: give up on feature i entirely, set W<sub>i</sub> = 0, and let b<sub>i</sub> predict the unconditional mean 𝔼[x<sub>i</sub>] = S/2. That costs exactly I<sub>i</sub>·Var(x<sub>i</sub>) = I<sub>i</sub>(S/3 − S²/4) — the price of a discarded feature, and a number we will check against the panel.</span></span></li>
+  </ul>
+  <p class="step">Everything interesting is in one matrix. Substitute h = Wx into the read-out and the model's own view of feature i falls out:</p>
+  <div class="mblock math" data-tex="\hat x_i=\mathrm{ReLU}\Big(\underbrace{\lVert W_i\rVert^{2}}_{\text{self}}x_i\;+\;\underbrace{\textstyle\sum_{j\neq i}\langle W_i,W_j\rangle\,x_j}_{\text{interference}}\;+\;b_i\Big),\qquad W^{\top}W\in\mathbb{R}^{m\times m}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="W^{\top}W"></span><span class="def">the <b>interference matrix</b> — the Gram matrix of the feature directions, the XᵀX object of Lessons 6–7 wearing new clothes. <span class="n">Rank ≤ d, so with m &gt; d it can never be the identity: some off-diagonal must be non-zero. That impossibility <i>is</i> the lesson.</span></span></li>
+    <li><span class="sym math" data-tex="\lVert W_i\rVert^{2}"></span><span class="def">the <b>diagonal</b>: how strongly feature i is represented. <span class="n">≈ 0 means the model has dropped it; ≈ 1 means it is carried at roughly unit gain.</span></span></li>
+    <li><span class="sym math" data-tex="\langle W_i,W_j\rangle"></span><span class="def">the <b>off-diagonal</b>: how much j leaks into i's read-out. <span class="n">Its cost is paid only on draws where x<sub>j</sub> ≠ 0 <i>and</i> feature i is being read — probability ~S² per pair. Sparsity is not a nice-to-have, it is the discount rate on interference.</span></span></li>
+    <li><span class="sym math" data-tex="b_i&lt;0"></span><span class="def">a <b>negative bias</b> as a noise gate. <span class="n">Positive leakage below |b<sub>i</sub>| is rectified to zero and costs nothing, which is why the trained biases go negative exactly when the model starts overbooking.</span></span></li>
+  </ul>
+
+  <div class="sec">4 · See it — train the toy model live (d = 2, m = 5)</div>
+  <p class="step">Real Adam on the real objective, in the page: 512 fresh seeded samples per step, 400 steps by default, from a fixed seeded initialization. Left: the five learned directions W<sub>i</sub> in the 2-D bottleneck (dashed circle = unit norm). Middle: ‖W<sub>i</sub>‖ per feature, most important at the top, with the dashed line the "represented" threshold 0.20. Right: WᵀW — blue positive, red negative, white ≈ 0. Slide the activity rate and watch the geometry change phase.</p>
+  <div class="panel">
+    <p class="hintline">S = 1 is dense (every feature on, every draw) · S = 0.02 is very sparse · reset returns to the untrained initialization</p>
+    <svg id="p1" viewBox="0 0 680 300" role="img" aria-label="Learned feature directions in two dimensions, per-feature norms, and the interference matrix"></svg>
+    <div class="ctrls">
+      <div class="field"><label>activity rate S (sparsity = 1 − S) <b id="sOut">0.10</b></label><input type="range" id="sIdx" min="0" max="6" value="4" step="1" /></div>
+      <div class="field" style="flex:0 1 auto;min-width:150px"><label>Adam steps taken <b id="stOut">400</b></label>
+        <div class="btnrow"><button class="ghost" id="tr100">train +100</button><button class="ghost" id="rst">reset</button></div></div>
+    </div>
+    <div class="tally">
+      <div class="stat"><div class="k">features represented</div><div class="v a" id="p1rep">—</div></div>
+      <div class="stat"><div class="k">mean |off-diag| WᵀW</div><div class="v" id="p1off">—</div></div>
+      <div class="stat"><div class="k">held-out loss</div><div class="v g" id="p1loss">—</div></div>
+      <div class="stat"><div class="k">mean bias b̄</div><div class="v" id="p1bias">—</div></div>
+    </div>
+    <p class="callout" id="p1note"></p>
+  </div>
+
+  <div class="sec">5 · The dense limit is PCA — and that part is a theorem</div>
+  <p class="step">Push S to 1 and the model stops overbooking: it keeps exactly d = 2 features and throws the rest away. That is not an accident of the optimizer, it is Lesson 8. Let M = WᵀW, so rank M ≤ d. Suppose the ReLU is inactive on the relevant range and let b absorb the means, so the model is the linear map x̂ = Mx applied to centred features with Var(x<sub>i</sub>) = σ². Then the objective collapses onto a Frobenius norm:</p>
+  <div class="mblock math" data-tex="\mathcal{L}=\sigma^{2}\big\lVert \operatorname{diag}(\sqrt{I})\,(\mathbb{I}_m-M)\big\rVert_F^{2},\qquad \operatorname{rank}\big(\operatorname{diag}(\sqrt{I})\,M\big)\le d" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="\operatorname{diag}(\sqrt{I})"></span><span class="def">the importance weights, <b>folded into the norm</b>. <span class="n">Row i of the residual is scaled by √I<sub>i</sub>, so Σ<sub>i</sub>I<sub>i</sub>‖row i‖² is literally a Frobenius norm of a reweighted matrix.</span></span></li>
+    <li><span class="sym math" data-tex="\mathbb{I}_m-M"></span><span class="def">the <b>error operator</b>. <span class="n">Minimizing ‖diag(√I) − diag(√I)M‖_F over rank-≤d second terms is Eckart–Young: approximate the diagonal matrix diag(√I) by a rank-d matrix.</span></span></li>
+    <li><span class="sym math" data-tex="\sigma^{2}=\tfrac1{12}"></span><span class="def">the <b>variance of a live feature</b> at S = 1, Var(Unif[0,1]) = 1/12 ≈ 0.0833. <span class="n">A dropped feature therefore costs exactly I<sub>i</sub>/12, and the sum over the m − d dropped ones is the loss floor the panel converges to.</span></span></li>
+    <li><span class="sym math" data-tex="M^{\star}"></span><span class="def">the <b>minimizer</b>: 1 on the d largest importances, 0 elsewhere. <span class="n">Singular values of a diagonal matrix are its entries, so the best rank-d truncation keeps the d biggest — the d most important features, on orthogonal directions. PCA, by another road.</span></span></li>
+  </ul>
+  <p class="step">The panel confirms it numerically. At S = 1 after 400 steps it keeps features 1 and 2 — the two most important — at 90.3° apart, with the other three collapsed, and their biases sitting near 0.5 = 𝔼[x<sub>i</sub>]. The held-out loss reads 0.1297 against the predicted floor (I₃ + I₄ + I₅)/12 = 1.5616/12 = 0.1301. Now drop S: at S = 0.02 all five features survive, with every adjacent angular gap between 69.4° and 75.8° — inside 4° of the 360°/5 = 72° of a regular pentagon, in a two-dimensional space (it is that narrow spread that is the evidence: the <i>mean</i> gap is 72° for <i>any</i> five directions, because the gaps close the circle) — with mean |off-diagonal| 0.744 and every bias negative (mean −0.260). Five features, two dimensions, loss 0.0019.</p>
+
+  <div class="theorem">
+    <p class="lbl">The precise statement</p>
+    <p>Three claims, of three different kinds. <b>(i) Hypothesis.</b> The <i>linear representation hypothesis</i> asserts that a network's features correspond to directions v<sub>i</sub> in activation space and that co-occurring features compose additively, h ≈ Σ<sub>i</sub> x<sub>i</sub>v<sub>i</sub>. This is an empirical hypothesis about trained networks, not a theorem, and it is imposed by construction in the toy model above. <b>(ii) Proved.</b> For fixed ε ∈ (0,1) the maximum number N<sub>ε</sub>(d) of unit vectors in ℝᵈ with pairwise |⟨u,v⟩| ≤ ε grows exponentially in d — specifically like e^{cε²d} for some c &gt; 0, Lesson 10's random construction quoting c = ½ and a strict union bound over pairs licensing c = ¼; the exponent, not the constant, is the content. The Johnson–Lindenstrauss lemma gives the dual form — m points embed into k = O(ε⁻²log m) dimensions with all pairwise distances preserved to 1 ± ε. Exact orthogonality is the only thing that costs d; ε-orthogonality is exponentially cheap. Sharp constants are open in general, so treat any capacity figure as an order of magnitude. <b>(iii) Proved, in the dense limit.</b> With S = 1, the rectifier inactive and the bias absorbing means, the toy objective equals σ²‖diag(√I)(𝕀−WᵀW)‖²_F with rank(WᵀW) ≤ d; by Eckart–Young–Mirsky (Lesson 8) the minimizer sets WᵀW to the identity on the d largest I<sub>i</sub> and zero elsewhere, giving loss σ²Σ<sub>i&gt;d</sub>I<sub>i</sub>. Dense superposition is never optimal. <b>What is not proved</b> is everything in between: the phase diagram — which sparsity level buys which polygon, and how many features a real network superposes — is empirical, measured here and in Elhage et al. (2022), not derived.</p>
+  </div>
+
+  <div class="sec">6 · See it — the interference budget</div>
+  <p class="step">No training here, pure geometry: m seeded random unit directions in ℝᵈ — the configuration a model would get for free, before learning anything — and the histogram of all m(m−1)/2 pairwise |cos|. Bars left of the ε line are pairs whose crosstalk you have declared acceptable. The activity slider then answers the question that actually matters: how many of these features are ever on <i>at the same time</i>?</p>
+  <div class="panel">
+    <p class="hintline">slide m, d, ε and the activity rate · directions redrawn from the same seed at every setting</p>
+    <svg id="p2" viewBox="0 0 680 250" role="img" aria-label="Histogram of pairwise absolute cosines among m random unit directions with the tolerance marked"></svg>
+    <div class="ctrls">
+      <div class="field"><label>features m <b id="mOut">64</b></label><input type="range" id="mIdx" min="0" max="4" value="2" step="1" /></div>
+      <div class="field"><label>dimensions d <b id="dOut">32</b></label><input type="range" id="dIdx" min="0" max="7" value="4" step="1" /></div>
+      <div class="field"><label>tolerance ε <b id="eOut">0.10</b></label><input type="range" id="eps" min="3" max="40" value="10" step="1" /></div>
+      <div class="field"><label>activity rate S <b id="s2Out">0.05</b></label><input type="range" id="s2Idx" min="0" max="7" value="4" step="1" /></div>
+    </div>
+    <div class="tally">
+      <div class="stat"><div class="k">mean |cos| · law √(2/πd)</div><div class="v a" id="p2mean">—</div></div>
+      <div class="stat"><div class="k">rms cos · law 1/√d</div><div class="v" id="p2rms">—</div></div>
+      <div class="stat"><div class="k">worst pair |cos|</div><div class="v" id="p2max">—</div></div>
+      <div class="stat"><div class="k">pairs within ε</div><div class="v g" id="p2sh">—</div></div>
+    </div>
+    <div class="tally">
+      <div class="stat"><div class="k">slots ~ e^(ε²d/2)</div><div class="v" id="p2cap">—</div></div>
+      <div class="stat"><div class="k">same ε at d = 4096</div><div class="v a" id="p2cap2">—</div></div>
+      <div class="stat"><div class="k">active at once mS</div><div class="v" id="p2act">—</div></div>
+      <div class="stat"><div class="k">colliding pairs / draw</div><div class="v g" id="p2col">—</div></div>
+    </div>
+    <p class="callout" id="p2note"></p>
+  </div>
+
+  <div class="sec">7 · Re-applied — a factor model is a superposition</div>
+  <p class="step">Strip the neural vocabulary and this is a risk model. You have m exposures — names, tenors, strikes, countries — and you insist on describing them with d ≪ m factors. The factor loadings <i>are</i> the feature directions: exposure i is the column β<sub>i</sub> ∈ ℝᵈ, the day's factor returns are the bottleneck h, and your reconstruction of exposure i is ⟨β<sub>i</sub>, h⟩ — the same read-out, with the same Gram matrix B<sup>⊤</sup>B (B the d×m loading matrix) deciding what bleeds into what. Three consequences transfer verbatim.</p>
+  <p class="step">First, at d factors you get exactly d mutually independent stories and no more; everything past that is a near-orthogonal direction with real, if small, overlap. Second, <b>which</b> exposures can safely share a direction is a question about co-activation, not about correlation of returns: two exposures that are never live in the same window — a Q1 expiry and a Q4 expiry, a name pre- and post-delisting — can share a factor direction at zero cost, because their interference term is multiplied by x<sub>i</sub>x<sub>j</sub> = 0. Third, the bill for the overbooking arrives as <i>spurious cross-sensitivity</i>: when two drivers do fire together, the model attributes part of one's move to the other. In Lesson 7's Cross-Matrix that is the collinear-driver problem exactly — the same ill-conditioned Gram matrix, the same sign flips across subsamples. Superposition is not an exotic AI phenomenon; it is what every low-factor description of a high-dimensional book has always been doing, now with the failure mode named.</p>
+
+  <div class="twist">
+    <p class="lbl">The twist — the neuron was never the unit</p>
+    <p>Look at the pentagon again. There are two coordinate axes and five directions, so at most two features could ever be axis-aligned and the other three are forced into blends — read off <i>either</i> coordinate of the bottleneck and you are reading several features at once: each neuron fires for unrelated things. The interpretability literature spent years treating that as evidence of messiness, something better training would clean up. The toy model says the opposite: under sparsity, polysemantic neurons are what the <b>optimal</b> code looks like, and an axis-aligned model would be leaving the exponential budget of Section 2 unspent. Which means "what does neuron 4,182 do?" is a malformed question — you were reading a coordinate of a basis the network never chose. The repair is to stop asking about neurons and go looking for the directions: fit an <b>overcomplete dictionary</b> of n ≫ d unit vectors with a sparsity penalty, so that each activation vector is explained by a handful of them. That is a sparse autoencoder — and note what it assumes: the sparsity Section 1 merely observed, its m·H₂(S) bits, promoted to a <i>penalty in the objective</i> — in practice an L1 term (or a hard top-k) on the codes, standing in for the count of live features. It is the machinery behind Lesson 41. Second barrel, and it needs saying: this is a <i>toy</i>. Five features, two dimensions, independent uniform activations, weight-tied linear encoder — a real model has correlated features, many layers, attention writing into the same stream, and no ground-truth feature list to check against. That real LLMs superpose in this specific geometric way is a hypothesis supported by sparse-autoencoder results, not a proven property of trained transformers, and the honest position is that the phase diagram above is a mechanism we know is <i>available</i> and <i>optimal in the toy</i>, not one we have measured in the wild.</p>
+  </div>
+
+  <div class="vol">
+    <p class="lbl">Why this matters · volarixs</p>
+    <p><code>pca_factors</code> is the superposition budget, set by hand. Choosing k factors for a several-hundred-name universe is choosing d, and everything beyond the k-th eigen-portfolio is not "noise you removed" — it is structure you have folded onto directions you already use. The read: don't ask only where the singular spectrum bends (Lesson 8), ask which exposures the truncation has just made share a direction, and whether those exposures are ever live simultaneously. Sharing is free between things that never fire together and expensive between things that fire in the same crisis.</p>
+    <p>The Cross-Matrix pays the interference bill directly. Its driver panel is deliberately overcomplete — dispersion at five horizons, their z-scores, several correlated country vols — so the Gram matrix is ill-conditioned and a cell's β̂ absorbs part of its neighbours' moves whenever those drivers fire together. That is not an estimation bug to fix with a better optimizer; it is the same ⟨W<sub>i</sub>, W<sub>j</sub>⟩x<sub>j</sub> term as above, and it is exactly why <code>sign_stability</code> — not the t-stat — is the gate: a cell whose loading is mostly interference keeps its sign only in subsamples where the colliding driver happened to be quiet.</p>
+  </div>
+
+  <div class="sec">Check yourself</div>
+  <div class="q" id="q1"><p class="stem">Superposition — storing m &gt; d features on m directions in ℝᵈ — is only a good trade if:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q2"><p class="stem">Set S = 1 (every feature active on every draw). The optimal solution of the toy model:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q3"><p class="stem">In the trained model, a large off-diagonal entry ⟨W<sub>i</sub>, W<sub>j</sub>⟩ of WᵀW means:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q4"><p class="stem">Your risk model describes m = 300 exposures with d = 8 factors, so exposures must share directions. Which pair is cheapest to put on the same direction?</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q5"><p class="stem">Fix an interference tolerance ε. As d grows, the number of directions in ℝᵈ that are pairwise ε-near-orthogonal grows:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q6"><p class="stem">A sparse autoencoder is trained on a model's activations. What is it looking for?</p><div class="opts"></div><p class="fb"></p></div>
+
+  <div class="checkRow">
+    <button class="primary" id="check">Check answers</button>
+    <span class="scoreOut" id="scoreOut"></span>
+    <span class="hint" id="hint">Answer all six first.</span>
+  </div>
+  <div class="done" id="done">Wing IV closed — the stream, and the directions crowded into it. Wing V opens next: scaling laws — power laws &amp; compute-optimal training.</div>
+</div>
+
+<script>
+/* storage shim: window.storage (Claude artifacts) or localStorage (web) */
+if(!window.storage){window.storage={async get(k){const v=localStorage.getItem(k);if(v==null)throw new Error('missing');return{key:k,value:v}},async set(k,v){localStorage.setItem(k,v);return{key:k,value:v}},async delete(k){localStorage.removeItem(k);return{key:k,deleted:true}},async list(p){const ks=[];for(let i=0;i<localStorage.length;i++){const kk=localStorage.key(i);if(!p||kk.startsWith(p))ks.push(kk)}return{keys:ks}}};}
+function renderMath(){document.querySelectorAll('.math').forEach(el=>{const tex=el.getAttribute('data-tex');if(!tex||el.dataset.done)return;try{if(window.katex){katex.render(tex,el,{displayMode:el.dataset.display==='1',throwOnError:false});el.dataset.done='1';}else el.textContent=tex;}catch(e){el.textContent=tex;}});}
+/* deterministic RNG — the atlas's seeded generator, seed 120 */
+function mulberry32(seed){let a=seed>>>0;return function(){a|=0;a=(a+0x6D2B79F5)|0;let t=Math.imul(a^(a>>>15),1|a);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296;}}
+function randn(rng){let u=0,v=0;while(!u)u=rng();while(!v)v=rng();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+const SEED=120;
+const FC=['var(--accent)','var(--series)','var(--ok)','var(--vol)','var(--miss)'];
+
+/* ================= Panel 1 : the toy model of superposition ================= */
+const M1=5,D1=2,IMP=[1,0.8,0.64,0.512,0.4096],INIT=0.10,BATCH=512,LR=0.05,EVALN=4096,TOL=0.20;
+const SVALS=[1.0,0.5,0.3,0.2,0.1,0.05,0.02];
+function trainToy(S,steps){
+  const rng=mulberry32(SEED);
+  const W=new Float64Array(D1*M1);
+  for(let a=0;a<D1;a++)for(let i=0;i<M1;i++)W[a*M1+i]=INIT*randn(rng);
+  const b=new Float64Array(M1);
+  const mW=new Float64Array(D1*M1),vW=new Float64Array(D1*M1),mB=new Float64Array(M1),vB=new Float64Array(M1);
+  const gW=new Float64Array(D1*M1),gB=new Float64Array(M1);
+  const x=new Float64Array(M1),h=new Float64Array(D1),pre=new Float64Array(M1),g=new Float64Array(M1);
+  for(let t=1;t<=steps;t++){
+    gW.fill(0);gB.fill(0);
+    for(let s=0;s<BATCH;s++){
+      for(let i=0;i<M1;i++)x[i]=(rng()<S)?rng():0;
+      for(let a=0;a<D1;a++){let acc=0;for(let i=0;i<M1;i++)acc+=W[a*M1+i]*x[i];h[a]=acc;}
+      for(let i=0;i<M1;i++){let acc=b[i];for(let a=0;a<D1;a++)acc+=W[a*M1+i]*h[a];pre[i]=acc;}
+      for(let i=0;i<M1;i++){const xh=pre[i]>0?pre[i]:0;g[i]=(pre[i]>0)?2*IMP[i]*(xh-x[i]):0;}
+      for(let a=0;a<D1;a++){let acc=0;for(let i=0;i<M1;i++)acc+=W[a*M1+i]*g[i];
+        for(let i=0;i<M1;i++)gW[a*M1+i]+=g[i]*h[a]+acc*x[i];}
+      for(let i=0;i<M1;i++)gB[i]+=g[i];
+    }
+    const inv=1/BATCH,c1=1-Math.pow(0.9,t),c2=1-Math.pow(0.999,t);
+    for(let k=0;k<D1*M1;k++){const gg=gW[k]*inv;mW[k]=0.9*mW[k]+0.1*gg;vW[k]=0.999*vW[k]+0.001*gg*gg;W[k]-=LR*(mW[k]/c1)/(Math.sqrt(vW[k]/c2)+1e-8);}
+    for(let i=0;i<M1;i++){const gg=gB[i]*inv;mB[i]=0.9*mB[i]+0.1*gg;vB[i]=0.999*vB[i]+0.001*gg*gg;b[i]-=LR*(mB[i]/c1)/(Math.sqrt(vB[i]/c2)+1e-8);}
+  }
+  let L=0;
+  for(let s=0;s<EVALN;s++){
+    for(let i=0;i<M1;i++)x[i]=(rng()<S)?rng():0;
+    for(let a=0;a<D1;a++){let acc=0;for(let i=0;i<M1;i++)acc+=W[a*M1+i]*x[i];h[a]=acc;}
+    for(let i=0;i<M1;i++){let acc=b[i];for(let a=0;a<D1;a++)acc+=W[a*M1+i]*h[a];const xh=acc>0?acc:0;L+=IMP[i]*(xh-x[i])*(xh-x[i]);}
+  }
+  L/=EVALN;
+  const norms=[],angs=[];
+  for(let i=0;i<M1;i++){norms.push(Math.hypot(W[i],W[M1+i]));angs.push(Math.atan2(W[M1+i],W[i])*180/Math.PI);}
+  const G=[];let off=0,cnt=0;
+  for(let i=0;i<M1;i++){G.push([]);for(let j=0;j<M1;j++){const v=W[i]*W[j]+W[M1+i]*W[M1+j];G[i].push(v);if(i<j){off+=Math.abs(v);cnt++;}}}
+  let bs=0;for(let i=0;i<M1;i++)bs+=b[i];
+  return {W,b:Array.from(b),norms,angs,G,off:off/cnt,loss:L,bmean:bs/M1};
+}
+let p1steps=400,p1cache=null;
+function gapsOf(r){
+  const kept=[];for(let i=0;i<M1;i++)if(r.norms[i]>TOL)kept.push(r.angs[i]);
+  if(kept.length<2)return [];
+  kept.sort((a,b)=>a-b);
+  return kept.map((a,i)=>i?a-kept[i-1]:a+360-kept[kept.length-1]);
+}
+function drawP1(r){
+  const cx=140,cy=150,sc=90;let s='';
+  s+=`<line x1="20" y1="${cy}" x2="260" y2="${cy}" stroke="var(--hair2)"/><line x1="${cx}" y1="30" x2="${cx}" y2="270" stroke="var(--hair2)"/>`;
+  s+=`<circle cx="${cx}" cy="${cy}" r="${sc}" fill="none" stroke="var(--hair2)" stroke-dasharray="3 3"/>`;
+  for(let i=0;i<M1;i++){
+    const wx=r.W[i],wy=r.W[M1+i],X=cx+sc*wx,Y=cy-sc*wy;
+    const dim=r.norms[i]>TOL?1:0.28;
+    s+=`<line x1="${cx}" y1="${cy}" x2="${X.toFixed(1)}" y2="${Y.toFixed(1)}" stroke="${FC[i]}" stroke-width="2.4" opacity="${dim}"/>`;
+    s+=`<circle cx="${X.toFixed(1)}" cy="${Y.toFixed(1)}" r="4" fill="${FC[i]}" opacity="${dim}"/>`;
+    if(r.norms[i]>TOL){const lx=cx+(sc*1.16)*wx/Math.max(r.norms[i],1e-9)*Math.min(r.norms[i],1.25),ly=cy-(sc*1.16)*wy/Math.max(r.norms[i],1e-9)*Math.min(r.norms[i],1.25);
+      s+=`<text x="${lx.toFixed(1)}" y="${(ly+3).toFixed(1)}" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="${FC[i]}">f${i+1}</text>`;}
+  }
+  s+=`<text x="20" y="24" font-family="var(--mono)" font-size="10" fill="var(--faint)">feature directions in R²</text>`;
+  const bx=330,bw=100;
+  s+=`<text x="300" y="24" font-family="var(--mono)" font-size="10" fill="var(--faint)">‖W_i‖</text>`;
+  s+=`<line x1="${bx+TOL*bw}" y1="34" x2="${bx+TOL*bw}" y2="268" stroke="var(--hair2)" stroke-dasharray="3 3"/>`;
+  for(let i=0;i<M1;i++){
+    const y=44+i*44,w=Math.min(r.norms[i],1.35)*bw;
+    s+=`<text x="${bx-8}" y="${y+12}" text-anchor="end" font-family="var(--mono)" font-size="10" fill="var(--muted)">f${i+1}</text>`;
+    s+=`<rect x="${bx}" y="${y}" width="${Math.max(w,0.6).toFixed(1)}" height="15" fill="${FC[i]}" opacity="${r.norms[i]>TOL?0.85:0.3}"/>`;
+    s+=`<text x="${bx+Math.min(w,1.35*bw)+6}" y="${y+12}" font-family="var(--mono)" font-size="10" fill="var(--muted)">${r.norms[i].toFixed(2)}</text>`;
+  }
+  const hx=505,hy=44,cs=32;
+  s+=`<text x="${hx}" y="24" font-family="var(--mono)" font-size="10" fill="var(--faint)">WᵀW · blue + / red −</text>`;
+  for(let i=0;i<M1;i++)for(let j=0;j<M1;j++){
+    const v=r.G[i][j],op=Math.min(1,Math.abs(v)/1.30);
+    s+=`<rect x="${hx+j*cs}" y="${hy+i*cs}" width="${cs}" height="${cs}" fill="${v>=0?'var(--accent)':'var(--miss)'}" opacity="${(0.05+0.9*op).toFixed(3)}" stroke="var(--panel)"/>`;
+  }
+  for(let i=0;i<M1;i++){
+    s+=`<text x="${hx-6}" y="${hy+i*cs+20}" text-anchor="end" font-family="var(--mono)" font-size="9" fill="var(--faint)">${i+1}</text>`;
+    s+=`<text x="${hx+i*cs+cs/2}" y="${hy-4}" text-anchor="middle" font-family="var(--mono)" font-size="9" fill="var(--faint)">${i+1}</text>`;
+  }
+  document.getElementById('p1').innerHTML=s;
+}
+function p1note(S,r,rep){
+  const gaps=gapsOf(r),Sf=S.toFixed(2);
+  const gtxt=gaps.length>1?gaps.map(g=>g.toFixed(0)+'°').join(' · '):'—';
+  if(p1steps===0)return `Untrained: the five directions are the seeded initialization, every norm below the 0.20 threshold, so nothing is represented yet and WᵀW is nearly blank. Press "train +100" repeatedly, or slide S to retrain 400 steps from scratch.`;
+  if(rep<=D1){
+    const sep=gaps.length>1?Math.min(...gaps).toFixed(1)+'°':'—';
+    const dr=[];for(let i=0;i<M1;i++)if(r.norms[i]<=TOL)dr.push(r.b[i]);
+    const dm=dr.length?dr.reduce((a,b)=>a+b,0)/dr.length:NaN;
+    return `S = ${Sf}: ${rep} of 5 features represented — at most d = 2, so no superposition at all. The model has spent its two dimensions on the ${rep} most important features, separated by ${sep}, and predicts the other ${M1-rep} by a constant: their biases average ${dm.toFixed(3)} against the best constant 𝔼[x] = S/2 = ${(S/2).toFixed(3)}. Mean |off-diagonal| is only ${r.off.toFixed(3)} — the surviving directions are essentially orthogonal. This is the PCA answer of Lesson 8: best rank-2 approximation, features ranked by importance.`;}
+  if(rep===M1)return `S = ${Sf}: all ${rep} features represented in d = 2 dimensions — ${(M1/D1).toFixed(1)}× overbooked. The directions sit at gaps ${gtxt}, every one inside ${Math.ceil(Math.max(...gaps.map(g=>Math.abs(g-72))))}° of 72°: a pentagon. (The <i>mean</i> gap is 360°/5 = 72° for any five directions — they close the circle — so it is the narrow spread that is the evidence.) A pentagon minimizes the worst <b>positive</b> interference, cos 72° = +0.31, and parks the large overlap at cos 144° = −0.81, where the ReLU discards it; a fan of five directions 36° apart has the same worst |cos| but +0.81 of it positive. Mean |off-diagonal| has risen to ${r.off.toFixed(3)} — real crosstalk — but at S = ${Sf} two given features are both on only ${(100*S*S).toFixed(1)}% of the time, so the bill is rarely presented. Note b̄ = ${r.bmean.toFixed(3)} &lt; 0: the model has learned a threshold that rectifies small leakage to zero.`;
+  return `S = ${Sf}: ${rep} of 5 features represented — more than d = 2, so the model is already superposing, but not all five. The kept directions sit at adjacent gaps ${gtxt} — an <b>antipodal</b> layout: some pair shares one axis in opposite signs, visible either as a ~180° gap between neighbours or, when four directions sit 90° apart, as the two pairs facing each other across the origin. Opposite signs are free for non-negative features because a ReLU read-out never confuses +x with −x. Mean |off-diagonal| ${r.off.toFixed(3)}. Which features get sacrificed is set by the initialization — this objective is non-convex and the intermediate regime has several near-equal optima.`;
+}
+function p1update(){
+  const S=SVALS[+document.getElementById('sIdx').value];
+  document.getElementById('sOut').textContent=S.toFixed(2);
+  document.getElementById('stOut').textContent=p1steps;
+  const r=trainToy(S,p1steps);p1cache=r;
+  let rep=0;for(let i=0;i<M1;i++)if(r.norms[i]>TOL)rep++;
+  drawP1(r);
+  document.getElementById('p1rep').textContent=rep+' / 5';
+  document.getElementById('p1off').textContent=r.off.toFixed(4);
+  document.getElementById('p1loss').textContent=r.loss.toFixed(5);
+  document.getElementById('p1bias').textContent=(r.bmean>=0?'+':'')+r.bmean.toFixed(3);
+  document.getElementById('p1note').innerHTML=p1note(S,r,rep);
+}
+document.getElementById('sIdx').addEventListener('input',()=>{p1steps=400;p1update();});
+document.getElementById('tr100').addEventListener('click',()=>{if(p1steps<2000){p1steps+=100;p1update();}});
+document.getElementById('rst').addEventListener('click',()=>{p1steps=0;p1update();});
+
+/* ================= Panel 2 : the interference budget ================= */
+const MV=[16,32,64,128,256],DV=[2,4,8,16,32,64,128,256],SV2=[1,0.5,0.2,0.1,0.05,0.02,0.01,0.005];
+function geom(m,d){
+  const rng=mulberry32(SEED),V=[];
+  for(let k=0;k<m;k++){const v=new Float64Array(d);let n2=0;for(let i=0;i<d;i++){v[i]=randn(rng);n2+=v[i]*v[i];}const nn=Math.sqrt(n2);for(let i=0;i<d;i++)v[i]/=nn;V.push(v);}
+  const B=40,hist=new Array(B).fill(0);let sum=0,sq=0,mx=0,n=0;const cs=[];
+  for(let a=0;a<m;a++)for(let b=a+1;b<m;b++){let c=0;for(let i=0;i<d;i++)c+=V[a][i]*V[b][i];
+    const ac=Math.abs(c);sum+=ac;sq+=c*c;if(ac>mx)mx=ac;n++;cs.push(ac);
+    let bin=Math.floor(ac*B);if(bin>=B)bin=B-1;hist[bin]++;}
+  return {mean:sum/n,rms:Math.sqrt(sq/n),max:mx,n,hist,cs,B};
+}
+function drawP2(g,eps){
+  const W=680,H=250,padL=46,padR=14,padT=18,padB=32,iw=W-padL-padR,ih=H-padT-padB;
+  const mxh=Math.max(...g.hist)||1,bw=iw/g.B;let s='';
+  s+=`<line x1="${padL}" y1="${padT+ih}" x2="${W-padR}" y2="${padT+ih}" stroke="var(--hair2)"/>`;
+  g.hist.forEach((c,i)=>{const h=(c/mxh)*ih,x=padL+i*bw,lo=(i+1)/g.B;
+    s+=`<rect x="${(x+0.6).toFixed(1)}" y="${(padT+ih-h).toFixed(1)}" width="${(bw-1.2).toFixed(1)}" height="${h.toFixed(1)}" fill="${lo<=eps+1e-9?'var(--accent)':'var(--series)'}" opacity="${lo<=eps+1e-9?0.85:0.5}"/>`;});
+  const ex=padL+eps*iw;
+  s+=`<line x1="${ex.toFixed(1)}" y1="${padT}" x2="${ex.toFixed(1)}" y2="${padT+ih}" stroke="var(--ink)" stroke-dasharray="4 3"/>`;
+  s+=`<text x="${(ex+5).toFixed(1)}" y="${padT+11}" font-family="var(--mono)" font-size="10" fill="var(--ink)">ε = ${eps.toFixed(2)}</text>`;
+  [0,0.25,0.5,0.75,1].forEach(t=>{s+=`<text x="${(padL+t*iw).toFixed(1)}" y="${H-12}" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--faint)">${t.toFixed(2)}</text>`;});
+  s+=`<text x="${padL}" y="${padT-4}" font-family="var(--mono)" font-size="10" fill="var(--faint)">count of pairs</text>`;
+  s+=`<text x="${W-padR}" y="${padT-4}" text-anchor="end" font-family="var(--mono)" font-size="10" fill="var(--faint)">|cos| between two feature directions →</text>`;
+  document.getElementById('p2').innerHTML=s;
+}
+function p2update(){
+  const m=MV[+document.getElementById('mIdx').value],d=DV[+document.getElementById('dIdx').value];
+  const eps=(+document.getElementById('eps').value)/100,S=SV2[+document.getElementById('s2Idx').value];
+  document.getElementById('mOut').textContent=m;document.getElementById('dOut').textContent=d;
+  document.getElementById('eOut').textContent=eps.toFixed(2);document.getElementById('s2Out').textContent=S;
+  const g=geom(m,d);drawP2(g,eps);
+  const law=Math.sqrt(2/(Math.PI*d)),share=g.cs.filter(c=>c<=eps).length/g.n;
+  const cap=Math.exp(eps*eps*d/2),cap2=Math.exp(eps*eps*4096/2);
+  const act=m*S,pairs=m*(m-1)/2*S*S,load=pairs*g.mean;
+  const fmt=v=>v<1e5?v.toFixed(v<100?2:0):v.toExponential(1);
+  document.getElementById('p2mean').textContent=g.mean.toFixed(4)+' · '+law.toFixed(4);
+  document.getElementById('p2rms').textContent=g.rms.toFixed(4)+' · '+(1/Math.sqrt(d)).toFixed(4);
+  document.getElementById('p2max').textContent=g.max.toFixed(4);
+  document.getElementById('p2sh').textContent=(100*share).toFixed(1)+'%';
+  document.getElementById('p2cap').textContent=fmt(cap);
+  document.getElementById('p2cap2').textContent=cap2.toExponential(1);
+  document.getElementById('p2act').textContent=act.toFixed(2);
+  document.getElementById('p2col').textContent=pairs.toFixed(2);
+  const capnote=cap2>1e6
+    ? `The capacity reading is an exponential <i>rate</i>: at d = ${d} the estimate e^(ε²d/2) = ${fmt(cap)} is order-1 and says nothing, but hold ε and take d to a real residual stream's 4096 and it is ${cap2.toExponential(1)} — that is the whole argument.`
+    : `The capacity reading is honest about small ε: e^(ε²d/2) = ${fmt(cap)} here, and even at a real residual stream's d = 4096 the same tolerance yields ${cap2<1e4?fmt(cap2):cap2.toExponential(1)} slots — ${cap2<4096?'fewer than the 4,096 exact directions you already had':`only ${(cap2/4096).toFixed(0)}× the 4,096 exact ones, not the blowout`}. What is exponential is ε²d, not d: the exponent here is 2048ε² = ${(2048*eps*eps).toFixed(2)}, so the overbooking factor stays modest however wide you make the stream. Widen ε and watch the exponent bite.`;
+  const dnote=d===2?` At d = 2 the law is the wrong law — the true cosine distribution is the arcsine shape, mean |cos| = 2/π ≈ 0.637, which is what you are measuring; the √(2/πd) form is the large-d limit (Lesson 10).`:(d<=8?` Read the mean-|cos| gap as the asymptote, not the sample: √(2/πd) is the large-d limit, and the exact mean sits 6.4% above it at d = 4 and 3.2% above it at d = 8. The rms law 1/√d is exact at every d.`:'');
+  document.getElementById('p2note').innerHTML=
+    `${g.n.toLocaleString()} pairs among ${m} random directions in ℝ<sup>${d}</sup>. Mean |cos| = ${g.mean.toFixed(4)} against the law √(2/πd) = ${law.toFixed(4)}, rms cos = ${g.rms.toFixed(4)} against Lesson 10's 1/√d = ${(1/Math.sqrt(d)).toFixed(4)}; the worst pair is ${g.max.toFixed(3)}, and ${(100*share).toFixed(1)}% of pairs clear ε = ${eps.toFixed(2)} with no learning at all.${dnote} ${capnote} And the constraint that actually binds: at S = ${S}, ${act.toFixed(2)} of the ${m} features are live at once, so a draw carries about ${pairs.toFixed(2)} colliding pairs (a bookkeeping estimate: m(m−1)S²/2 pairs × mean |cos| ≈ ${load.toFixed(3)} of accumulated bleed). Interference is a bill you only pay on collisions — which is why sparsity, not dimension, sets how far you can overbook.`;
+}
+['mIdx','dIdx','eps','s2Idx'].forEach(id=>document.getElementById(id).addEventListener('input',p2update));
+
+/* ================= retrieval ================= */
+const QS={
+  q1:{opts:["the m directions can be made exactly orthogonal","the features are sparse — rarely active at the same time, so collisions between non-orthogonal directions are rare","the encoder is nonlinear","m is at most twice d"],a:1,
+    fb:"Sparsity is the whole trade. Interference ⟨W_i,W_j⟩x_j only costs when features i and j are on together, probability ~S² per pair, so as S falls the same crosstalk becomes affordable and the model represents more than d features. m > d makes exact orthogonality impossible by rank, and the dense limit (S = 1) proves superposition is a bad trade without sparsity."},
+  q2:{opts:["represents all m features at equal angles","represents m − 1 features and drops the least important one","represents features in proportion to their importance","keeps the d most important features on orthogonal directions and predicts the rest by their mean — the Eckart–Young answer of Lesson 8"],a:3,
+    fb:"With S = 1 the objective reduces to σ²‖diag(√I)(𝕀 − WᵀW)‖²_F with rank(WᵀW) ≤ d, so Eckart–Young–Mirsky (Lesson 8) picks the d largest importances and zeros the rest: dense superposition is never optimal. The panel shows it — at S = 1, 2 of 5 features survive at 90.3° and the loss sits at the predicted floor (I₃+I₄+I₅)/12 = 0.1301."},
+  q3:{opts:["interference: whenever feature j is active it leaks into the read-out of feature i","that features i and j are the same feature","that the model has not converged","that feature i is unimportant"],a:0,
+    fb:"WᵀW is the Gram matrix of the feature directions. Its diagonal ‖W_i‖² says how strongly feature i is carried; its off-diagonals are crosstalk, entering the read-out as Σ_{j≠i}⟨W_i,W_j⟩x_j. With m > d the rank is at most d, so some off-diagonal must be non-zero — non-convergence has nothing to do with it."},
+  q4:{opts:["two exposures with the highest correlation of returns","two exposures with the largest notional","two exposures that are never live in the same window, so their interference term is multiplied by x_i x_j = 0","two exposures in different currencies"],a:2,
+    fb:"The cost of sharing a direction is ⟨β_i,β_j⟩x_i x_j — it is only charged when both exposures are active at once. A Q1 expiry and a Q4 expiry, or a name before and after delisting, can share a direction for free. High return-correlation is a different statement (and would argue for putting them on the same direction deliberately, as one factor); notional and currency say nothing about co-activation."},
+  q5:{opts:["linearly in d, one extra direction per dimension","exponentially in d — Lesson 10's count e^(ε²d/2), which is why d = 4096 buys ≈ 8×10⁸ slots at ε = 0.1","quadratically in d","not at all — the maximum is d for any ε"],a:1,
+    fb:"Exact orthogonality caps you at d. Relax to |cos| ≤ ε and a random pair violates the tolerance with probability ≈ 2e^(−dε²/2), so on the order of e^(ε²d/2) directions coexist within tolerance (Lesson 10's twist) — exponential in d at fixed ε. At ε = 0.1, d = 4096 that is e^20.48 ≈ 8×10⁸. Treat it as an order of magnitude, not a sharp capacity theorem."},
+  q6:{opts:["the neuron that fires for each concept","a rotation that makes the neurons monosemantic","an overcomplete dictionary of n ≫ d directions such that each activation vector is a sparse combination of a few of them","a low-rank approximation of the weight matrix"],a:2,
+    fb:"Superposition predicts polysemantic neurons — the feature directions are not axis-aligned, so no neuron and no rotation of the d axes can be the answer: a rotation gives only d directions, and there are more features than that. The SAE fits an overcomplete dictionary (n ≫ d unit directions) with a sparsity penalty, recovering the directions rather than the coordinates. Low-rank approximation (Lesson 8) is the opposite move — fewer directions, not more."}
+};
+const sel={q1:null,q2:null,q3:null,q4:null,q5:null,q6:null};let revealed=false;
+Object.keys(QS).forEach(id=>{const holder=document.querySelector('#'+id+' .opts');QS[id].opts.forEach((txt,i)=>{const b=document.createElement('button');b.className='opt';b.textContent=String.fromCharCode(65+i)+'.  '+txt;b.onclick=()=>{if(revealed)return;sel[id]=i;[...holder.children].forEach((c,ci)=>c.classList.toggle('sel',ci===i));document.getElementById('hint').style.display='none';};holder.appendChild(b);});});
+document.getElementById('check').onclick=async()=>{
+  if(revealed)return;if(Object.values(sel).some(v=>v===null)){document.getElementById('hint').style.display='inline';return;}
+  revealed=true;let score=0;
+  Object.keys(QS).forEach(id=>{const a=QS[id].a,holder=document.querySelector('#'+id+' .opts'),fb=document.querySelector('#'+id+' .fb');[...holder.children].forEach((c,ci)=>{c.style.cursor='default';c.classList.remove('sel');if(ci===a)c.classList.add('correct');else if(ci===sel[id])c.classList.add('wrong');});if(sel[id]===a)score++;fb.textContent=QS[id].fb;fb.classList.add('show');});
+  document.getElementById('check').style.opacity='0.5';document.getElementById('check').textContent='Checked';
+  document.getElementById('scoreOut').textContent=score+' / 6';document.getElementById('done').classList.add('show');
+  try{await window.storage.set('mfs:lesson20',JSON.stringify({done:true,retrieval:score+'/6',ts:Date.now()}),false);}catch(e){}
+};
+function boot(){renderMath();p1update();p2update();}
+if(window.katex)boot();else window.addEventListener('load',boot);
+(async()=>{try{const r=await window.storage.get('mfs:lesson20',false);if(r&&r.value){const v=JSON.parse(r.value);if(v.done){const c=document.getElementById('chip');c.classList.add('show');c.textContent='completed · '+v.retrieval;}}}catch(e){}})();
+</script>
+</body>
+</html>
