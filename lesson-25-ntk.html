@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lesson 25 — The neural tangent kernel &amp; the lazy regime</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<style>
+  :root{
+    --paper:#FAFAF6;--ink:#1A1C22;--muted:#63676E;--faint:#9A9EA4;--hair:#E4E3DB;--hair2:#D4D3CA;--panel:#FFFFFF;
+    --accent:#24507A;--accent-bg:#EAF0F6;--series:#B07A2E;--miss:#B23A3A;--ok:#2F6B4F;--ok-bg:#E9F1EC;
+    --vol:#8A5A2B;--vol-bg:#F6EFE6;--serif:Iowan Old Style,Palatino,Georgia,serif;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme:dark){:root{--paper:#15161A;--ink:#E9E8E2;--muted:#A2A6AC;--faint:#71757B;--hair:#2A2C31;--hair2:#3A3C42;--panel:#1B1D22;--accent:#7FB0E0;--accent-bg:#1E2A38;--series:#D9A85E;--miss:#E07A7A;--ok:#7FC49F;--ok-bg:#1C2A22;--vol:#D9A066;--vol-bg:#2A2115;}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.62;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:750px;margin:0 auto;padding:32px 24px 60px}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 6px}
+  h1{font-family:var(--serif);font-weight:600;font-size:27px;line-height:1.22;margin:0 0 6px;letter-spacing:-.01em}
+  .chip{display:none;font-family:var(--mono);font-size:11px;letter-spacing:.05em;color:var(--ok);border:1px solid var(--ok);border-radius:20px;padding:3px 10px;vertical-align:middle;margin-left:10px}
+  .chip.show{display:inline-block}
+  .sub{color:var(--muted);font-size:15px;margin:0 0 18px}
+  .levels{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 26px}
+  .levels .lk{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+  .levels .pill{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-family:var(--mono);color:var(--muted);background:var(--panel);border:1px solid var(--hair2);border-radius:20px;padding:4px 11px}
+  .levels .pill b{color:var(--accent);font-weight:700;letter-spacing:.03em}
+  p.lead{font-size:16px;margin:0 0 22px}
+  p.lead b{font-weight:600}
+  .sec{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:36px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--hair)}
+  .mblock{margin:16px 0;overflow-x:auto}
+  .glo{list-style:none;padding:0;margin:14px 0 0}
+  .glo li{display:flex;gap:14px;padding:9px 0;border-top:1px solid var(--hair);align-items:baseline}
+  .glo li:first-child{border-top:none}
+  .glo .sym{flex:0 0 92px;text-align:right;padding-top:2px}
+  .glo .sym.w{font-family:var(--mono);font-size:12.5px;color:var(--accent)}
+  .glo .def{font-size:14.5px}
+  .glo .def .n{color:var(--muted)}
+  .step{font-size:14.5px;color:var(--muted);margin:10px 0}
+  .panel{background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:20px;margin:14px 0}
+  .imgs{display:flex;flex-wrap:wrap;gap:22px;align-items:flex-start}
+  .imgs figure{margin:0;display:flex;flex-direction:column;gap:6px}
+  .imgs figcaption{font-family:var(--mono);font-size:12px;color:var(--muted)}
+  .figcap{font-family:var(--mono);font-size:12px;color:var(--muted);margin:2px 0 12px}
+  .leg{display:flex;flex-wrap:wrap;gap:8px 18px;font-family:var(--mono);font-size:11px;color:var(--muted);margin:4px 0 0}
+  .leg i{display:inline-block;width:18px;height:0;border-top:2px solid var(--accent);vertical-align:middle;margin-right:5px}
+  canvas{image-rendering:pixelated;border:1px solid var(--hair2);border-radius:6px;width:196px;height:196px;background:var(--panel)}
+  .ctrls{display:flex;flex-wrap:wrap;gap:16px 26px;align-items:flex-end;margin:16px 0 6px}
+  .field{display:flex;flex-direction:column;gap:6px;min-width:210px;flex:1}
+  .field label{font-size:12px;color:var(--muted);font-family:var(--mono);letter-spacing:.03em;display:flex;justify-content:space-between}
+  .field label b{color:var(--ink);font-weight:600}
+  input[type=range]{width:100%;accent-color:var(--accent);height:20px}
+  svg{max-width:100%;height:auto;display:block}
+  .tally{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 2px}
+  .stat{flex:1;min-width:120px;background:var(--paper);border-radius:9px;padding:9px 12px}
+  .stat .k{font-size:11px;font-family:var(--mono);letter-spacing:.04em;color:var(--muted);text-transform:uppercase}
+  .stat .v{font-size:19px;font-weight:600;font-family:var(--mono);margin-top:2px}
+  .stat .v.sm{font-size:15px}
+  .stat .v.a{color:var(--accent)}.stat .v.g{color:var(--ok)}.stat .v.s{color:var(--series)}.stat .v.m{color:var(--miss)}
+  .callout{font-size:14px;color:var(--muted);border-left:2px solid var(--accent);padding:2px 0 2px 14px;margin:16px 0 2px;min-height:1.4em}
+  .theorem{background:var(--accent-bg);border-radius:12px;padding:18px 20px;margin:16px 0}
+  .theorem .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
+  .theorem p{font-family:var(--serif);font-size:16px;line-height:1.55;margin:0 0 10px}
+  .theorem p:last-child{margin-bottom:0}
+  .twist{border:1px dashed var(--hair2);border-radius:12px;padding:16px 18px;margin:16px 0;background:var(--panel)}
+  .twist .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+  .twist p{margin:0 0 10px;font-size:14.6px}.twist p:last-child{margin-bottom:0}
+  .vol{background:var(--vol-bg);border:1px solid var(--vol);border-radius:12px;padding:18px 20px;margin:16px 0}
+  .vol .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:var(--vol);margin:0 0 8px}
+  .vol p{margin:0 0 10px;font-size:14.8px}.vol p:last-child{margin-bottom:0}
+  .vol code{font-family:var(--mono);font-size:13px;background:rgba(138,90,43,.12);padding:1px 5px;border-radius:4px}
+  .q{border:1px solid var(--hair);border-radius:12px;padding:16px 18px;margin:12px 0;background:var(--panel)}
+  .q .stem{font-size:15px;font-weight:500;margin:0 0 12px}
+  .opt{display:block;width:100%;text-align:left;font-size:14px;padding:10px 12px;margin:0 0 8px;border:1px solid var(--hair2);border-radius:8px;background:transparent;color:var(--ink);cursor:pointer;line-height:1.45}
+  .opt:last-child{margin-bottom:0}
+  .opt:hover{border-color:var(--accent)}
+  .opt.sel{border-color:var(--accent);background:var(--accent-bg)}
+  .opt.correct{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+  .opt.wrong{background:#F7ECEC;border-color:var(--miss);color:var(--miss)}
+  @media (prefers-color-scheme:dark){.opt.wrong{background:#2E1E1E}}
+  .fb{font-size:13.5px;color:var(--muted);margin:10px 0 0;line-height:1.5;display:none}
+  .fb.show{display:block}
+  .checkRow{display:flex;align-items:center;gap:14px;margin:18px 0 0;flex-wrap:wrap}
+  .hint{font-size:13px;color:var(--miss);display:none}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-family:var(--sans);font-size:14px;padding:8px 14px;border-radius:8px;border:1px solid var(--accent);cursor:pointer}
+  .scoreOut{font-family:var(--mono);font-size:14px;font-weight:600}
+  .done{display:none;align-items:center;gap:10px;background:var(--ok-bg);color:var(--ok);border-radius:10px;padding:12px 16px;font-size:14px;margin:14px 0 0}
+  .done.show{display:flex}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">Lesson 25 · Wing V — training-dynamics mysteries</p>
+  <h1>The neural tangent kernel &amp; the lazy regime<span class="chip" id="chip"></span></h1>
+  <p class="sub">Make a network wide enough and its weights stop moving — while the function it computes moves all the way to the data.</p>
+  <div class="levels"><span class="lk">Level</span><span class="pill"><b>US</b> PhD</span><span class="pill"><b>FR</b> Master 2 advanced</span></div>
+
+  <p class="lead">Widen a network and something odd happens to its parameters: individually they barely move. Over an entire training run each weight in a width-m layer drifts by an amount of order <b>1/√m</b> — at m = 10,000 that is a change of about one part in a hundred, against parameters of size 1 — and yet the <b>function</b> travels the whole distance from its random initialization to a fit of the training set. Both facts are true at once because there are m weights, and m tiny coordinated nudges add up to an O(1) change in the output. That observation has an exact consequence. If θ never leaves a shrinking neighbourhood of θ₀, then the first-order Taylor expansion of f in θ stops being an approximation and becomes exact in the limit, and a network linear in its parameters is a <b>linear model with a fixed feature map</b> — training it is kernel regression, with a kernel built from gradients. This lesson constructs that kernel, measures the laziness on real seeded training runs at five widths, and then reads the kernel's eigenvalues to predict in advance which part of the target gets learned first. Then the honest part: the regime where all of this is exactly true is precisely the regime in which nothing interesting can happen.</p>
+
+  <div class="sec">The words, before the machinery</div>
+  <ul class="glo">
+    <li><span class="sym w">width m</span><span class="def">the number of hidden units in a layer. <span class="n">The limit m → ∞ is taken with the training set, the depth and the number of steps all held fixed. Lesson 21's N counted a real model's parameters and asked what loss they buy; here we take one layer to infinity as a mathematical device.</span></span></li>
+    <li><span class="sym w">θ, θ₀, P</span><span class="def">the parameter vector, its value at initialization, and its length. <span class="n">θ ∈ ℝ<sup>P</sup>. For the one-hidden-layer network below P = 3m. "Parameter space" is Lesson 9's weight space, now with P in the thousands.</span></span></li>
+    <li><span class="sym w">parameterization</span><span class="def">the bookkeeping choice of how layer scalings, initial variances and learning rates depend on m. <span class="n">Three named ones matter: <b>standard</b> (what PyTorch does by default), <b>NTK</b> (an explicit 1/√m in front of each layer, which is what this lesson uses), and <b>μP</b> (maximal update). They differ only in powers of m — and they decide which limit you get.</span></span></li>
+    <li><span class="sym w">lazy / rich</span><span class="def"><b>lazy</b>: the features the network computes are frozen at their random initial values and only the read-out combination of them is fitted. <b>rich</b>: the features themselves move. <span class="n">Chizat, Oyallon &amp; Bach's terminology (2019). "Lazy" is not an insult, it is a measurable property — three numbers below measure it.</span></span></li>
+    <li><span class="sym w">Jacobian ∇<sub>θ</sub>f</span><span class="def">the row vector of ∂f(x)/∂θ<sub>p</sub> over all P parameters. <span class="n">Exactly the object Lesson 13's backward sweep produces: one reverse pass per input gives this whole row, at the cost of a few forward passes.</span></span></li>
+    <li><span class="sym w">tangent kernel Θ</span><span class="def">the inner product of two inputs' Jacobians. <span class="n">Lesson 6's reading of an inner product as a similarity, applied to gradients: two inputs are "similar" if moving a parameter moves both of their outputs the same way.</span></span></li>
+    <li><span class="sym w">Gram matrix</span><span class="def">the n×n table of pairwise kernel values on the training inputs, Θ<sub>ij</sub> = Θ(x<sub>i</sub>,x<sub>j</sub>). <span class="n">Symmetric positive semidefinite for the same reason XᵀX was in Lessons 6–7: it is a table of inner products.</span></span></li>
+    <li><span class="sym w">gradient flow</span><span class="def">gradient descent with the step size taken to zero: the ODE θ̇ = −∇<sub>θ</sub>L. <span class="n">The continuous-time idealization of Lesson 9's update. Everything on this page is run in discrete steps and read through the flow.</span></span></li>
+    <li><span class="sym w">function space</span><span class="def">tracking the n numbers f(x<sub>i</sub>) instead of the P numbers θ<sub>p</sub>. <span class="n">The change of viewpoint that makes the whole lesson work: P is enormous and growing, n is fixed and small.</span></span></li>
+    <li><span class="sym w">RKHS</span><span class="def">reproducing kernel Hilbert space — the space of functions a kernel can build, with its own notion of length ‖h‖<sub>Θ</sub>. <span class="n">All you need here: among functions that fit the data exactly, one has the smallest ‖·‖<sub>Θ</sub>, and kernel gradient descent from zero converges to that one. It is Lesson 22's min-norm interpolant with a different feature map.</span></span></li>
+    <li><span class="sym w">spectral bias</span><span class="def">the empirical fact that networks fit smooth, low-frequency structure before wiggly, high-frequency structure. <span class="n">In the lazy regime it stops being an empirical fact and becomes an eigenvalue ordering, computed in the second panel.</span></span></li>
+  </ul>
+
+  <div class="sec">Step one — the network as a linear model</div>
+  <p class="step">Take any differentiable f(x;θ) and expand it to first order in the parameters around initialization. Nothing here is special to networks; it is a Taylor expansion:</p>
+  <div class="mblock math" data-tex="f^{\mathrm{lin}}(x;\theta)\;=\;f(x;\theta_0)\;+\;\nabla_{\theta}f(x;\theta_0)^{\top}\big(\theta-\theta_0\big)\;=\;f(x;\theta_0)+\phi(x)^{\top}\delta,\qquad \phi(x):=\nabla_{\theta}f(x;\theta_0)\in\mathbb R^{P},\;\;\delta:=\theta-\theta_0" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="\phi(x)"></span><span class="def">the <b>tangent features</b> of the input x: its Jacobian row at initialization. <span class="n">P numbers per input, computed once and then never updated. This is the whole meaning of "the features are frozen."</span></span></li>
+    <li><span class="sym math" data-tex="\delta"></span><span class="def">the parameter displacement, the only thing that moves. <span class="n">f<sup>lin</sup> is <b>linear in δ</b> — so fitting it by least squares is Lesson 5's problem with design matrix rows φ(x<sub>i</sub>), and its geometry is Lesson 22's.</span></span></li>
+    <li><span class="sym math" data-tex="f(x;\theta_0)"></span><span class="def">the random function the network computes before any training. <span class="n">An offset, not a feature. In the panels below it is removed exactly, by a trick described there, so every width starts from the zero function.</span></span></li>
+  </ul>
+  <p class="step">The concrete network used on this page is the smallest one that shows the effect — one hidden layer, scalar input, scalar output, written in the NTK parameterization (note the explicit 1/√m):</p>
+  <div class="mblock math" data-tex="f(x;\theta)\;=\;\frac{1}{\sqrt m}\sum_{k=1}^{m}a_k\,\sigma\!\big(w_kx+b_k\big),\qquad \sigma=\tanh,\qquad a_k,w_k,b_k\stackrel{\text{iid}}{\sim}\mathcal N(0,1),\qquad \theta=(a,w,b)\in\mathbb R^{3m}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="1/\sqrt m"></span><span class="def">the NTK scaling. <span class="n">Without it, a sum of m random O(1) terms would be of size √m; with it the output is O(1) at every width, and — the point — each parameter's influence on the output is O(1/√m), which is why each one need only move that far.</span></span></li>
+    <li><span class="sym math" data-tex="\partial f/\partial a_k"></span><span class="def">= σ(w<sub>k</sub>x+b<sub>k</sub>)/√m; likewise ∂f/∂w<sub>k</sub> = a<sub>k</sub>σ′(·)x/√m and ∂f/∂b<sub>k</sub> = a<sub>k</sub>σ′(·)/√m. <span class="n">These 3m numbers are φ(x). Every one of them is O(1/√m) — the individual-influence statement, in symbols.</span></span></li>
+    <li><span class="sym math" data-tex="\mathcal N(0,1)"></span><span class="def">unit-variance Gaussian initialization. <span class="n">So ‖θ₀‖ ≈ √(3m) — the denominator of the relative-movement statistic below, and the reason the ratio carries a 1/√m.</span></span></li>
+  </ul>
+
+  <div class="sec">Step two — the kernel is an inner product of gradients</div>
+  <p class="step">A linear model has a kernel: the inner product of its feature vectors. For the tangent features that object is the <b>neural tangent kernel</b>.</p>
+  <div class="mblock math" data-tex="\Theta_{\theta}(x,x')\;=\;\nabla_{\theta}f(x;\theta)^{\top}\nabla_{\theta}f(x';\theta)\;=\;\sum_{p=1}^{P}\frac{\partial f(x)}{\partial\theta_p}\frac{\partial f(x')}{\partial\theta_p},\qquad \Theta\in\mathbb R^{n\times n},\;\;\Theta_{ij}=\Theta_{\theta}(x_i,x_j)=\big(JJ^{\top}\big)_{ij}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="J"></span><span class="def">the n×P <b>Jacobian</b> of the training outputs, row i = φ(x<sub>i</sub>)ᵀ. <span class="n">Lesson 13 built exactly this, one row per reverse sweep. Θ = JJᵀ is Lesson 6's table-of-all-inner-products, XᵀX, built over J's <i>rows</i> instead of its columns — the same Gram construction, entered from the other side.</span></span></li>
+    <li><span class="sym math" data-tex="\Theta\succeq 0"></span><span class="def">symmetric positive semidefinite, always. <span class="n">vᵀΘv = ‖Σ<sub>i</sub>v<sub>i</sub>φ(x<sub>i</sub>)‖² ≥ 0 — no assumption needed, it is a Gram matrix (Lesson 6's spectral theorem then gives real non-negative eigenvalues and an orthonormal eigenbasis).</span></span></li>
+    <li><span class="sym math" data-tex="\Theta_\theta\ \text{vs}\ \Theta_{\theta_0}"></span><span class="def">the kernel exists at <i>every</i> θ; the lazy claim is that it does not <b>move</b>. <span class="n">‖Θ<sub>θ_T</sub> − Θ<sub>θ_0</sub>‖<sub>F</sub>/‖Θ<sub>θ_0</sub>‖<sub>F</sub> is the number the first panel measures, with ‖·‖<sub>F</sub> the Frobenius norm — the square root of the sum of the squared entries. Zero drift = frozen features.</span></span></li>
+  </ul>
+
+  <div class="sec">Step three — training, seen in function space</div>
+  <p class="step">Now run gradient flow on the squared loss and watch the <i>outputs</i> rather than the weights. Write u(t) = (f(x₁;θ<sub>t</sub>), …, f(x<sub>n</sub>;θ<sub>t</sub>)) for the vector of training predictions. The chain rule does the rest, and the P-dimensional parameter dynamics collapse into an n-dimensional linear ODE — <i>exactly</i>, with no approximation, at any width:</p>
+  <div class="mblock math" data-tex="L(\theta)=\tfrac12\lVert u-y\rVert^2,\quad \dot\theta=-\nabla_\theta L=-J^{\top}(u-y)\;\;\Longrightarrow\;\; \dot u=J\dot\theta=-\underbrace{JJ^{\top}}_{\Theta_{\theta_t}}(u-y)\;\;\Longrightarrow\;\; \dot r=-\Theta_{\theta_t}\,r,\quad r:=u-y" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="r=u-y"></span><span class="def">the <b>residual</b> on the training set: n numbers. <span class="n">The whole of training, viewed from function space, is the decay of this vector. Note what has vanished: P.</span></span></li>
+    <li><span class="sym math" data-tex="\dot u=J\dot\theta"></span><span class="def">the chain rule, once. <span class="n">This step is exact for any architecture and any width. The <i>only</i> place an approximation can enter is the subscript on Θ<sub>θ_t</sub>.</span></span></li>
+    <li><span class="sym math" data-tex="-\Theta r"></span><span class="def">the loss's gradient, expressed in function space. <span class="n">Compare Lesson 9: there the error contracted as (1 − ηλ<sub>i</sub>) per step along each eigenvector of the Hessian, in <i>weight</i> space. Here the same structure appears in <i>function</i> space, with Θ in place of the Hessian.</span></span></li>
+  </ul>
+  <p class="step">Freeze the kernel — assume Θ<sub>θ_t</sub> ≡ Θ — and the ODE is solved by a matrix exponential. Diagonalize Θ = Σᵢ λᵢ qᵢ qᵢᵀ with the spectral theorem of Lesson 6, and the coupled system falls apart into n independent scalar decays:</p>
+  <div class="mblock math" data-tex="r(t)=e^{-\Theta t}\,r(0)\qquad\Longleftrightarrow\qquad q_i^{\top}r(t)=e^{-\lambda_i t}\;q_i^{\top}r(0),\qquad \tau_i=\frac{1}{\lambda_i},\qquad t_{90}(i)=\frac{\ln 10}{\lambda_i}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="\lambda_i,\,q_i"></span><span class="def">eigenvalue and eigenvector of the Gram matrix Θ. <span class="n">λ<sub>i</sub> ≥ 0 because Θ ⪰ 0. A direction with λ = 0 is never learned at all: the residual there is untouched by training, forever.</span></span></li>
+    <li><span class="sym math" data-tex="\tau_i=1/\lambda_i"></span><span class="def">the <b>time constant</b> of eigendirection i. <span class="n">Large eigenvalue → fast. Ratios of time constants are ratios of eigenvalues, so the condition number κ = λ<sub>max</sub>/λ<sub>min</sub> of Lessons 5, 9 and 22 is here literally the ratio between the fastest and slowest thing the model learns.</span></span></li>
+    <li><span class="sym math" data-tex="t_{90}(i)"></span><span class="def">the time at which direction i's residual has fallen by 90%. <span class="n">e<sup>−λt</sup> = 0.1 ⇔ t = ln10/λ. This is the frontier line drawn in the second panel.</span></span></li>
+  </ul>
+  <p class="step">So <b>if</b> the kernel is constant, training is completely predictable from one eigendecomposition, done before a single step is taken. The rest of the lesson is about when that "if" holds, and what it costs.</p>
+
+  <div class="sec">See it — laziness, measured at five widths</div>
+  <p class="step">A seeded 1-D regression task: 12 inputs drawn once on [−2, 2], targets y = 2 sin(1.8x). Each width is trained by real full-batch gradient descent, 400 steps at step size η = 0.08, on the squared loss above — and, from the same initialization, so is the <b>linearized</b> model f<sup>lin</sup>, using the frozen Jacobian and nothing else. Every initialization uses <i>antisymmetric pairing</i>: each hidden unit is duplicated with its output weight negated, so f(·;θ₀) ≡ 0 exactly. That removes the random initial function without disturbing the kernel — the paired net's Θ is exactly the empirical tangent kernel of the m/2 independent units it was built from — so all five widths start from the same place and the comparison is clean. Curves are one draw; the statistics average four independent initializations at that width.</p>
+  <div class="panel">
+    <svg id="p1" viewBox="0 0 680 300" role="img" aria-label="Trained network and its linearization against the target, at the selected width"></svg>
+    <div class="leg"><span><i></i>trained network f(·;θ_T)</span><span><i style="border-color:var(--miss);border-top-style:dashed"></i>its own linearization f<sup>lin</sup>, trained identically</span><span><i style="border-color:var(--series);border-top-style:dotted"></i>target 2·sin(1.8x)</span><span>● = the 12 training points</span></div>
+    <div class="ctrls"><div class="field"><label>hidden width m <b id="mOut">4</b></label><input type="range" id="mS" min="0" max="4" value="0" step="1" /></div></div>
+    <div class="tally">
+      <div class="stat"><div class="k">‖θ_T−θ₀‖ / ‖θ₀‖</div><div class="v a" id="s1mv">—</div></div>
+      <div class="stat"><div class="k">kernel drift (rel. Frobenius)</div><div class="v m" id="s1dr">—</div></div>
+      <div class="stat"><div class="k">max |f − f<sup>lin</sup>| · this draw</div><div class="v s" id="s1gp">—</div></div>
+      <div class="stat"><div class="k">train loss · network</div><div class="v sm" id="s1ln">—</div></div>
+      <div class="stat"><div class="k">train loss · linearized</div><div class="v sm" id="s1ll">—</div></div>
+    </div>
+    <div class="tally">
+      <div class="stat"><div class="k">movement slope (theory −0.5)</div><div class="v g" id="s1sm">…</div></div>
+      <div class="stat"><div class="k">drift slope</div><div class="v sm" id="s1sd">…</div></div>
+      <div class="stat"><div class="k">gap slope</div><div class="v sm" id="s1sg">…</div></div>
+      <div class="stat"><div class="k">movement m=4 → 1024 (theory 16×)</div><div class="v sm a" id="s1rt">…</div></div>
+    </div>
+    <p class="callout" id="c1"></p>
+  </div>
+
+  <div class="sec">The precise statement</div>
+  <div class="theorem">
+    <p class="lbl">The precise statement</p>
+    <p><b>(i) Linearization and the tangent kernel.</b> Let f(·;θ) be differentiable in θ ∈ ℝ<sup>P</sup>. Its first-order model at θ₀ is f<sup>lin</sup>(x;θ) = f(x;θ₀) + ∇<sub>θ</sub>f(x;θ₀)ᵀ(θ−θ₀), a model linear in θ with the fixed feature map φ(x) = ∇<sub>θ</sub>f(x;θ₀), whose kernel is Θ₀(x,x′) = φ(x)ᵀφ(x′). Every Gram matrix built from Θ₀ is symmetric positive semidefinite, since vᵀΘ₀v = ‖Σᵢvᵢφ(xᵢ)‖² ≥ 0. Under gradient flow θ̇ = −∇<sub>θ</sub>L with L = ½Σᵢ(f(xᵢ;θ)−yᵢ)², the training outputs obey exactly u̇ = −Θ<sub>θ_t</sub>(u−y), with no approximation and at any width. If Θ<sub>θ_t</sub> ≡ Θ is constant, then r(t) = e<sup>−Θt</sup>r(0), and in the eigenbasis Θ = Σᵢλᵢqᵢqᵢᵀ each coordinate obeys qᵢᵀr(t) = e<sup>−λᵢt</sup>qᵢᵀr(0), with time constant 1/λᵢ.</p>
+    <p><b>(ii) The infinite-width limit</b> (Jacot, Gabriel &amp; Hongler, 2018; Lee, Xiao, Schoenholz, Bahri, Novak, Sohl-Dickstein &amp; Pennington, 2019). For a fully-connected network under the NTK parameterization with i.i.d. Gaussian initialization, as the hidden widths tend to infinity the initial kernel Θ<sub>θ_0</sub> converges in probability to a deterministic limit Θ<sup>∞</sup> determined only by the architecture and the nonlinearity — the randomness of the draw washes out — and along gradient flow on a fixed training set over a fixed time horizon, Θ<sub>θ_t</sub> converges to that same Θ<sup>∞</sup>, uniformly in t. Training is therefore exactly kernel gradient descent with a fixed kernel: u(t) = y + e<sup>−Θ<sup>∞</sup>t</sup>(u(0)−y). If Θ<sup>∞</sup> is positive definite on the training inputs then u(t) → y, and the learned function change f<sub>∞</sub> − f<sub>0</sub> is the interpolant of the residuals y − u(0) with the smallest RKHS norm ‖·‖<sub>Θ<sup>∞</sup></sub> — the same "shortest exact fit" object as Lesson 22's minimum-norm interpolant X⁺y, with the tangent features φ in place of that lesson's random cosines. At large finite width m, Lee et al. show that with high probability the trained network and its own linearization stay within O(m<sup>−1/2</sup>) of each other, uniformly over the training horizon.</p>
+    <p><b>(iii) Scope — this is a regime, not a description.</b> The limit is a property of the parameterization, not of width as such. Yang and Hu (2021) classify the width-scalings of layer multipliers, initial variances and learning rates, and show that each admissible scheme has either a <i>kernel</i> infinite-width limit, in which the features are frozen and the theorem above applies, or a <i>feature-learning</i> limit, in which they are not; μP is the unique scheme in which every layer learns features at width-independent scale. NTK parameterization sits on the kernel side by construction. Empirically, on the standard vision benchmarks where both sides have been measured carefully — CIFAR-10 above all — finite networks trained at standard settings outperform their own tangent kernels, so the lazy limit is a statement about what frozen random features can achieve — a useful lower bound and a solvable model — not a model of what training actually does.</p>
+  </div>
+
+  <div class="sec">See it — the spectrum decides the order of learning</div>
+  <p class="step">Panel one measured a kernel; panel two <i>uses</i> one. To make every claim exact we switch to the closed-form infinite-width tangent kernel of a one-hidden-layer ReLU network. For unit-norm inputs it depends only on u = x̃ᵀx̃′, through the two arc-cosine kernels κ₀ = 𝔼[σ′σ′] and κ₁ = 𝔼[σσ]:</p>
+  <div class="mblock math" data-tex="\Theta^{\infty}(x,x')=\kappa_1(u)+u\,\kappa_0(u),\qquad \kappa_0(u)=\frac{\pi-\arccos u}{2\pi},\qquad \kappa_1(u)=\frac{\sqrt{1-u^{2}}+(\pi-\arccos u)\,u}{2\pi},\qquad u=\tilde x^{\top}\tilde x'" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="\kappa_1"></span><span class="def">the contribution of the <b>output</b> weights: 𝔼[σ(wᵀx)σ(wᵀx′)] for w ~ 𝒩(0,I) and ReLU σ. <span class="n">Cho &amp; Saul's arc-cosine kernel of degree 1. At u = 1 it equals ½ = 𝔼[ReLU(g)²].</span></span></li>
+    <li><span class="sym math" data-tex="u\,\kappa_0"></span><span class="def">the contribution of the <b>hidden</b> weights: (x̃ᵀx̃′)·𝔼[σ′σ′], with 𝔼[a²] = 1. <span class="n">κ₀(1) = ½: half the units are active at any input. So Θ<sup>∞</sup>(x,x) = 1 for unit-norm x, which is why every diagonal entry below is exactly 1.</span></span></li>
+    <li><span class="sym math" data-tex="\tilde x"></span><span class="def">the input, lifted to the unit sphere in ℝ³: x̃(α) = (cos α, sin α, 1)/√2, where α is the angle that indexes the input (φ stays reserved for the tangent features). <span class="n">n = 24 inputs equally spaced around the circle; the constant third coordinate <i>is</i> the first-layer bias. Then u = (cos Δα + 1)/2 depends only on the angular gap, so the Gram matrix is <b>circulant</b> — and the eigenvectors of a symmetric circulant matrix are exactly the discrete cosines and sines. Frequency indexes the eigenspaces, with no approximation.</span></span></li>
+    <li><span class="sym math" data-tex="\nu"></span><span class="def">the <b>frequency</b> labelling an eigenspace, ν = 0 … 12, with eigenvalue λ<sub>ν</sub>. <span class="n">Not the residual r of Step three: ν counts oscillations around the circle. ν = 0 is the constant mode, ν = 12 the fastest one the 24-point grid can carry; each ν between them spans a 2-dimensional eigenspace (a cosine and a sine), which is why the 13 frequencies account for 24 eigendirections.</span></span></li>
+  </ul>
+  <p class="step">Because the eigenvectors are literally Fourier modes, "which mode is learned first" is answered by sorting eigenvalues. The target is a seeded sum of nine unit-amplitude modes (frequencies ν = 0 to 8, seeded phases), so every frequency present enters with the same amplitude and none is favoured by the <i>data</i> — anything you see is the kernel's doing. Drag training time t and watch the frontier λ = ln10/t sweep down the spectrum.</p>
+  <div class="panel">
+    <svg id="p2" viewBox="0 0 680 250" role="img" aria-label="Eigenvalues of the tangent-kernel Gram matrix by frequency, on a log scale, with the ninety-percent frontier"></svg>
+    <p class="figcap">horizontal axis: frequency ν = 0 … 12 · bar height = λ<sub>ν</sub> (log axis) · filled share of each bar = 1 − e<sup>−λ<sub>ν</sub>t</sup>, the fraction by which <i>any</i> residual sitting in that eigendirection has been removed by time t · dashed line = the 90% frontier λ = ln10/t</p>
+    <svg id="p3" viewBox="0 0 680 200" role="img" aria-label="The target function on the circle and the network's fit at the selected training time"></svg>
+    <div class="leg"><span><i></i>fit at time t</span><span><i style="border-color:var(--series);border-top-style:dotted"></i>target</span></div>
+    <div class="ctrls"><div class="field"><label>training time t (gradient flow, log scale) <b id="tOut">—</b></label><input type="range" id="tS" min="-100" max="300" value="30" step="1" /></div></div>
+    <div class="tally">
+      <div class="stat"><div class="k">modes past 90%</div><div class="v a" id="s2md">—</div></div>
+      <div class="stat"><div class="k">highest such frequency</div><div class="v sm" id="s2hf">—</div></div>
+      <div class="stat"><div class="k">‖f(t)−y‖ / ‖y‖</div><div class="v m" id="s2rs">—</div></div>
+      <div class="stat"><div class="k">slowest direction (ν = 12) decayed</div><div class="v sm s" id="s2sl">—</div></div>
+    </div>
+    <div class="tally">
+      <div class="stat"><div class="k">λ<sub>max</sub> (ν = 0)</div><div class="v" id="s2mx">—</div></div>
+      <div class="stat"><div class="k">λ<sub>min</sub> (ν = 12)</div><div class="v" id="s2mn">—</div></div>
+      <div class="stat"><div class="k">κ = λ<sub>max</sub>/λ<sub>min</sub></div><div class="v a" id="s2kp">—</div></div>
+      <div class="stat"><div class="k">slowest time constant 1/λ<sub>min</sub></div><div class="v sm" id="s2tc">—</div></div>
+    </div>
+    <p class="callout" id="c2"></p>
+  </div>
+  <p class="step">Two things worth naming. First, the eigenvalues are strictly decreasing in frequency here — that is computed, not assumed, and it is what makes "smooth first" a theorem about this kernel rather than a slogan. Second, since every mode's learned fraction is 1 − e<sup>−λ<sub>ν</sub>t</sup>, the time to reach <i>any</i> fixed fraction scales as 1/λ<sub>ν</sub>; so the slowest mode takes exactly κ times as long as the fastest, whatever fraction you pick. Conditioning is not a nuisance here either — it is the ratio between what the model learns immediately and what it never gets to.</p>
+
+  <div class="twist">
+    <p class="lbl">The twist — the theory works because the interesting part has been switched off</p>
+    <p>The NTK explains something real. In the lazy regime the loss is a <b>convex</b> quadratic in δ, so there are no bad local minima, no saddles to escape, and convergence is guaranteed at a rate you can compute before training; that is a large part of why very wide networks train reliably, and it is the honest answer to "why does a non-convex problem in a billion dimensions not get stuck." But look at what has been paid for it. A kernel method with a <i>fixed</i> kernel is precisely the class of model that deep learning beats — and the kernel here is fixed at a <b>random</b> initialization. Lesson 20's superposition, in which a network arranges features to pack more of them than it has dimensions, cannot happen: nothing arranges anything. Lesson 23's grokked circle, in which the network discovers a representation and then reorganizes onto it, cannot happen either: the representation is φ(x), fixed by the Gaussian draw on the first line and never touched again. Every mechanism this wing has been about is a <i>feature-learning</i> mechanism, and the lazy limit is the limit in which feature learning is exactly zero. The theory is the clean case because it is the empty case.</p>
+    <p>Second barrel, and it is the one that decides how much of this to believe: <b>the parameterization chooses the regime</b>. Nothing about "wide" forces laziness. Move the width-dependence between the layer multiplier, the initial variance and the learning rate and you get a different infinite-width limit — NTK scaling sends you to the frozen kernel, μP keeps the features moving at a width-independent scale, and the standard PyTorch defaults give no feature-learning limit at all, with the extra practical defect that their best learning rate drifts as you widen — exactly the drift μP removes. So the sentence "wide networks are kernel machines" is not a discovery about neural networks; it is a consequence of the units you chose to write them in. That is also the practical payoff: μP's width-independent hyperparameters, now standard for frontier training runs, come directly from asking which parameterizations avoid this lesson's limit.</p>
+  </div>
+
+  <div class="sec">Re-applied — the desk has been doing this since before it had a name</div>
+  <p class="step">A linearized risk model is the same move, made for the same reason. Take a book value V(S, σ, r, …) and expand it to first order in the risk factors around today's marks: the Jacobian ∇V is the vector of <b>Greeks</b>, produced by exactly the adjoint sweep of Lesson 13, and the linearization ΔV ≈ ∇Vᵀ Δz is delta-vega-rho P&amp;L attribution. It is a fixed-feature model in the same precise sense as f<sup>lin</sup>: the features are the sensitivities, computed once at the current mark and then held constant while the factors move.</p>
+  <p class="step">And its failure mode is the same one. The linearization is excellent for small moves and wrong exactly when the exposures themselves move — which is the gamma term, the second derivative that the first-order expansion discarded. Lazy is delta-only: the Greeks are frozen, so the book is a fixed linear function of the factors. Rich is the book that re-hedges: the exposures are functions of where the market went, and the P&amp;L is not a linear read-out of anything computed this morning. The trade-off transfers intact, too — the linear model is the one you can solve in closed form, aggregate across the firm and explain to a risk committee, and it is the one that misprices the day the market moves enough to matter. "Feature learning is the gamma term" is not an analogy; it is the same Taylor expansion, truncated at the same place, failing for the same reason.</p>
+
+  <div class="vol">
+    <p class="lbl">Why this matters · volarixs</p>
+    <p>A Cross-Matrix cell (Lesson 7) is a fixed-feature linear fit: the driver, its lags, the controls Z are chosen in advance and the coefficient is solved for. This lesson says something specific about replacing such a cell with a neural forecaster — namely, ask first which regime it will train in. If it trains lazily (wide layer, small effective learning rate, short run, output scaled down at init), you have not bought feature discovery; you have swapped a small hand-chosen feature set for a large random one and are running kernel ridge on it. That can still help, because random features are a genuinely richer basis than three named columns — but the honest benchmark for it is kernel ridge on those features, not "the linear cell", and the diagnostic is the one in the first panel: measure whether the kernel moved.</p>
+    <p>The second panel is directly usable as well. Stopping gradient flow at time t applies the filter 1 − e<sup>−λt</sup> to each eigendirection, and ridge with penalty λ<sub>ridge</sub> = 1/t applies λ/(λ+1/t); the two agree at both extremes (both ≈ λt when λt ≪ 1, both → 1 when λt ≫ 1) and differ in the middle, where at λt = 1 they read 0.632 against 0.500. So <b>early stopping is a spectral filter</b>, of the same family as the truncated pseudoinverse of Lesson 8 and the ridge of Lesson 22 — which is what <code>bayesian_pooled_elasticity</code> already is. On an ill-conditioned cell the small-λ directions are the ones that neither a short run nor a ridge will resolve, and <code>sign_stability</code> is what it looks like when you let them resolve anyway.</p>
+  </div>
+
+  <div class="sec">Check yourself</div>
+  <div class="q" id="q1"><p class="stem">In the measurement above, "lazy" means precisely:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q2"><p class="stem">The neural tangent kernel Θ(x, x′) is:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q3"><p class="stem">With the kernel held constant, the training residual obeys ṙ = −Θr. In the eigenbasis of Θ that means:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q4"><p class="stem">As width → ∞ under the NTK parameterization, gradient flow on the squared loss converges to:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q5"><p class="stem">Why can the NTK limit not be the explanation of deep learning's success?</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q6"><p class="stem">The desk's version of the lazy regime is:</p><div class="opts"></div><p class="fb"></p></div>
+
+  <div class="checkRow"><button class="primary" id="check">Check answers</button><span class="scoreOut" id="scoreOut"></span><span class="hint" id="hint">Answer all six first.</span></div>
+  <div class="done" id="done">Lazy limit mapped. Wing VI opens next: diffusion as SDEs + score matching.</div>
+</div>
+
+<script>
+/* storage shim: window.storage (Claude artifacts) or localStorage (web) */
+if(!window.storage){window.storage={async get(k){const v=localStorage.getItem(k);if(v==null)throw new Error('missing');return{key:k,value:v}},async set(k,v){localStorage.setItem(k,v);return{key:k,value:v}},async delete(k){localStorage.removeItem(k);return{key:k,deleted:true}},async list(p){const ks=[];for(let i=0;i<localStorage.length;i++){const kk=localStorage.key(i);if(!p||kk.startsWith(p))ks.push(kk)}return{keys:ks}}};}
+function renderMath(){document.querySelectorAll('.math').forEach(el=>{const tex=el.getAttribute('data-tex');if(!tex||el.dataset.done)return;try{if(window.katex){katex.render(tex,el,{displayMode:el.dataset.display==='1',throwOnError:false});el.dataset.done='1';}else el.textContent=tex;}catch(e){el.textContent=tex;}});}
+const id=x=>document.getElementById(x);
+
+/* ---------- deterministic randomness (seed 125) ---------- */
+function mulberry32(seed){let a=seed>>>0;return function(){a|=0;a=(a+0x6D2B79F5)|0;let t=Math.imul(a^(a>>>15),1|a);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296;}}
+function randn(rng){let u=0,v=0;while(!u)u=rng();while(!v)v=rng();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+const SEED=125;
+const f3=x=>x.toFixed(3),pct=(x,d)=>(100*x).toFixed(d===undefined?1:d)+'%';
+/* fixed significant figures, so no stat can ever print a raw 13-digit float */
+function sig(x,d){if(!isFinite(x))return '—';if(x===0)return '0';const e=Math.floor(Math.log10(Math.abs(x)));return x.toFixed(Math.max(0,Math.min(6,(d-1)-e)));}
+
+/* ================= interactive 1 : lazy vs rich ================= */
+const ND=12,GN=61,ETA=0.08,TSTEPS=400,REPS=4,WIDTHS=[4,16,64,256,1024];
+const XS=[];{const rd=mulberry32(SEED);for(let i=0;i<ND;i++)XS.push(-2+4*rd());XS.sort((a,b)=>a-b);}
+const YS=XS.map(x=>2*Math.sin(1.8*x));
+const GR=[];for(let i=0;i<GN;i++)GR.push(-2+4*i/(GN-1));
+const TGT=GR.map(x=>2*Math.sin(1.8*x));
+
+/* antisymmetric pairing: unit h+k mirrors unit k with a flipped read-out, so f(.;th0) === 0 */
+function initNet(m,off){const rng=mulberry32(SEED+off),h=m/2,a=new Float64Array(m),w=new Float64Array(m),b=new Float64Array(m);
+  for(let k=0;k<h;k++){a[k]=randn(rng);w[k]=randn(rng);b[k]=randn(rng);a[h+k]=-a[k];w[h+k]=w[k];b[h+k]=b[k];}return{m,a,w,b};}
+function fv(nt,x){const{m,a,w,b}=nt;let s=0;for(let k=0;k<m;k++)s+=a[k]*Math.tanh(w[k]*x+b[k]);return s/Math.sqrt(m);}
+function jc(nt,x){const{m,a,w,b}=nt,g=new Float64Array(3*m),rs=1/Math.sqrt(m);
+  for(let k=0;k<m;k++){const t=Math.tanh(w[k]*x+b[k]),d=1-t*t;g[k]=t*rs;g[m+k]=a[k]*d*x*rs;g[2*m+k]=a[k]*d*rs;}return g;}
+function kmat(nt,A,B){const JA=A.map(x=>jc(nt,x)),JB=B.map(x=>jc(nt,x)),K=[];
+  for(let i=0;i<A.length;i++){const r=new Float64Array(B.length);
+    for(let j=0;j<B.length;j++){let s=0;const u=JA[i],v=JB[j];for(let q=0;q<u.length;q++)s+=u[q]*v[q];r[j]=s;}K.push(r);}
+  return K;}
+function runOne(m,off){
+  const nt=initNet(m,off),a0=Float64Array.from(nt.a),w0=Float64Array.from(nt.w),b0=Float64Array.from(nt.b);
+  const K0=kmat(nt,XS,XS),Kg=kmat(nt,GR,XS),c=new Float64Array(ND);
+  /* the linearization, trained in dual coordinates: delta = J^T c, so f_lin = K c (f(.;th0) = 0) */
+  for(let t=0;t<TSTEPS;t++){const u=new Float64Array(ND);
+    for(let i=0;i<ND;i++){let s=0;for(let j=0;j<ND;j++)s+=K0[i][j]*c[j];u[i]=s;}
+    for(let i=0;i<ND;i++)c[i]-=ETA*(u[i]-YS[i]);}
+  const flin=GR.map((x,gi)=>{let s=0;for(let j=0;j<ND;j++)s+=Kg[gi][j]*c[j];return s;});
+  let llin=0;for(let i=0;i<ND;i++){let s=0;for(let j=0;j<ND;j++)s+=K0[i][j]*c[j];llin+=(s-YS[i])**2;}
+  const{a,w,b}=nt,tk=new Float64Array(m);                       /* the true net, by real gradient descent */
+  for(let t=0;t<TSTEPS;t++){
+    const ga=new Float64Array(m),gw=new Float64Array(m),gb=new Float64Array(m),rs=1/Math.sqrt(m);
+    for(let i=0;i<ND;i++){const x=XS[i];let f=0;
+      for(let k=0;k<m;k++){tk[k]=Math.tanh(w[k]*x+b[k]);f+=a[k]*tk[k];}
+      const r=f*rs-YS[i];
+      for(let k=0;k<m;k++){const d=1-tk[k]*tk[k];ga[k]+=r*tk[k]*rs;gw[k]+=r*a[k]*d*x*rs;gb[k]+=r*a[k]*d*rs;}}
+    for(let k=0;k<m;k++){a[k]-=ETA*ga[k];w[k]-=ETA*gw[k];b[k]-=ETA*gb[k];}}
+  let dn=0,n0=0;for(let k=0;k<m;k++){dn+=(a[k]-a0[k])**2+(w[k]-w0[k])**2+(b[k]-b0[k])**2;n0+=a0[k]**2+w0[k]**2+b0[k]**2;}
+  const KT=kmat(nt,XS,XS);let d2=0,q2=0,gap=0,loss=0;
+  for(let i=0;i<ND;i++)for(let j=0;j<ND;j++){d2+=(KT[i][j]-K0[i][j])**2;q2+=K0[i][j]**2;}
+  const fnet=GR.map(x=>fv(nt,x));
+  for(let i=0;i<GN;i++)gap=Math.max(gap,Math.abs(fnet[i]-flin[i]));
+  for(let i=0;i<ND;i++)loss+=(fv(nt,XS[i])-YS[i])**2;
+  return{move:Math.sqrt(dn/n0),drift:Math.sqrt(d2/q2),gap,loss:loss/2,llin:llin/2,fnet,flin};}
+
+const REPD=[[],[],[],[],[]],AGG=new Array(5).fill(null),off=(wi,r)=>1+wi*13+r*101;
+function getRep(wi,r){if(!REPD[wi][r])REPD[wi][r]=runOne(WIDTHS[wi],off(wi,r));return REPD[wi][r];}
+function getW(wi){if(AGG[wi])return AGG[wi];let mv=0,dr=0,gp=0,ls=0,ll=0;
+  for(let r=0;r<REPS;r++){const o=getRep(wi,r);mv+=o.move;dr+=o.drift;gp+=o.gap;ls+=o.loss;ll+=o.llin;}
+  const z=getRep(wi,0);
+  AGG[wi]={move:mv/REPS,drift:dr/REPS,gap:gp/REPS,loss:ls/REPS,llin:ll/REPS,gap0:z.gap,fnet:z.fnet,flin:z.flin};return AGG[wi];}
+function slope(vals){let sx=0,sy=0,sxx=0,sxy=0;const n=WIDTHS.length;
+  for(let i=0;i<n;i++){const X=Math.log(WIDTHS[i]),Y=Math.log(vals[i]);sx+=X;sy+=Y;sxx+=X*X;sxy+=X*Y;}
+  return(n*sxy-sx*sy)/(n*sxx-sx*sx);}
+const allReady=()=>AGG.every(v=>v!==null);
+
+const P1={L:46,R:14,T:14,B:30,W:680,H:300,y0:-2.6,y1:2.6};
+const px1=x=>P1.L+(x+2)/4*(P1.W-P1.L-P1.R),py1=y=>P1.T+(P1.y1-y)/(P1.y1-P1.y0)*(P1.H-P1.T-P1.B);
+function path1(vals){return vals.map((v,i)=>(i?'L':'M')+px1(GR[i]).toFixed(1)+' '+py1(v).toFixed(1)).join(' ');}
+function draw1(D){let s='';
+  s+=`<rect x="${P1.L}" y="${P1.T}" width="${P1.W-P1.L-P1.R}" height="${P1.H-P1.T-P1.B}" fill="none" stroke="var(--hair)"/>`;
+  for(const yy of [-2,0,2]) s+=`<line x1="${P1.L}" y1="${py1(yy).toFixed(1)}" x2="${P1.W-P1.R}" y2="${py1(yy).toFixed(1)}" stroke="var(--hair)" stroke-dasharray="${yy===0?'':'2 3'}"/><text x="${P1.L-6}" y="${(py1(yy)+4).toFixed(1)}" text-anchor="end" font-family="var(--mono)" font-size="10" fill="var(--faint)">${yy}</text>`;
+  for(const xx of [-2,-1,0,1,2]) s+=`<text x="${px1(xx).toFixed(1)}" y="${P1.H-10}" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--faint)">${xx}</text>`;
+  s+=`<path d="${path1(TGT)}" fill="none" stroke="var(--series)" stroke-width="1.4" stroke-dasharray="1 3"/>`;
+  s+=`<path d="${path1(D.flin)}" fill="none" stroke="var(--miss)" stroke-width="1.8" stroke-dasharray="6 4"/>`;
+  s+=`<path d="${path1(D.fnet)}" fill="none" stroke="var(--accent)" stroke-width="2"/>`;
+  for(let i=0;i<ND;i++) s+=`<circle cx="${px1(XS[i]).toFixed(1)}" cy="${py1(YS[i]).toFixed(1)}" r="3.2" fill="var(--ink)"/>`;
+  id('p1').innerHTML=s;}
+function upd1(){
+  const wi=+id('mS').value,m=WIDTHS[wi],D=getW(wi);
+  id('mOut').textContent=m;draw1(D);
+  id('s1mv').textContent=pct(D.move,1);id('s1dr').textContent=pct(D.drift,1);id('s1gp').textContent=f3(D.gap0);
+  id('s1ln').textContent=f3(D.loss);id('s1ll').textContent=f3(D.llin);
+  if(allReady()){const mv=AGG.map(o=>o.move),dr=AGG.map(o=>o.drift),gp=AGG.map(o=>o.gap);
+    id('s1sm').textContent=slope(mv).toFixed(3);id('s1sd').textContent=slope(dr).toFixed(3);
+    id('s1sg').textContent=slope(gp).toFixed(3);id('s1rt').textContent=(mv[0]/mv[4]).toFixed(2)+'×';}
+  let tail;
+  if(D.drift>=1) tail=`Nothing here is lazy: the kernel changed by more than its own entire size, so the features the network finished with are not the features it started with. This is the rich regime, and the linearization is describing a different model.`;
+  else if(D.drift>=0.1) tail=`The kernel moved by a visible fraction of itself, so the linearization is a rough guide rather than a description — the two curves track each other's shape and disagree in the detail.`;
+  else if(D.drift>=0.03) tail=`The kernel is nearly frozen and the two curves are close, but they are still separable by eye in places. Laziness is arriving, not yet arrived.`;
+  else tail=`The kernel barely moved, and the network and its own linearization agree everywhere to within ${f3(D.gap0)} on a vertical axis spanning ±2.6 — one curve, to drawing accuracy. This is the regime the theorem describes.`;
+  id('c1').textContent=`Width m = ${m}: over 400 steps the parameters moved ${pct(D.move,1)} of their own norm and the tangent kernel drifted ${pct(D.drift,1)} of its own size (means over 4 initializations). On the draw plotted here the trained network and its linearization differ by at most ${f3(D.gap0)}, against a target of amplitude 2. ${tail}`;
+}
+
+/* ================= interactive 2 : the NTK spectrum ================= */
+const NC=24,RMAX=NC/2,NF=9,k0f=u=>(Math.PI-Math.acos(u))/(2*Math.PI);
+const k1f=u=>(Math.sqrt(Math.max(0,1-u*u))+(Math.PI-Math.acos(u))*u)/(2*Math.PI),Th=u=>k1f(u)+u*k0f(u);
+const KROW=[];for(let d=0;d<NC;d++){const u=(Math.cos(2*Math.PI*d/NC)+1)/2;KROW.push(Th(Math.max(-1,Math.min(1,u))));}
+const LAM=[];for(let r=0;r<=RMAX;r++){let s=0;for(let d=0;d<NC;d++)s+=KROW[d]*Math.cos(2*Math.PI*r*d/NC);LAM.push(s);}
+const MULT=r=>(r===0||r===RMAX)?1:2;
+const PSI=[];{const rp=mulberry32(SEED+31);for(let r=0;r<NF;r++)PSI.push(r===0?0:2*Math.PI*rp());}
+const YC=[];for(let j=0;j<NC;j++){let s=0;for(let r=0;r<NF;r++)s+=Math.cos(2*Math.PI*r*j/NC+PSI[r]);YC.push(s);}
+let YN2=0;for(let j=0;j<NC;j++)YN2+=YC[j]*YC[j];const YN=Math.sqrt(YN2);
+function fitAt(t){const out=new Float64Array(NC);
+  for(let r=0;r<NF;r++){const g=1-Math.exp(-LAM[r]*t);for(let j=0;j<NC;j++)out[j]+=g*Math.cos(2*Math.PI*r*j/NC+PSI[r]);}
+  return out;}
+let YDOM=0;for(let j=0;j<NC;j++)YDOM=Math.max(YDOM,Math.abs(YC[j]));
+for(const tt of [0.1,0.3,1,3,10,30,100,300,1000]){const f=fitAt(tt);for(let j=0;j<NC;j++)YDOM=Math.max(YDOM,Math.abs(f[j]));}
+YDOM*=1.12;
+const P2={L:46,R:14,T:14,B:26,W:680,H:250},lo2=Math.log(LAM[RMAX]/2),hi2=Math.log(LAM[0]*1.6);
+const py2=l=>P2.T+(hi2-Math.log(l))/(hi2-lo2)*(P2.H-P2.T-P2.B);
+function draw2(t){const iw=P2.W-P2.L-P2.R,bw=iw/(RMAX+1),base=P2.H-P2.B;let s='';
+  s+=`<line x1="${P2.L}" y1="${base}" x2="${P2.W-P2.R}" y2="${base}" stroke="var(--hair2)"/>`;
+  for(const l of [10,1,0.1,0.01]){const yy=py2(l);if(yy<P2.T||yy>base)continue;
+    s+=`<line x1="${P2.L}" y1="${yy.toFixed(1)}" x2="${P2.W-P2.R}" y2="${yy.toFixed(1)}" stroke="var(--hair)" stroke-dasharray="2 4"/>`;
+    s+=`<text x="${P2.L-6}" y="${(yy+3.5).toFixed(1)}" text-anchor="end" font-family="var(--mono)" font-size="10" fill="var(--faint)">${l}</text>`;}
+  for(let r=0;r<=RMAX;r++){const x=P2.L+r*bw+2,w=bw-4,top=py2(LAM[r]),h=base-top,frac=1-Math.exp(-LAM[r]*t);
+    s+=`<rect x="${x.toFixed(1)}" y="${top.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" fill="var(--hair2)" opacity="0.55"/>`;
+    s+=`<rect x="${x.toFixed(1)}" y="${(base-frac*h).toFixed(1)}" width="${w.toFixed(1)}" height="${(frac*h).toFixed(1)}" fill="var(--accent)" opacity="0.9"/>`;
+    s+=`<text x="${(x+w/2).toFixed(1)}" y="${P2.H-8}" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--faint)">${r}</text>`;}
+  const yf=Math.max(P2.T,Math.min(base,py2(Math.LN10/t)));
+  s+=`<line x1="${P2.L}" y1="${yf.toFixed(1)}" x2="${P2.W-P2.R}" y2="${yf.toFixed(1)}" stroke="var(--miss)" stroke-width="1.6" stroke-dasharray="7 4"/>`;
+  s+=`<text x="${P2.W-P2.R}" y="${(yf-5).toFixed(1)}" text-anchor="end" font-family="var(--mono)" font-size="10" fill="var(--miss)">90% frontier</text>`;
+  id('p2').innerHTML=s;}
+
+const P3={L:46,R:14,T:12,B:26,W:680,H:200},px3=j=>P3.L+j/NC*(P3.W-P3.L-P3.R);
+const py3=v=>P3.T+(YDOM-v)/(2*YDOM)*(P3.H-P3.T-P3.B);
+function path3(v){let s='';for(let j=0;j<=NC;j++){const jj=j%NC;s+=(j?'L':'M')+px3(j).toFixed(1)+' '+py3(v[jj]).toFixed(1);}return s;}
+function draw3(t){const f=fitAt(t);let s='';
+  s+=`<rect x="${P3.L}" y="${P3.T}" width="${P3.W-P3.L-P3.R}" height="${P3.H-P3.T-P3.B}" fill="none" stroke="var(--hair)"/>`;
+  s+=`<line x1="${P3.L}" y1="${py3(0).toFixed(1)}" x2="${P3.W-P3.R}" y2="${py3(0).toFixed(1)}" stroke="var(--hair)"/>`;
+  s+=`<path d="${path3(YC)}" fill="none" stroke="var(--series)" stroke-width="1.6" stroke-dasharray="2 3"/>`;
+  s+=`<path d="${path3(f)}" fill="none" stroke="var(--accent)" stroke-width="2"/>`;
+  s+=`<text x="${P3.L}" y="${P3.H-8}" font-family="var(--mono)" font-size="10" fill="var(--faint)">α = 0</text>`;
+  s+=`<text x="${P3.W-P3.R}" y="${P3.H-8}" text-anchor="end" font-family="var(--mono)" font-size="10" fill="var(--faint)">2π</text>`;
+  id('p3').innerHTML=s;}
+function upd2(){
+  const t=Math.pow(10,(+id('tS').value)/100),ts=t<100?sig(t,3):Math.round(t).toString();
+  id('tOut').textContent=ts;draw2(t);draw3(t);
+  let cnt=0,hi=-1,res2=0;
+  for(let r=0;r<=RMAX;r++)if(1-Math.exp(-LAM[r]*t)>=0.9){cnt+=MULT(r);hi=r;}
+  for(let r=0;r<NF;r++)res2+=(r===0?NC:NC/2)*Math.exp(-2*LAM[r]*t);
+  const rel=Math.sqrt(res2)/YN;
+  id('s2md').textContent=cnt+' / '+NC;id('s2hf').textContent=hi<0?'none yet':('ν = '+hi);
+  id('s2rs').textContent=pct(rel,1);id('s2sl').textContent=pct(1-Math.exp(-LAM[RMAX]*t),2);
+  id('s2mx').textContent=sig(LAM[0],4);id('s2mn').textContent=sig(LAM[RMAX],4);
+  id('s2kp').textContent=(LAM[0]/LAM[RMAX]).toFixed(1);id('s2tc').textContent=(1/LAM[RMAX]).toFixed(1);
+  let tail;
+  if(hi<0) tail=`No mode has reached 90% yet — even the constant mode ν = 0, with the largest eigenvalue of all, needs t = ${(Math.LN10/LAM[0]).toFixed(3)}. The frontier is still above the whole spectrum.`;
+  else if(hi<RMAX) tail=`Everything up to frequency ν = ${hi} is past 90% and everything above it is not; the slowest mode, ν = ${RMAX}, is ${pct(1-Math.exp(-LAM[RMAX]*t),2)} of the way there. The frontier is a horizontal line sliding down a spectrum that happens to be sorted by frequency — that is all spectral bias is.`;
+  else tail=`Every mode is now past 90%, including the fastest-oscillating one, and the fit has caught the target everywhere: ${pct(rel,1)} of the residual is left. Getting the last mode here took ${(LAM[0]/LAM[RMAX]).toFixed(0)}× as long as the first, which is exactly the condition number.`;
+  id('c2').textContent=`At t = ${ts}, ${cnt} of the ${NC} eigendirections ${cnt===1?'has':'have'} passed the 90% mark and ${pct(rel,1)} of the residual remains. ${tail}`;
+}
+
+/* ---------- boot: default width synchronously, the rest in background chunks ----------
+   soon() yields between chunks without the 1s setTimeout clamp browsers apply to hidden tabs. */
+const soon=(typeof window.MessageChannel==='function')?(()=>{const ch=new window.MessageChannel(),q=[];
+    ch.port1.onmessage=()=>{const f=q.shift();if(f)f();};return f=>{q.push(f);ch.port2.postMessage(0);};})()
+  :(f=>setTimeout(f,0));
+function prewarm(){const jobs=[];let i=0;
+  for(let wi=0;wi<WIDTHS.length;wi++)for(let r=0;r<REPS;r++)jobs.push([wi,r]);
+  (function tick(){const t0=Date.now();
+    while(i<jobs.length&&Date.now()-t0<20){const[wi,r]=jobs[i++];getRep(wi,r);}
+    if(i<jobs.length){soon(tick);return;}
+    for(let wi=0;wi<WIDTHS.length;wi++)getW(wi);upd1();})();}
+id('mS').addEventListener('input',upd1);
+id('tS').addEventListener('input',upd2);
+
+/* ---------- retrieval ---------- */
+const QS={
+  q1:{opts:["The network trains more slowly the wider it gets, so more steps are needed to fit the same data.", "The relative parameter movement ‖θ_T − θ₀‖/‖θ₀‖ falls like 1/√m and the tangent kernel barely changes, so the features ∇_θf(·;θ₀) stay frozen and only the read-out combination of them is fitted.", "The learning rate has to be shrunk as width grows, which is what stops the weights from moving.", "The network's outputs stay near zero throughout training."],a:1,
+    fb:"Laziness is the pair of measured facts in the first panel: relative parameter movement scaling like m^(−1/2) — the fitted slope is right there next to the theoretical −0.5 — and a kernel drift that goes to zero with width. A is false: convergence in function space is governed by Θ's eigenvalues, which converge as m grows rather than degrade. C is false in this parameterization: the 1/√m sits in the architecture, and the learning rate is width-independent — the weights move little because each one's influence is O(1/√m), not because the step was made small. D confuses the function with the parameters; the whole point is that the function moves all the way to the data."},
+  q2:{opts:["The covariance of the network's outputs at initialization across random draws.", "The Hessian of the loss with respect to the parameters.", "The inner product of the two inputs' parameter-gradients, ∇_θf(x;θ₀)ᵀ∇_θf(x′;θ₀) — a Gram matrix of Jacobian rows, hence symmetric and positive semidefinite.", "The covariance matrix of the training inputs."],a:2,
+    fb:"Θ = JJᵀ, the Gram matrix of the Jacobian rows Lesson 13's backward sweep produces — an inner product of gradients, read as a similarity exactly as in Lesson 6. A names a different and genuinely distinct object, the NNGP kernel (the covariance of the random initial function); it governs the Bayesian/infinite-width prior, not gradient training. B is wrong: the Hessian is P×P and indefinite for a non-convex loss, while Θ is n×n and PSD. D ignores the network entirely."},
+  q3:{opts:["The component along eigenvector qᵢ decays as e^(−λᵢt), so large-eigenvalue directions are learned first and the slowest direction has time constant 1/λ_min.", "Every component decays at the same rate, set by the average eigenvalue.", "Components along small eigenvalues decay fastest, since a small eigenvalue means less resistance.", "The residual decays as a power law t^(−λᵢ) rather than exponentially."],a:0,
+    fb:"Diagonalizing turns one coupled n-dimensional ODE into n scalar ones, ṙᵢ = −λᵢrᵢ, whose solution is e^(−λᵢt) — the function-space twin of Lesson 9's per-eigen-axis factor (1−ηλᵢ) in weight space. B would require Θ ∝ I. C has the sign backwards: a small λ means a nearly flat direction and therefore a long time constant 1/λ, which is why a λ = 0 direction is never learned at all. D is the wrong functional form: gradient flow on a fixed quadratic gives exponentials."},
+  q4:{opts:["The global minimum of the non-convex loss, found because infinite width smooths the landscape enough for feature learning to succeed.", "A random interpolant, since the features are drawn at random and never updated.", "The ridge solution with penalty exactly 1/t, since early stopping is the same estimator as ridge.", "Kernel regression with the fixed limit kernel Θ^∞ — and as t → ∞, the initial function plus the minimum-RKHS-norm interpolant of the residuals: Lesson 22's min-norm fit with tangent features in place of random cosines."],a:3,
+    fb:"Jacot et al. (2018): the kernel is deterministic at initialization and constant along training in the limit, so the dynamics are exactly kernel gradient descent, and flow from δ = 0 stays in the row space of J and lands on the smallest-norm solution — the min-RKHS-norm interpolant, Lesson 22's object with a new feature map. A gets the mechanism backwards: this limit switches feature learning off. B is wrong because the interpolant is a specific, non-random selection — the kernel itself becomes deterministic in the limit, which is the striking part. C is close but false as stated: early stopping is a spectral filter 1 − e^(−λt) while ridge is λ/(λ+1/t); they agree at both ends and differ in between (0.632 versus 0.500 at λt = 1)."},
+  q5:{opts:["Because its predictions are not deterministic, so it cannot be evaluated.", "Because in the lazy limit the features are frozen at a random initialization, making the model a kernel method with a fixed kernel — and real trained networks, which do move their features, empirically beat their own tangent kernels.", "Because the tangent kernel is not positive semidefinite, so kernel regression on it is ill-posed.", "Because gradient descent fails to converge in the infinite-width limit."],a:1,
+    fb:"The limit's own content is that nothing is learned about the representation: φ(x) is drawn once and frozen, so superposition (Lesson 20) and grokked representations (Lesson 23) are ruled out by construction — and measured finite networks outperform their tangent kernels. A is backwards: the limit kernel is deterministic, which is one of the theorem's selling points. C is false: Θ is a Gram matrix and therefore PSD, always. D is false in the opposite direction: convergence in the lazy regime is guaranteed and its rate is computable in advance, which is exactly why the regime is attractive to theorists."},
+  q6:{opts:["A full revaluation of the book under a shocked scenario.", "A Monte-Carlo VaR run over simulated factor paths.", "Delta-only P&L attribution: linearize the book in the risk factors with the Greeks held at today's marks — exact for small moves, wrong exactly when the exposures themselves move, which is the gamma term.", "Marking the book to mid rather than to model."],a:2,
+    fb:"ΔV ≈ ∇Vᵀ Δz is f^lin with the Jacobian of Lesson 13 as the feature map: fixed features, computed once, then held. Its error term is the curvature it discarded — gamma — which is precisely the analogue of feature learning. A is the opposite of a linearization: full revaluation keeps all orders. B is a sampling scheme, orthogonal to whether the pricing is linearized (and usually run on full revaluation). D is a marking-source question with no Taylor expansion in it at all."}
+};
+const sel={q1:null,q2:null,q3:null,q4:null,q5:null,q6:null};let revealed=false;
+Object.keys(QS).forEach(qid=>{const holder=document.querySelector('#'+qid+' .opts');QS[qid].opts.forEach((txt,i)=>{const b=document.createElement('button');b.className='opt';b.textContent=String.fromCharCode(65+i)+'.  '+txt;b.onclick=()=>{if(revealed)return;sel[qid]=i;[...holder.children].forEach((c,ci)=>c.classList.toggle('sel',ci===i));id('hint').style.display='none';};holder.appendChild(b);});});
+id('check').onclick=async()=>{
+  if(revealed)return;if(Object.values(sel).some(v=>v===null)){id('hint').style.display='inline';return;}
+  revealed=true;let score=0;
+  Object.keys(QS).forEach(qid=>{const a=QS[qid].a,holder=document.querySelector('#'+qid+' .opts'),fb=document.querySelector('#'+qid+' .fb');[...holder.children].forEach((c,ci)=>{c.style.cursor='default';c.classList.remove('sel');if(ci===a)c.classList.add('correct');else if(ci===sel[qid])c.classList.add('wrong');});if(sel[qid]===a)score++;fb.textContent=QS[qid].fb;fb.classList.add('show');});
+  id('check').style.opacity='0.5';id('check').textContent='Checked';
+  id('scoreOut').textContent=score+' / 6';id('done').classList.add('show');
+  try{await window.storage.set('mfs:lesson25',JSON.stringify({done:true,retrieval:score+'/6',ts:Date.now()}),false);}catch(e){}
+};
+function boot(){renderMath();upd1();upd2();soon(prewarm);}
+if(window.katex)boot();else window.addEventListener('load',boot);
+(async()=>{try{const r=await window.storage.get('mfs:lesson25',false);if(r&&r.value){const v=JSON.parse(r.value);if(v.done){const c=id('chip');c.classList.add('show');c.textContent='completed · '+v.retrieval;}}}catch(e){}})();
+</script>
+</body>
+</html>
