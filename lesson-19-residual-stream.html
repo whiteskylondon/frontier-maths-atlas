@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lesson 19 — The residual stream, LayerNorm &amp; RMSNorm</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<style>
+  :root{
+    --paper:#FAFAF6;--ink:#1A1C22;--muted:#63676E;--faint:#9A9EA4;--hair:#E4E3DB;--hair2:#D4D3CA;--panel:#FFFFFF;
+    --accent:#24507A;--accent-bg:#EAF0F6;--series:#B07A2E;--miss:#B23A3A;--ok:#2F6B4F;--ok-bg:#E9F1EC;
+    --vol:#8A5A2B;--vol-bg:#F6EFE6;--serif:Iowan Old Style,Palatino,Georgia,serif;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme:dark){:root{--paper:#15161A;--ink:#E9E8E2;--muted:#A2A6AC;--faint:#71757B;--hair:#2A2C31;--hair2:#3A3C42;--panel:#1B1D22;--accent:#7FB0E0;--accent-bg:#1E2A38;--series:#D9A85E;--miss:#E07A7A;--ok:#7FC49F;--ok-bg:#1C2A22;--vol:#D9A066;--vol-bg:#2A2115;}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.62;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:750px;margin:0 auto;padding:32px 24px 60px}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 6px}
+  h1{font-family:var(--serif);font-weight:600;font-size:27px;line-height:1.22;margin:0 0 6px;letter-spacing:-.01em}
+  .chip{display:none;font-family:var(--mono);font-size:11px;letter-spacing:.05em;color:var(--ok);border:1px solid var(--ok);border-radius:20px;padding:3px 10px;vertical-align:middle;margin-left:10px}
+  .chip.show{display:inline-block}
+  .sub{color:var(--muted);font-size:15px;margin:0 0 18px}
+  .levels{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 26px}
+  .levels .lk{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+  .levels .pill{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-family:var(--mono);color:var(--muted);background:var(--panel);border:1px solid var(--hair2);border-radius:20px;padding:4px 11px}
+  .levels .pill b{color:var(--accent);font-weight:700;letter-spacing:.03em}
+  p.lead{font-size:16px;margin:0 0 22px}
+  p.lead b{font-weight:600}
+  .sec{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:36px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--hair)}
+  .mblock{margin:16px 0;overflow-x:auto}
+  .glo{list-style:none;padding:0;margin:14px 0 0}
+  .glo li{display:flex;gap:14px;padding:9px 0;border-top:1px solid var(--hair);align-items:baseline}
+  .glo li:first-child{border-top:none}
+  .glo .sym{flex:0 0 92px;text-align:right;padding-top:2px}
+  .glo .sym.w{font-family:var(--mono);font-size:12.5px;color:var(--accent)}
+  .glo .def{font-size:14.5px}
+  .glo .def .n{color:var(--muted)}
+  .step{font-size:14.5px;color:var(--muted);margin:10px 0}
+  .panel{background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:20px;margin:14px 0}
+  .imgs{display:flex;flex-wrap:wrap;gap:22px;align-items:flex-start}
+  .imgs figure{margin:0;display:flex;flex-direction:column;gap:6px}
+  .imgs figcaption{font-family:var(--mono);font-size:12px;color:var(--muted)}
+  canvas{image-rendering:pixelated;border:1px solid var(--hair2);border-radius:6px;width:196px;height:196px;background:var(--panel)}
+  .seg{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 4px}
+  .seg button{font-family:var(--mono);font-size:12px;padding:6px 11px;border:1px solid var(--hair2);border-radius:7px;background:var(--panel);color:var(--muted);cursor:pointer}
+  .seg button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .ctrls{display:flex;flex-wrap:wrap;gap:16px 26px;align-items:flex-end;margin:16px 0 6px}
+  .field{display:flex;flex-direction:column;gap:6px;min-width:200px;flex:1}
+  .field label{font-size:12px;color:var(--muted);font-family:var(--mono);letter-spacing:.03em;display:flex;justify-content:space-between}
+  .field label b{color:var(--ink);font-weight:600}
+  input[type=range]{width:100%;accent-color:var(--accent);height:20px}
+  svg{max-width:100%;height:auto;display:block}
+  .tally{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 2px}
+  .stat{flex:1;min-width:120px;background:var(--paper);border-radius:9px;padding:9px 12px}
+  .stat .k{font-size:11px;font-family:var(--mono);letter-spacing:.04em;color:var(--muted);text-transform:uppercase}
+  .stat .v{font-size:19px;font-weight:600;font-family:var(--mono);margin-top:2px}
+  .stat .v.a{color:var(--accent)}.stat .v.g{color:var(--ok)}.stat .v.r{color:var(--miss)}
+  .callout{font-size:14px;color:var(--muted);border-left:2px solid var(--accent);padding:2px 0 2px 14px;margin:16px 0 2px;min-height:1.4em}
+  .theorem{background:var(--accent-bg);border-radius:12px;padding:18px 20px;margin:16px 0}
+  .theorem .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
+  .theorem p{font-family:var(--serif);font-size:16px;line-height:1.55;margin:0}
+  .twist{border:1px dashed var(--hair2);border-radius:12px;padding:16px 18px;margin:16px 0;background:var(--panel)}
+  .twist .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+  .twist p{margin:0;font-size:14.6px}
+  .vol{background:var(--vol-bg);border:1px solid var(--vol);border-radius:12px;padding:18px 20px;margin:16px 0}
+  .vol .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:var(--vol);margin:0 0 8px}
+  .vol p{margin:0 0 10px;font-size:14.8px}.vol p:last-child{margin-bottom:0}
+  .vol code{font-family:var(--mono);font-size:13px;background:rgba(138,90,43,.12);padding:1px 5px;border-radius:4px}
+  .q{border:1px solid var(--hair);border-radius:12px;padding:16px 18px;margin:12px 0;background:var(--panel)}
+  .q .stem{font-size:15px;font-weight:500;margin:0 0 12px}
+  .opt{display:block;width:100%;text-align:left;font-size:14px;padding:10px 12px;margin:0 0 8px;border:1px solid var(--hair2);border-radius:8px;background:transparent;color:var(--ink);cursor:pointer;line-height:1.45}
+  .opt:last-child{margin-bottom:0}
+  .opt:hover{border-color:var(--accent)}
+  .opt.sel{border-color:var(--accent);background:var(--accent-bg)}
+  .opt.correct{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+  .opt.wrong{background:#F7ECEC;border-color:var(--miss);color:var(--miss)}
+  @media (prefers-color-scheme:dark){.opt.wrong{background:#2E1E1E}}
+  .fb{font-size:13.5px;color:var(--muted);margin:10px 0 0;line-height:1.5;display:none}
+  .fb.show{display:block}
+  .checkRow{display:flex;align-items:center;gap:14px;margin:18px 0 0;flex-wrap:wrap}
+  .hint{font-size:13px;color:var(--miss);display:none}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-family:var(--sans);font-size:14px;padding:8px 14px;border-radius:8px;border:1px solid var(--accent);cursor:pointer}
+  .scoreOut{font-family:var(--mono);font-size:14px;font-weight:600}
+  .done{display:none;align-items:center;gap:10px;background:var(--ok-bg);color:var(--ok);border-radius:10px;padding:12px 16px;font-size:14px;margin:14px 0 0}
+  .done.show{display:flex}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">Lesson 19 · Wing IV — inside the transformer</p>
+  <h1>The residual stream, LayerNorm &amp; RMSNorm<span class="chip" id="chip"></span></h1>
+  <p class="sub">A transformer has one shared memory bus. Every block reads it, computes, and adds its answer back — nothing is ever overwritten.</p>
+  <div class="levels">
+    <span class="lk">Level</span>
+    <span class="pill"><b>US</b> Graduate · ML</span>
+    <span class="pill"><b>FR</b> M2 · ENSAE 3A</span>
+  </div>
+
+  <p class="lead">Lesson 17 built one attention head; Lesson 18 gave it a sense of position. Neither said how forty of them are wired together. The answer is almost embarrassingly simple: there is <b>one vector per token</b>, and every block <b>adds</b> to it. Read the current vector, normalize a copy, compute something, add the result back — <code>x ← x + f(LN(x))</code>. Because the operation is addition and never assignment, the vector is a <b>running total</b>: what the embedding layer wrote is still literally present forty blocks later, unless some later block explicitly writes its negative. That single design choice buys two things this lesson makes precise. Gradients get a free highway home, so a hundred layers train at all. And blocks can talk to each other privately, by writing into <b>near-orthogonal directions</b> of a wide space — the exponential budget Lesson 10 opened. The normalization layers are the small print: they decide what each block is allowed to <i>see</i>, and they turn out not to be normalizations at all.</p>
+
+  <div class="sec">The vocabulary, in plain words</div>
+  <ul class="glo">
+    <li><span class="sym w">residual stream</span><span class="def">the running total itself: one vector of width d<sub>model</sub> per token, carried from the embedding to the output. <span class="n">Also called the "hidden state". Think of it as a shared blackboard, or a shared memory bus, that every block writes onto.</span></span></li>
+    <li><span class="sym w">block</span><span class="def">one attention sub-layer or one MLP sub-layer. <span class="n">GPT-style models alternate them; each is a separate read-compute-add cycle, so a "40-layer" model performs 80 additions.</span></span></li>
+    <li><span class="sym w">read / write</span><span class="def">a block <b>reads</b> the stream through its input projection and <b>writes</b> by adding its output back. <span class="n">Nothing is deleted; "forgetting" can only happen by adding a cancelling vector.</span></span></li>
+    <li><span class="sym w">skip / identity path</span><span class="def">the bare wire that carries x past the block untouched. <span class="n">The other branch is the block. Their outputs are summed — that fan-out is exactly the node whose adjoints <i>add</i> in Lesson 13.</span></span></li>
+    <li><span class="sym w">feature dimension</span><span class="def">the d coordinates <i>inside one token's vector</i>. <span class="n">Not the batch, not the sequence. Every statistic in this lesson is computed along this axis, one token at a time — say it out loud, because it is the single most-confused fact about LayerNorm.</span></span></li>
+    <li><span class="sym w">LayerNorm</span><span class="def">"recentre and rescale this token's own d numbers so they have mean 0 and variance 1, then apply a learned per-feature gain and offset." <span class="n">Two learned vectors, γ and β, both of width d.</span></span></li>
+    <li><span class="sym w">RMSNorm</span><span class="def">the same idea with the recentring deleted: divide by the root-mean-square of the token's numbers, apply the gain γ, no offset. <span class="n">What LLaMA-style models use instead of LayerNorm.</span></span></li>
+    <li><span class="sym w">pre-LN / post-LN</span><span class="def">whether the normalizer sits <i>inside</i> the block (x + f(LN(x))) or <i>around</i> the sum (LN(x + f(x))). <span class="n">One trains without a warmup schedule and one does not; the reason is one line of calculus.</span></span></li>
+    <li><span class="sym w">logit lens</span><span class="def">reading the partial sum after l blocks as if it were the final answer. <span class="n">Legitimate precisely because the stream is a sum: every intermediate state is a well-formed vector in the same space as the output.</span></span></li>
+  </ul>
+
+  <div class="sec">The machinery — one line per block</div>
+  <div class="mblock math" data-tex="x_{l+1}\;=\;x_l\;+\;f_l\big(\mathrm{LN}(x_l)\big),\qquad l=0,1,\dots,L-1" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="x_l"></span><span class="def">the <b>stream</b> at depth l, one vector in ℝ<sup>d</sup> per token. <span class="n">x₀ is the token embedding plus its positional information (Lesson 18 injects that by rotating queries and keys instead, leaving x₀ purely semantic).</span></span></li>
+    <li><span class="sym math" data-tex="f_l"></span><span class="def">block l: an attention sub-layer or an MLP. <span class="n">Its output is a <b>write</b> — a vector added to the stream, not a replacement for it. For attention, Lesson 17's theorem says that write is a convex combination of value vectors.</span></span></li>
+    <li><span class="sym math" data-tex="\mathrm{LN}"></span><span class="def">the normalizer, applied to the <b>copy the block reads</b> — never to the stream itself. <span class="n">This is the pre-LN convention, universal since GPT-2. The stream on the left of the plus sign is untouched.</span></span></li>
+    <li><span class="sym math" data-tex="+"></span><span class="def">the whole lesson. <span class="n">Assignment would destroy information; addition accumulates it. Every claim below is a consequence of this one symbol.</span></span></li>
+  </ul>
+
+  <p class="step">Now unroll the recursion. Substitute x₁ into x₂, x₂ into x₃, and so on. Nothing cancels, because every step only ever adds:</p>
+  <div class="mblock math" data-tex="x_L\;=\;x_0\;+\;\sum_{l=0}^{L-1} f_l\big(\mathrm{LN}(x_l)\big)" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="x_0"></span><span class="def">the <b>embedding term</b>, still present at full strength in x<sub>L</sub>. <span class="n">Not approximately, not decayed — it is a literal summand of the final vector.</span></span></li>
+    <li><span class="sym math" data-tex="\sum_l"></span><span class="def">the stream is a <b>flat sum of contributions</b>, one per block. <span class="n">This is an identity, not an approximation or a linearization. The blocks themselves are wildly nonlinear — the <i>combination</i> is additive.</span></span></li>
+    <li><span class="sym w">logit lens</span><span class="def">why interpretability can attribute the output to individual blocks: apply the final unembedding to any single term and you get that block's own contribution to the logits. <span class="n">The caveat that matters: the terms are not independent — f₂ was computed <i>from</i> x₂, which contains f₀ and f₁. The decomposition is exact; the causal reading is not.</span></span></li>
+  </ul>
+
+  <div class="sec">See it — the stream as a running sum</div>
+  <p class="step">A d = 256 toy stream, L = 8 blocks, seed 119. Each block reads LN(x<sub>l</sub>), pushes it through its own seeded random linear map, and writes the result back with its length pinned to 1 — the idealization that isolates the geometry: eight equal-sized writes in eight fresh, unrelated directions. The left figure projects the stream onto the plane spanned by the embedding direction x̂₀ (horizontal) and the net drift (vertical); the pale ring is the part of x<sub>l</sub> pointing <i>out of the page</i>, which is where near-orthogonal writes go. Toggle the residual wire off and the same eight blocks run as a pure composition, x ← f(LN(x)).</p>
+  <div class="panel">
+    <div class="seg" id="mode1"><button class="on" data-m="1">residual ON &nbsp;x ← x + f(LN(x))</button><button data-m="0">residual OFF &nbsp;x ← f(LN(x))</button></div>
+    <div class="imgs">
+      <figure style="flex:1;min-width:250px"><svg id="p1a" viewBox="0 0 286 344" role="img" aria-label="The residual stream projected onto the plane of the embedding direction and the net drift"></svg><figcaption>the stream in the (x̂₀, drift) plane · ring = the part of x<sub>l</sub> pointing out of this page — with the residual on it closes to zero at l = 0 and l = 8, the two points that define the page</figcaption></figure>
+      <figure style="flex:1;min-width:250px"><svg id="p1b" viewBox="0 0 330 344" role="img" aria-label="Norm of the stream at each depth against the square-root reference"></svg><figcaption>‖x<sub>l</sub>‖ per depth · dashed = √(l+1) quadrature law</figcaption></figure>
+    </div>
+    <div class="ctrls">
+      <div class="field"><label>view the partial sum at depth l <b id="lOut">8</b></label><input type="range" id="l1" min="1" max="8" value="8" step="1" /></div>
+    </div>
+    <div class="tally">
+      <div class="stat"><div class="k">‖x<sub>l</sub>‖</div><div class="v a" id="s1n">—</div></div>
+      <div class="stat"><div class="k">√(l+1)</div><div class="v" id="s1t">—</div></div>
+      <div class="stat"><div class="k">cos(x<sub>l</sub>, x̂₀)</div><div class="v g" id="s1c">—</div></div>
+      <div class="stat"><div class="k">log-log slope</div><div class="v" id="s1s">—</div></div>
+    </div>
+    <p class="callout" id="c1"></p>
+  </div>
+  <p class="step">The quadrature law is worth stating plainly. If the writes are unit-length and mutually near-orthogonal, then ‖x<sub>l</sub>‖² = ‖x₀‖² + Σ‖δ‖² + crosstalk ≈ l + 1, so the stream's norm grows like the <b>square root of the number of writes</b> — and the embedding's share of the <i>direction</i> falls like 1/√(l+1) for exactly the same reason. Above, at l = 8: norm 3.166 against √9 = 3.000, the 5.5% excess being a crosstalk term of ‖x₈‖² − 9 = 1.02 spread over 36 pairs, each a cosine of typical size 1/√256 = 0.0625 (Lesson 10's noise floor, arriving on cue). That crosstalk is zero-mean across seeds — over 200 fresh draws ‖x₈‖ averages 2.99 — so this particular seed simply ran hot rather than revealing a systematic drift. The fitted log-log slope is 0.513 against a theoretical ½.</p>
+
+  <div class="sec">The gradient consequence — a highway that cannot vanish</div>
+  <p class="step">Differentiate the update. Lesson 13's rule for a node that feeds two branches is that the two contributions <b>add</b>; here one branch is the block and the other is a bare wire, whose derivative is the identity:</p>
+  <div class="mblock math" data-tex="\frac{\partial x_{l+1}}{\partial x_l}=I+J_l,\qquad \frac{\partial x_L}{\partial x_0}=\prod_{l=0}^{L-1}\big(I+J_l\big)=I+\sum_l J_l+\sum_{l&lt;m}J_mJ_l+\cdots" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="J_l"></span><span class="def">the block's own Jacobian, ∂f<sub>l</sub>(LN(x<sub>l</sub>))/∂x<sub>l</sub> — <b>including</b> the normalizer's Jacobian, computed below. <span class="n">Everything the block does is inside this one symbol; the identity beside it is the wire.</span></span></li>
+    <li><span class="sym math" data-tex="I"></span><span class="def">the <b>surviving term</b> of the expansion. Every other term carries at least one J; this one carries none, so it is depth-independent. <span class="n">A gradient signal can reach x₀ from x<sub>L</sub> along the skip path alone, multiplied by nothing at all.</span></span></li>
+    <li><span class="sym math" data-tex="\prod_l J_l"></span><span class="def">what you get <b>without</b> the wire — the pure composition. <span class="n">Lesson 9 met this object as the contraction factor |1−ηλ|<sup>t</sup>: a repeated multiplicative factor decays or explodes geometrically, and only the knife-edge value 1 does neither. Depth is the exponent, so there is no forgiving regime.</span></span></li>
+  </ul>
+  <p class="step">Model each block's Jacobian as a fresh random matrix of unit typical gain, scaled by a per-block gain <b>s</b> — the honest toy, since for this question only the gain matters. Push one seeded unit tangent direction through the stack (a forward-mode JVP, Lesson 13) and measure how long it comes out. The two laws are exact in mean square: 𝔼‖Π(I+sJ)u‖² = (1+s²)<sup>L</sup> and 𝔼‖Π(sJ)u‖² = s<sup>2L</sup>.</p>
+  <div class="panel">
+    <svg id="p2" viewBox="0 0 660 300" role="img" aria-label="Gradient magnitude against depth on a log axis, with and without the residual wire"></svg>
+    <div class="ctrls">
+      <div class="field"><label>per-block Jacobian gain s <b id="sOut">0.50</b></label><input type="range" id="s2" min="20" max="150" value="50" step="5" /></div>
+      <div class="field"><label>depth L <b id="dOut">40</b></label><input type="range" id="d2" min="1" max="40" value="40" step="1" /></div>
+    </div>
+    <div class="tally">
+      <div class="stat"><div class="k">with residual</div><div class="v a" id="s2r">—</div></div>
+      <div class="stat"><div class="k">pure composition</div><div class="v r" id="s2c">—</div></div>
+      <div class="stat"><div class="k">ratio</div><div class="v g" id="s2q">—</div></div>
+      <div class="stat"><div class="k">dead below 1e−8 at depth</div><div class="v" id="s2u">—</div></div>
+    </div>
+    <p class="callout" id="c2"></p>
+  </div>
+  <p class="step">At the opening setting — s = 0.50, depth 40, a 128-wide stack — the composition path arrives at 1.31e−12 (mean-square law 0.5⁴⁰ = 9.09e−13) while the residual path arrives at 117.0 (law 1.25²⁰ = 86.7, so this draw runs 1.35× hot: a random matrix product's length is log-normally spread, and a single realization sits a factor of order one from its mean square). The gap is 8.9e+13 — near fourteen orders of magnitude. The composition path crosses 10⁻⁸, below which no optimizer can act on it, at depth 27, matching ⌈8 ln 10 / ln(1/s)⌉ = 27 exactly. Slide s to 1.00 and the composition survives at 1.445 — the knife edge; slide to 1.50 and it explodes to 1.60e+7. Only the residual path is indifferent. The floor drawn at 1.18e−38 is the smallest normal float32, and no setting on this slider quite reaches it — the deepest, quietest corner, s = 0.20 at depth 40, lands at 1.6e−28 — but extend the stack and it bites: at s = 0.50 the composition path crosses it at depth 127, and past that point the gradient does not merely become small, it rounds to <i>zero</i>.</p>
+
+  <div class="sec">LayerNorm — along the features, one token at a time</div>
+  <div class="mblock math" data-tex="\mathrm{LN}(x)\;=\;\gamma\odot\frac{x-\mu\mathbf{1}}{\sqrt{\sigma^{2}+\varepsilon}}\;+\;\beta,\qquad \mu=\frac1d\sum_{i=1}^{d}x_i,\qquad \sigma^{2}=\frac1d\sum_{i=1}^{d}\big(x_i-\mu\big)^{2}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="\mu,\ \sigma^{2}"></span><span class="def">mean and variance <b>over the d features of this one token</b> — the sums run over i = 1…d, not over the batch and not over the sequence. <span class="n">Consequence: LayerNorm needs no batch statistics, so it behaves identically at batch size 1, at inference on a single token, and in training. That is why transformers use it and not BatchNorm.</span></span></li>
+    <li><span class="sym math" data-tex="\gamma,\ \beta"></span><span class="def">learned per-feature <b>gain</b> and <b>offset</b>, each a vector of width d. <span class="n">They are applied after normalizing, so the layer can undo the rescaling it just did — but only in a fixed, learned way, never per-token.</span></span></li>
+    <li><span class="sym math" data-tex="\varepsilon"></span><span class="def">a numerical floor, typically 10⁻⁵. <span class="n">It is also the only reason the invariance below is not exact: at σ² = 1 and ε = 10⁻⁵, scaling a token by a = 0.1 shrinks the output by 0.05%. Small, but not zero.</span></span></li>
+    <li><span class="sym math" data-tex="\lVert\mathrm{LN}(x)\rVert=\sqrt d"></span><span class="def">with γ = 1, β = 0 and ε = 0, the output norm is <b>always exactly √d</b>. <span class="n">Because Σ(xᵢ−μ)²/σ² = d by construction. At d = 256 that is 16.000, whatever went in. The block downstream cannot know how long the stream was.</span></span></li>
+  </ul>
+  <p class="step">That last line is the substance of the layer, so make it precise by differentiating. Write ẑ for the centred input, normalized to unit length:</p>
+  <div class="mblock math" data-tex="\frac{\partial\,\mathrm{LN}(x)}{\partial x}\;=\;\frac{1}{\sigma}\Big(I-\tfrac{1}{d}\mathbf{1}\mathbf{1}^{\top}-\hat z\hat z^{\top}\Big),\qquad \hat z=\frac{x-\mu\mathbf 1}{\lVert x-\mu\mathbf 1\rVert}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="\mathbf{1}\mathbf{1}^{\top}/d"></span><span class="def">projection onto the <b>all-ones direction</b> — the "add a constant to every feature" direction, killed. <span class="n">Adding b·1 to a token is invisible to LayerNorm.</span></span></li>
+    <li><span class="sym math" data-tex="\hat z\hat z^{\top}"></span><span class="def">projection onto the token's <b>own direction</b> — the "make this token longer" direction, also killed. <span class="n">Scaling a token is invisible too.</span></span></li>
+    <li><span class="sym math" data-tex="I-\tfrac{1}{d}\mathbf{1}\mathbf{1}^{\top}-\hat z\hat z^{\top}"></span><span class="def">since 1ᵀẑ = 0, these two projections are orthogonal, so the bracket is a genuine <b>orthogonal projector of rank d − 2</b>. <span class="n">Verified numerically against central differences: idempotent, trace exactly d − 2, and it annihilates both 1 and ẑ. RMSNorm's Jacobian is (I − x̂x̂ᵀ)/rms — rank d − 1, one dimension richer, because it only throws away scale.</span></span></li>
+  </ul>
+
+  <div class="sec">RMSNorm — the same layer with two things deleted</div>
+  <div class="mblock math" data-tex="\mathrm{RMS}(x)\;=\;\gamma\odot\frac{x}{\sqrt{\frac1d\sum_{i=1}^{d}x_i^{2}+\varepsilon}}\qquad\Longrightarrow\qquad \mathbf 1^{\top}x=0\ \Rightarrow\ \mathrm{RMS}(x)=\mathrm{LN}(x)" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="\frac1d\sum x_i^{2}"></span><span class="def">the <b>mean square</b>, not the variance. <span class="n">One reduction over the features, and no subtraction. LayerNorm needs μ before it can accumulate Σ(xᵢ−μ)² — two dependent passes over the vector (fusable into one via 𝔼[x²]−μ², at a cost in numerical stability). RMSNorm needs one pass, full stop.</span></span></li>
+    <li><span class="sym w">what is dropped</span><span class="def">the mean subtraction <b>and</b> the offset β. <span class="n">β is d parameters per norm: for a 4,096-wide model with two norms in each of its 32 <i>layers</i> — one per sub-layer, in this lesson's vocabulary one per block — 4,096 × 2 × 32 = 262,144 parameters that simply stop existing.</span></span></li>
+    <li><span class="sym math" data-tex="\mathbf 1^{\top}x=0"></span><span class="def">the condition under which the two layers <b>coincide exactly</b> — ε included, to machine precision. <span class="n">If x is already mean-zero then σ² is the mean square, and centring does nothing. Once the mean is not zero they genuinely differ.</span></span></li>
+    <li><span class="sym w">invariances kept</span><span class="def">RMSNorm keeps scale-invariance and <b>loses</b> shift-invariance: RMS(ax) = RMS(x) for a &gt; 0, but RMS(x + b1) ≠ RMS(x). <span class="n">Its invariance group is one-dimensional instead of two, which is exactly why its Jacobian has rank d − 1 instead of d − 2.</span></span></li>
+  </ul>
+
+  <div class="sec">Pre-LN or post-LN — one plus sign, two training regimes</div>
+  <p class="step">Post-LN, the original 2017 wiring, is <code>x ← LN(x + f(x))</code>: the normalizer sits <i>around</i> the sum, so the skip path passes through it too. Pre-LN, universal since GPT-2, is <code>x ← x + f(LN(x))</code>: the normalizer sits <i>inside</i> the block and the wire is untouched. Differentiate both and the difference is stark. Pre-LN gives ∂x<sub>l+1</sub>/∂x<sub>l</sub> = I + J<sub>l</sub> — the clean identity term from the section above. Post-LN gives L<sub>l</sub>(I + J<sub>l</sub>) — now with J<sub>l</sub> = ∂f<sub>l</sub>/∂x<sub>l</sub>, no normalizer inside it — where L<sub>l</sub> is the normalizer's Jacobian: a rank-(d−2) projector scaled by 1/σ. Every skip step is now multiplied by something, so the free identity path is gone and you are back to a product of L matrices — Lesson 9's contraction factor with the depth as its exponent. That is why deep post-LN transformers need a learning-rate warmup (the early updates are large where the product is badly scaled, and diverge without it), and why pre-LN trains from step one at full learning rate. The price of pre-LN is the twist below: the stream itself is never normalized, so its norm grows without bound, and a single final LayerNorm before the unembedding is what rescues the logits.</p>
+
+  <div class="sec">The same object on a trading book</div>
+  <p class="step">A book's end-of-day PnL is a residual stream. The attribution system starts from yesterday's mark and each desk <b>adds</b> its contribution to a running total; nothing is overwritten, which is exactly why the final number decomposes into per-desk terms with no remainder:</p>
+  <div class="mblock math" data-tex="\mathrm{PnL}_T=\mathrm{PnL}_0+\sum_{k=1}^{K}\Delta_k,\qquad \tilde\Delta_k=\frac{\Delta_k}{\sigma_k}\ \ \text{(risk-scaled, for comparison)}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="\Delta_k"></span><span class="def">desk k's contribution — the analogue of one block's write. <span class="n">The sum is the logit lens: read the total after k desks and you have a well-formed partial PnL in the same units as the final one.</span></span></li>
+    <li><span class="sym math" data-tex="\sigma_k"></span><span class="def">the <b>normalization step</b>: divide each desk's number by its own risk before comparing them. <span class="n">Like LayerNorm, it is applied to the <i>copy you look at</i>, never to the ledger — you scale to compare, you sum unscaled to account. Scaling the ledger would break the identity.</span></span></li>
+    <li><span class="sym w">the crosstalk</span><span class="def">the decomposition is <b>always exact</b>; it is only <b>interpretable per-desk</b> when the desks' books are near-orthogonal. <span class="n">Two desks running the same trade produce an exact sum whose split is arbitrary — the collinearity of Lessons 5 and 7, and the same crosstalk term you measured in the panel above.</span></span></li>
+  </ul>
+
+  <div class="theorem">
+    <p class="lbl">The precise statement</p>
+    <p>Let x<sub>l+1</sub> = x<sub>l</sub> + f<sub>l</sub>(LN(x<sub>l</sub>)) for l = 0,…,L−1. (i) <b>Unrolling.</b> x<sub>L</sub> = x₀ + Σ<sub>l=0</sub><sup>L−1</sup> f<sub>l</sub>(LN(x<sub>l</sub>)) identically — an exact decomposition of the final state into the embedding plus one term per block, valid however nonlinear the f<sub>l</sub> are. (ii) <b>Jacobian.</b> With J<sub>l</sub> = ∂f<sub>l</sub>(LN(x<sub>l</sub>))/∂x<sub>l</sub>, ∂x<sub>L</sub>/∂x₀ = ∏<sub>l</sub>(I + J<sub>l</sub>), whose expansion contains the term I with no factor of any J<sub>l</sub>; hence the map from x<sub>L</sub>-sensitivity to x₀-sensitivity is the identity plus corrections, and cannot vanish geometrically in L through the skip path, whereas the pure composition obeys ‖∏<sub>l</sub>J<sub>l</sub>‖ ≤ ∏<sub>l</sub>‖J<sub>l</sub>‖, so a uniform bound ‖J<sub>l</sub>‖ ≤ c &lt; 1 forces decay at least as fast as c<sup>L</sup>, while J<sub>l</sub> = c·Q<sub>l</sub> with Q<sub>l</sub> orthogonal attains ‖∏<sub>l</sub>J<sub>l</sub>‖ = c<sup>L</sup> exactly: the composition path is geometric in the depth, with no identity term to protect it in either direction. (iii) <b>LayerNorm's invariance.</b> At ε = 0 and for any a &gt; 0, b ∈ ℝ, LN(ax + b·1) = LN(x): the invariance group is two-dimensional, the layer is constant on each orbit {ax + b1}, and with γ = 1, β = 0 its image is {z : 1ᵀz = 0, ‖z‖ = √d} — the radius-√d sphere inside the mean-zero hyperplane, a surface of dimension d − 2. Accordingly ∂LN/∂x = σ⁻¹(I − 11ᵀ/d − ẑẑᵀ) is σ⁻¹ times an orthogonal projector of rank d − 2. (iv) <b>RMSNorm.</b> RMS(x) = γ ⊙ x/√(mean(x²)+ε) is invariant to positive scaling only; its Jacobian has rank d − 1; and whenever 1ᵀx = 0 it agrees with LN(x) exactly, ε included.</p>
+  </div>
+
+  <div class="twist">
+    <p class="lbl">The twist — LayerNorm is not a normalization, it is a projection</p>
+    <p>Count the dimensions. LayerNorm's invariance group has two parameters (a scale and a shift), so it destroys two dimensions of information at every block and its Jacobian is exactly a rank-(d−2) projector, divided by σ. The image is a (d−2)-dimensional sphere: <b>only the direction survives</b>. A token's magnitude is not attenuated, it is <i>annihilated</i> — every downstream block sees a vector of length exactly √d (at γ = 1, β = 0) no matter what arrived. So if a model wants to encode "how strongly" as well as "what", it has to re-encode strength <i>as direction</i>, which is precisely why mechanistic interpretability speaks in directions and features rather than magnitudes, and why superposition (Lesson 20) is a story about angles in Lesson 10's exponentially large budget of near-orthogonal slots — 8×10⁸ of them at ε = 0.1 in a 4,096-wide stream. Second barrel: because the normalizer sits inside the block and the wire is untouched, <b>the residual stream is the only object in a pre-LN transformer that is never normalized.</b> Its norm grows monotonically with depth — the √(l+1) law you measured — so the stream's magnitude is not a meaningful quantity, merely a count of how many blocks have written. Real models exploit this: a block can make itself quieter over training simply by keeping its write norm fixed while the stream grows around it. And since nothing rescales the stream, one final LayerNorm before the unembedding is doing all of the work of turning a vector that has been growing for forty blocks into logits of sane size.</p>
+  </div>
+
+  <div class="vol">
+    <p class="lbl">Why this matters · volarixs</p>
+    <p>The Cross-Matrix's additive reading <i>is</i> the unrolling identity. A target move decomposed as Σ<sub>k</sub> β<sub>r,k</sub>Δx<sub>k</sub> is a residual stream with one write per driver, and the z-scored driver panel is the normalization step: you rescale each driver to compare elasticities, then sum the unscaled contributions to account. Same discipline as pre-LN — normalize the copy you read, never the ledger.</p>
+    <p>And the crosstalk warning transfers exactly. Lesson 7 showed the driver panel is deliberately collinear (dispersion at five horizons plus their z-scores), so XᵀX is ill-conditioned and the per-driver split of an exact total is unstable even though the total is not — which is why <code>sign_stability</code>, not the t-stat, is the gate on any single cell. A near-orthogonal set of writes gives a decomposition you can read term by term; a collinear one gives a sum you can trust and an attribution you cannot.</p>
+  </div>
+
+  <div class="sec">Check yourself</div>
+  <div class="q" id="q1"><p class="stem">Your attribution system computes <code>total += desk_pnl</code> across 40 desks; a transformer computes <code>x += f(LN(x))</code> across 40 blocks. In both cases the final value is exactly:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q2"><p class="stem">Why does the residual wiring fix vanishing gradients?</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q3"><p class="stem">LayerNorm's μ and σ² are computed over:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q4"><p class="stem">Take ε = 0, γ = 1, β = 0. You feed LayerNorm the vector 3x + 7·1 instead of x. The output is:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q5"><p class="stem">RMSNorm differs from LayerNorm by:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q6"><p class="stem">Post-LN is LN(x + f(x)); pre-LN is x + f(LN(x)). Which trains at full learning rate without a warmup schedule, and why?</p><div class="opts"></div><p class="fb"></p></div>
+
+  <div class="checkRow">
+    <button class="primary" id="check">Check answers</button>
+    <span class="scoreOut" id="scoreOut"></span>
+    <span class="hint" id="hint">Answer all six first.</span>
+  </div>
+  <div class="done" id="done">The bus is wired. Next in Wing IV: embeddings as directions &amp; superposition.</div>
+</div>
+
+<script>
+/* storage shim: window.storage (Claude artifacts) or localStorage (web) */
+if(!window.storage){window.storage={async get(k){const v=localStorage.getItem(k);if(v==null)throw new Error('missing');return{key:k,value:v}},async set(k,v){localStorage.setItem(k,v);return{key:k,value:v}},async delete(k){localStorage.removeItem(k);return{key:k,deleted:true}},async list(p){const ks=[];for(let i=0;i<localStorage.length;i++){const kk=localStorage.key(i);if(!p||kk.startsWith(p))ks.push(kk)}return{keys:ks}}};}
+function renderMath(){document.querySelectorAll('.math').forEach(el=>{const tex=el.getAttribute('data-tex');if(!tex||el.dataset.done)return;try{if(window.katex){katex.render(tex,el,{displayMode:el.dataset.display==='1',throwOnError:false});el.dataset.done='1';}else el.textContent=tex;}catch(e){el.textContent=tex;}});}
+/* deterministic RNG — the atlas's seeded generator, seed 119 */
+function mulberry32(seed){let a=seed>>>0;return function(){a|=0;a=(a+0x6D2B79F5)|0;let t=Math.imul(a^(a>>>15),1|a);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296;}}
+function randn(rng){let u=0,v=0;while(!u)u=rng();while(!v)v=rng();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+const SEED=119;
+
+/* ---------- shared numerics ---------- */
+const dot=(a,b)=>{let s=0;for(let i=0;i<a.length;i++)s+=a[i]*b[i];return s;};
+const nrm=a=>Math.sqrt(dot(a,a));
+function layernorm(x,eps){const d=x.length;let m=0;for(let i=0;i<d;i++)m+=x[i];m/=d;
+  let v=0;for(let i=0;i<d;i++)v+=(x[i]-m)*(x[i]-m);v/=d;const s=1/Math.sqrt(v+eps);
+  const o=new Float64Array(d);for(let i=0;i<d;i++)o[i]=(x[i]-m)*s;return o;}
+function matvec(M,x,d){const o=new Float64Array(d);for(let i=0;i<d;i++){let s=0,r=i*d;for(let j=0;j<d;j++)s+=M[r+j]*x[j];o[i]=s;}return o;}
+function slope(xs,ys){const n=xs.length;let mx=0,my=0;for(let i=0;i<n;i++){mx+=xs[i];my+=ys[i];}mx/=n;my/=n;
+  let nu=0,de=0;for(let i=0;i<n;i++){nu+=(xs[i]-mx)*(ys[i]-my);de+=(xs[i]-mx)*(xs[i]-mx);}return nu/de;}
+
+/* ---------- Panel 1 : d=256, L=8, one boot-time computation ---------- */
+const D1=256,L1=8,EPS=1e-5;
+const P1=(function(){
+  const r=mulberry32(SEED);
+  const x0=new Float64Array(D1);for(let i=0;i<D1;i++)x0[i]=randn(r);
+  {const n=nrm(x0);for(let i=0;i<D1;i++)x0[i]/=n;}
+  const on=[x0],off=[x0];
+  for(let l=0;l<L1;l++){                               /* one W per block, used by BOTH wirings */
+    const W=new Float64Array(D1*D1);for(let i=0;i<D1*D1;i++)W[i]=randn(r);
+    const yr=matvec(W,layernorm(on[l],EPS),D1),ar=nrm(yr),nx=new Float64Array(D1);
+    for(let i=0;i<D1;i++)nx[i]=on[l][i]+yr[i]/ar;on.push(nx);          /* x + f(LN(x)) */
+    const yc=matvec(W,layernorm(off[l],EPS),D1),ac=nrm(yc),cx=new Float64Array(D1);
+    for(let i=0;i<D1;i++)cx[i]=yc[i]/ac;off.push(cx);                  /* f(LN(x))     */
+  }
+  /* display plane: e1 = xhat0, e2 = net drift orthogonalized against e1 */
+  const t=new Float64Array(D1);for(let i=0;i<D1;i++)t[i]=on[L1][i]-x0[i];
+  const p=dot(t,x0),e2=new Float64Array(D1);for(let i=0;i<D1;i++)e2[i]=t[i]-p*x0[i];
+  {const n=nrm(e2);for(let i=0;i<D1;i++)e2[i]/=n;}
+  const pack=q=>q.map(v=>{const a=dot(v,x0),b=dot(v,e2),n=nrm(v);return {x:a,y:b,r:Math.sqrt(Math.max(0,n*n-a*a-b*b)),n:n,c:a/n};});
+  return {on:pack(on),off:pack(off)};
+})();
+
+const PX={x0:-0.9,x1:1.9,y0:-0.45,y1:3.15,mL:40,mT:12,px:84};
+const AX=v=>PX.mL+(v-PX.x0)*PX.px, AY=v=>PX.mT+(PX.y1-v)*PX.px;
+function drawPlane(seq,l){
+  let s='<defs><clipPath id="cp"><rect x="'+PX.mL+'" y="'+PX.mT+'" width="'+((PX.x1-PX.x0)*PX.px).toFixed(0)+'" height="'+((PX.y1-PX.y0)*PX.px).toFixed(0)+'"/></clipPath></defs>';
+  s+='<rect x="'+PX.mL+'" y="'+PX.mT+'" width="'+((PX.x1-PX.x0)*PX.px).toFixed(0)+'" height="'+((PX.y1-PX.y0)*PX.px).toFixed(0)+'" fill="none" stroke="var(--hair)"/>';
+  for(let k=0;k<=3;k++)s+='<line x1="'+PX.mL+'" y1="'+AY(k).toFixed(1)+'" x2="'+AX(PX.x1).toFixed(1)+'" y2="'+AY(k).toFixed(1)+'" stroke="var(--hair)" stroke-dasharray="2 3"/><text x="'+(PX.mL-6)+'" y="'+(AY(k)+3.5).toFixed(1)+'" text-anchor="end" font-size="9.5" fill="var(--faint)" font-family="monospace">'+k+'</text>';
+  s+='<line x1="'+AX(0).toFixed(1)+'" y1="'+PX.mT+'" x2="'+AX(0).toFixed(1)+'" y2="'+AY(PX.y0).toFixed(1)+'" stroke="var(--hair2)"/>';
+  s+='<line x1="'+AX(1).toFixed(1)+'" y1="'+(AY(0)-4).toFixed(1)+'" x2="'+AX(1).toFixed(1)+'" y2="'+(AY(0)+4).toFixed(1)+'" stroke="var(--hair2)"/>';
+  s+='<g clip-path="url(#cp)">';
+  const pts=seq.map(q=>[AX(q.x),AY(q.y)]),poly=a=>a.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
+  s+='<polyline points="'+poly(pts)+'" fill="none" stroke="var(--hair2)" stroke-width="1"/>';
+  s+='<polyline points="'+poly(pts.slice(0,l+1))+'" fill="none" stroke="var(--accent)" stroke-width="1.8"/>';
+  s+='<circle cx="'+pts[l][0].toFixed(1)+'" cy="'+pts[l][1].toFixed(1)+'" r="'+(seq[l].r*PX.px).toFixed(1)+'" fill="var(--accent)" fill-opacity="0.07" stroke="var(--accent)" stroke-opacity="0.35" stroke-dasharray="3 3"/>';
+  for(let i=0;i<=l;i++)s+='<circle cx="'+pts[i][0].toFixed(1)+'" cy="'+pts[i][1].toFixed(1)+'" r="'+(i===l?4.2:2.6)+'" fill="'+(i===0?'var(--series)':'var(--accent)')+'"/>';
+  s+='</g>';
+  s+='<text x="'+(pts[0][0]+8).toFixed(1)+'" y="'+(pts[0][1]+4).toFixed(1)+'" font-size="10" fill="var(--series)" font-family="monospace">x0</text>';
+  s+='<text x="'+PX.mL+'" y="338" font-size="10" fill="var(--faint)" font-family="monospace">component along x0-hat →</text>';
+  document.getElementById('p1a').innerHTML=s;
+}
+function drawBars(seq,l){
+  const W=330,H=344,mL=34,mB=28,mT=14,iw=W-mL-10,ih=H-mB-mT,top=3.6,bw=iw/9;let s='';
+  for(let k=0;k<=3;k++){const y=mT+ih-(k/top)*ih;
+    s+='<line x1="'+mL+'" y1="'+y.toFixed(1)+'" x2="'+(mL+iw)+'" y2="'+y.toFixed(1)+'" stroke="var(--hair)" stroke-dasharray="2 3"/><text x="'+(mL-6)+'" y="'+(y+3.5).toFixed(1)+'" text-anchor="end" font-size="9.5" fill="var(--faint)" font-family="monospace">'+k+'</text>';}
+  seq.forEach((q,i)=>{const h=(q.n/top)*ih,x=mL+i*bw;
+    s+='<rect x="'+(x+3).toFixed(1)+'" y="'+(mT+ih-h).toFixed(1)+'" width="'+(bw-6).toFixed(1)+'" height="'+h.toFixed(1)+'" fill="'+(i===l?'var(--accent)':'var(--hair2)')+'" opacity="'+(i<=l?0.95:0.4)+'"/><text x="'+(x+bw/2).toFixed(1)+'" y="'+(H-14)+'" text-anchor="middle" font-size="9.5" fill="var(--faint)" font-family="monospace">'+i+'</text>';});
+  const ref=[];for(let i=0;i<=8;i++)ref.push([mL+i*bw+bw/2,mT+ih-(Math.sqrt(i+1)/top)*ih]);
+  s+='<polyline points="'+ref.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')+'" fill="none" stroke="var(--series)" stroke-width="1.6" stroke-dasharray="4 3"/>';
+  ref.forEach(p=>{s+='<circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="2" fill="var(--series)"/>';});
+  s+='<text x="'+mL+'" y="'+(H-2)+'" font-size="10" fill="var(--faint)" font-family="monospace">depth l</text>';document.getElementById('p1b').innerHTML=s;
+}
+let MODE=1;
+function up1(){
+  const l=+document.getElementById('l1').value,seq=MODE?P1.on:P1.off;
+  document.getElementById('lOut').textContent=l;
+  drawPlane(seq,l);drawBars(seq,l);
+  const X=[],Y=[];for(let k=0;k<=l;k++){X.push(Math.log(k+1));Y.push(Math.log(seq[k].n));}const sl0=slope(X,Y),sl=Math.abs(sl0)<1e-9?0:sl0;
+  document.getElementById('s1n').textContent=seq[l].n.toFixed(3);
+  document.getElementById('s1t').textContent=Math.sqrt(l+1).toFixed(3);
+  document.getElementById('s1c').textContent=seq[l].c.toFixed(3);
+  document.getElementById('s1s').textContent=sl.toFixed(3);
+  const ring = l===L1 ? 'its out-of-page part closes to zero here only because x0 and x8 are the two points that define this page'
+                      : 'a further '+seq[l].r.toFixed(2)+' of it points out of this flat page entirely — the near-orthogonal directions Lesson 10 promised';
+  document.getElementById('c1').textContent = MODE
+    ? 'Residual ON, depth '+l+': the stream is x0 plus '+l+' write'+(l===1?'':'s')+', its norm '+seq[l].n.toFixed(3)+' against the quadrature prediction '+Math.sqrt(l+1).toFixed(3)+', and the fitted growth exponent '+sl.toFixed(3)+' against the theoretical 0.500. Read the horizontal axis: the embedding coordinate is '+seq[l].x.toFixed(3)+' against the 1.000 it started at — jostled by crosstalk, never deleted. The '+l+' new term'+(l===1?'':'s')+' simply piled up beside it, and '+ring+'. The cosine fell to '+seq[l].c.toFixed(3)+' only because the total got longer.'
+    : 'Residual OFF, depth '+l+': every block overwrites. The norm sits at '+seq[l].n.toFixed(3)+' at every depth and the growth exponent is '+sl.toFixed(3)+' — flat because assignment discards the old vector, so nothing can accumulate; each write is unit-length by construction, and LayerNorm is what makes that pinning harmless, since the block’s output carries no trace of how long its input was. What died is memory: the embedding coordinate is '+seq[l].x.toFixed(3)+' and the cosine '+seq[l].c.toFixed(3)+' — the size the 1/√256 = 0.0625 noise floor predicts for two unrelated directions (Lesson 10). One block was enough. And '+seq[l].r.toFixed(2)+' of this unit vector lies out of the page — it has left the embedding’s neighbourhood completely.';
+}
+document.getElementById('l1').addEventListener('input',up1);
+document.querySelectorAll('#mode1 button').forEach(b=>{b.onclick=()=>{MODE=+b.dataset.m;
+  document.querySelectorAll('#mode1 button').forEach(o=>o.classList.toggle('on',o===b));up1();};});
+
+/* ---------- Panel 2 : d=128, depth 40 ---------- */
+const D2=128,LMAX=40;
+const P2=(function(){
+  const r=mulberry32(SEED+1000),sc=1/Math.sqrt(D2);
+  const u=new Float64Array(D2);for(let i=0;i<D2;i++)u[i]=randn(r);{const n=nrm(u);for(let i=0;i<D2;i++)u[i]/=n;}
+  const JS=[];for(let l=0;l<LMAX;l++){const M=new Float64Array(D2*D2);for(let i=0;i<D2*D2;i++)M[i]=randn(r)*sc;JS.push(M);}
+  return {u,JS};
+})();
+let CACHE={s:null};
+function chains(s){
+  if(CACHE.s===s)return CACHE.v;
+  let a=Float64Array.from(P2.u),b=Float64Array.from(P2.u);const na=[1],nb=[1];
+  for(let l=0;l<LMAX;l++){                             /* a: prod(I+sJ)u   b: prod(sJ)u */
+    const ja=matvec(P2.JS[l],a,D2),jb=matvec(P2.JS[l],b,D2),a2=new Float64Array(D2),b2=new Float64Array(D2);
+    for(let i=0;i<D2;i++){a2[i]=a[i]+s*ja[i];b2[i]=s*jb[i];}
+    a=a2;b=b2;na.push(nrm(a));nb.push(nrm(b));
+  }
+  let uf=0;for(let l=1;l<=LMAX;l++)if(nb[l]<1e-8){uf=l;break;}
+  CACHE={s:s,v:{na,nb,uf}};return CACHE.v;
+}
+const fmt=v=>(v>=1e-3&&v<1e4)?v.toFixed(v<10?3:1):v.toExponential(2);
+const GY0=-40,GY1=12,G={mL:52,mT:12,mR:12,mB:30,W:660,H:300};
+const GX=l=>G.mL+(l/LMAX)*(G.W-G.mL-G.mR), GYv=v=>G.mT+(GY1-Math.max(GY0,Math.min(GY1,Math.log10(Math.max(v,1e-300)))))/(GY1-GY0)*(G.H-G.mT-G.mB);
+function drawGrad(s,dep){
+  const c=chains(s);let g='';
+  for(let e=GY1;e>=GY0;e-=10){const y=GYv(Math.pow(10,e));
+    g+='<line x1="'+G.mL+'" y1="'+y.toFixed(1)+'" x2="'+(G.W-G.mR)+'" y2="'+y.toFixed(1)+'" stroke="var(--hair)"/><text x="'+(G.mL-6)+'" y="'+(y+3.5).toFixed(1)+'" text-anchor="end" font-size="9.5" fill="var(--faint)" font-family="monospace">1e'+e+'</text>';}
+  const mark=(v,col,lab,dash)=>'<line x1="'+G.mL+'" y1="'+GYv(v).toFixed(1)+'" x2="'+(G.W-G.mR)+'" y2="'+GYv(v).toFixed(1)+'" stroke="'+col+'" stroke-dasharray="'+dash+'"/><text x="'+(G.W-G.mR)+'" y="'+(GYv(v)-5).toFixed(1)+'" text-anchor="end" font-size="9.5" fill="'+col+'" font-family="monospace">'+lab+'</text>';
+  g+=mark(1e-8,'var(--series)','1e-8 · unusable','5 3')+mark(1.18e-38,'var(--faint)','1.18e-38 · fp32 underflow','2 4');
+  const pl=(arr,col,to,w,op)=>{const p=[];for(let l=0;l<=to;l++)p.push(GX(l).toFixed(1)+','+GYv(arr[l]).toFixed(1));
+    return '<polyline points="'+p.join(' ')+'" fill="none" stroke="'+col+'" stroke-width="'+w+'" opacity="'+op+'"/>';};
+  const line=(a,c,to)=>pl(a,c,to,2,1), ghost=(a,c)=>pl(a,c,LMAX,1,0.28);
+  g+=ghost(c.na,'var(--accent)')+ghost(c.nb,'var(--miss)')+line(c.na,'var(--accent)',dep)+line(c.nb,'var(--miss)',dep);
+  g+='<line x1="'+GX(dep).toFixed(1)+'" y1="'+G.mT+'" x2="'+GX(dep).toFixed(1)+'" y2="'+(G.H-G.mB)+'" stroke="var(--hair2)"/>';
+  g+='<circle cx="'+GX(dep).toFixed(1)+'" cy="'+GYv(c.na[dep]).toFixed(1)+'" r="3.4" fill="var(--accent)"/><circle cx="'+GX(dep).toFixed(1)+'" cy="'+GYv(c.nb[dep]).toFixed(1)+'" r="3.4" fill="var(--miss)"/>';
+  for(let l=0;l<=LMAX;l+=10)g+='<text x="'+GX(l).toFixed(1)+'" y="'+(G.H-12)+'" text-anchor="middle" font-size="9.5" fill="var(--faint)" font-family="monospace">'+l+'</text>';
+  g+='<text x="'+(G.W-G.mR)+'" y="'+(G.H-12)+'" text-anchor="end" font-size="10" fill="var(--faint)" font-family="monospace">depth</text>';
+  g+='<text x="'+(G.mL+8)+'" y="'+(G.mT+14)+'" font-size="10.5" fill="var(--accent)" font-family="monospace">with residual  ∏(I+sJ)</text>';
+  g+='<text x="'+(G.mL+8)+'" y="'+(G.mT+28)+'" font-size="10.5" fill="var(--miss)" font-family="monospace">pure composition  ∏(sJ)</text>';
+  document.getElementById('p2').innerHTML=g;
+  return c;
+}
+function up2(){
+  const s=+document.getElementById('s2').value/100,dep=+document.getElementById('d2').value;
+  document.getElementById('sOut').textContent=s.toFixed(2);
+  document.getElementById('dOut').textContent=dep;
+  const c=drawGrad(s,dep),R=c.na[dep],C=c.nb[dep];
+  document.getElementById('s2r').textContent=fmt(R);
+  document.getElementById('s2c').textContent=fmt(C);
+  document.getElementById('s2q').textContent=(R/C).toExponential(1);
+  document.getElementById('s2u').textContent=c.uf?String(c.uf):'never ≤ 40';
+  const thR=Math.pow(1+s*s,dep/2),thC=Math.pow(s,dep);
+  document.getElementById('c2').textContent = s<0.98
+    ? 'Gain s = '+s.toFixed(2)+': the pure composition multiplies by about '+s.toFixed(2)+' per block, so by depth '+dep+' it is down to '+fmt(C)+' (mean-square law s^L = '+thC.toExponential(2)+') and it '+(c.uf?'crosses 1e-8 at depth '+c.uf:'has still not crossed 1e-8 by depth 40')+'. The residual path is at '+fmt(R)+' (law (1+s²)^(L/2) = '+fmt(thR)+'): the identity term in ∏(I+sJ) has no factor of s in it, so depth cannot shrink it. The ratio is '+(R/C).toExponential(1)+' here'+(dep<LMAX?', climbing to '+(c.na[LMAX]/c.nb[LMAX]).toExponential(1)+' by the full depth 40':'')+' — the entire reason deep stacks train at all.'
+    : (s<1.02
+      ? 'Gain s = '+s.toFixed(2)+' is the knife edge: with no residual the product neither vanishes nor explodes — '+fmt(C)+' at depth '+dep+' — but nothing holds it there, and this is the single value of s for which pure composition survives. The residual path sits at '+fmt(R)+'. Move s a hair either way and the red curve starts sliding geometrically — down at s = 0.95, up at s = 1.05, and the slide compounds with every extra block; the blue one does not care.'
+      : 'Gain s = '+s.toFixed(2)+' > 1: the sign of the exponent flips and the composition path now GROWS geometrically, reaching '+fmt(C)+' by depth '+dep+' (s^L = '+thC.toExponential(2)+', and s^120 = '+fmt(Math.pow(s,120))+' at depth 120) — the same geometric law read the other way, and the reason exploding gradients and vanishing gradients are one phenomenon. The residual path is at '+fmt(R)+'. Note it grows too, like (1+s²)^(L/2): the skip path guarantees a floor, never a ceiling — clipping and normalization handle the ceiling.');
+}
+document.getElementById('s2').addEventListener('input',up2);
+document.getElementById('d2').addEventListener('input',up2);
+
+/* ---------- retrieval ---------- */
+const QS={
+  q1:{opts:["the last contribution, since each step overwrites the previous value",
+            "an approximation to the sum, exact only if the contributions are small",
+            "the starting value plus the sum of all 40 contributions — an exact identity",
+            "the average of the 40 contributions, rescaled by the normalizer"],a:2,
+    fb:"Because the update is += and never =, unrolling gives x_L = x₀ + Σ_l f_l(LN(x_l)) and PnL_T = PnL_0 + Σ_k Δ_k. Both are exact identities, however nonlinear each contribution was to compute — that exactness is what licenses per-block (logit lens) and per-desk attribution. The blocks are nonlinear; their combination is a flat sum."},
+  q2:{opts:["because ∂x_L/∂x₀ = ∏(I + J_l) expands with a term that carries no J at all, so the skip path delivers the gradient unmultiplied",
+            "because LayerNorm rescales the gradient back to unit norm at every block",
+            "because the sum of many small gradients is larger than any one of them",
+            "because the identity matrix has condition number 1, so the loss becomes convex"],a:0,
+    fb:"The expansion I + ΣJ_l + Σ J_mJ_l + … contains I with no factor of any J_l, so its magnitude is depth-independent. A pure composition ∏J_l instead multiplies a gain L times, which decays or explodes geometrically (Lesson 9's contraction factor with depth as the exponent). LayerNorm does not fix this — post-LN puts a normalizer on the skip path and warmup becomes necessary again. And convexity is untouched."},
+  q3:{opts:["the batch, like BatchNorm, which is why large batches train better",
+            "the sequence, so that every token in the context is comparable",
+            "the batch and the sequence jointly, then broadcast back",
+            "the d features inside one token's own vector, independently for every token"],a:3,
+    fb:"μ = (1/d)Σᵢxᵢ and σ² = (1/d)Σᵢ(xᵢ−μ)² run over i = 1…d, the feature axis of a single token. Nothing couples tokens or batch elements, which is exactly why LayerNorm behaves identically at batch size 1 and at single-token inference — the property BatchNorm lacks and the reason transformers do not use it."},
+  q4:{opts:["3·LN(x) + 7, since the affine map passes through",
+            "exactly LN(x) — both the scale and the shift are annihilated",
+            "LN(x) + 7·1, since only the scale is removed",
+            "undefined, because the variance of the shifted vector is different"],a:1,
+    fb:"LN(ax + b1) = LN(x) for any a > 0 and any b, at ε = 0: centring kills b·1 and dividing by σ kills a. The invariance group is two-dimensional, which is precisely why the Jacobian σ⁻¹(I − 11ᵀ/d − ẑẑᵀ) is a projector of rank d − 2. (Note b is a shift of every feature by the same amount, not the learned per-feature β, which is applied after normalizing and does survive.)"},
+  q5:{opts:["dropping the learned gain γ, so it has no parameters at all",
+            "normalizing over the batch instead of the features",
+            "dropping the mean subtraction and the offset β — and it coincides with LayerNorm exactly whenever the input is already mean-zero",
+            "using the median instead of the mean, for robustness to outlier features"],a:2,
+    fb:"RMS(x) = γ ⊙ x/√(mean(x²)+ε): no centring, no β, γ retained. If 1ᵀx = 0 then mean(x²) = σ² and the two agree to machine precision, ε included. It also costs one reduction over the features instead of two dependent ones, and saves d parameters per norm — 4,096 × 2 × 32 = 262,144 in a 32-layer, 4,096-wide model. The trade: it keeps scale-invariance but loses shift-invariance."},
+  q6:{opts:["pre-LN, because the normalizer sits inside the block and leaves the skip path un-normalized, so the identity term in the Jacobian survives",
+            "post-LN, because normalizing the sum keeps the stream's norm bounded at every depth",
+            "neither — warmup is about the optimizer's second-moment estimate and is unrelated to the wiring",
+            "pre-LN, because it has fewer parameters and therefore a smoother loss surface"],a:0,
+    fb:"Pre-LN gives ∂x_{l+1}/∂x_l = I + J_l. Post-LN gives L_l(I + J_l) with L_l the normalizer's Jacobian, so every skip step is multiplied by something and the free identity path is gone — hence the warmup schedule deep post-LN models need. Post-LN does bound the stream's norm (option B is a true statement about post-LN) but that is the cost side, not the reason it trains harder; the price of pre-LN is an unbounded stream, rescued by one final LayerNorm before the unembedding."}
+};
+const sel={q1:null,q2:null,q3:null,q4:null,q5:null,q6:null};let revealed=false;
+Object.keys(QS).forEach(id=>{const holder=document.querySelector('#'+id+' .opts');QS[id].opts.forEach((txt,i)=>{const b=document.createElement('button');b.className='opt';b.textContent=String.fromCharCode(65+i)+'.  '+txt;b.onclick=()=>{if(revealed)return;sel[id]=i;[...holder.children].forEach((c,ci)=>c.classList.toggle('sel',ci===i));document.getElementById('hint').style.display='none';};holder.appendChild(b);});});
+document.getElementById('check').onclick=async()=>{
+  if(revealed)return;if(Object.values(sel).some(v=>v===null)){document.getElementById('hint').style.display='inline';return;}
+  revealed=true;let score=0;
+  Object.keys(QS).forEach(id=>{const a=QS[id].a,holder=document.querySelector('#'+id+' .opts'),fb=document.querySelector('#'+id+' .fb');[...holder.children].forEach((c,ci)=>{c.style.cursor='default';c.classList.remove('sel');if(ci===a)c.classList.add('correct');else if(ci===sel[id])c.classList.add('wrong');});if(sel[id]===a)score++;fb.textContent=QS[id].fb;fb.classList.add('show');});
+  document.getElementById('check').style.opacity='0.5';document.getElementById('check').textContent='Checked';
+  document.getElementById('scoreOut').textContent=score+' / 6';document.getElementById('done').classList.add('show');
+  try{await window.storage.set('mfs:lesson19',JSON.stringify({done:true,retrieval:score+'/6',ts:Date.now()}),false);}catch(e){}
+};
+function boot(){renderMath();up1();up2();}
+if(window.katex)boot();else window.addEventListener('load',boot);
+(async()=>{try{const r=await window.storage.get('mfs:lesson19',false);if(r&&r.value){const v=JSON.parse(r.value);if(v.done){const c=document.getElementById('chip');c.classList.add('show');c.textContent='completed · '+v.retrieval;}}}catch(e){}})();
+</script>
+</body>
+</html>
