@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lesson 22 — Double descent</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<style>
+  :root{
+    --paper:#FAFAF6;--ink:#1A1C22;--muted:#63676E;--faint:#9A9EA4;--hair:#E4E3DB;--hair2:#D4D3CA;--panel:#FFFFFF;
+    --accent:#24507A;--accent-bg:#EAF0F6;--series:#B07A2E;--miss:#B23A3A;--ok:#2F6B4F;--ok-bg:#E9F1EC;
+    --vol:#8A5A2B;--vol-bg:#F6EFE6;--serif:Iowan Old Style,Palatino,Georgia,serif;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme:dark){:root{--paper:#15161A;--ink:#E9E8E2;--muted:#A2A6AC;--faint:#71757B;--hair:#2A2C31;--hair2:#3A3C42;--panel:#1B1D22;--accent:#7FB0E0;--accent-bg:#1E2A38;--series:#D9A85E;--miss:#E07A7A;--ok:#7FC49F;--ok-bg:#1C2A22;--vol:#D9A066;--vol-bg:#2A2115;}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.62;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:750px;margin:0 auto;padding:32px 24px 60px}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 6px}
+  h1{font-family:var(--serif);font-weight:600;font-size:27px;line-height:1.22;margin:0 0 6px;letter-spacing:-.01em}
+  .chip{display:none;font-family:var(--mono);font-size:11px;letter-spacing:.05em;color:var(--ok);border:1px solid var(--ok);border-radius:20px;padding:3px 10px;vertical-align:middle;margin-left:10px}
+  .chip.show{display:inline-block}
+  .sub{color:var(--muted);font-size:15px;margin:0 0 18px}
+  .levels{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 26px}
+  .levels .lk{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+  .levels .pill{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-family:var(--mono);color:var(--muted);background:var(--panel);border:1px solid var(--hair2);border-radius:20px;padding:4px 11px}
+  .levels .pill b{color:var(--accent);font-weight:700;letter-spacing:.03em}
+  p.lead{font-size:16px;margin:0 0 22px}
+  p.lead b{font-weight:600}
+  .sec{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:36px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--hair)}
+  .mblock{margin:16px 0;overflow-x:auto}
+  .glo{list-style:none;padding:0;margin:14px 0 0}
+  .glo li{display:flex;gap:14px;padding:9px 0;border-top:1px solid var(--hair);align-items:baseline}
+  .glo li:first-child{border-top:none}
+  .glo .sym{flex:0 0 92px;text-align:right;padding-top:2px}
+  .glo .sym.w{font-family:var(--mono);font-size:12.5px;color:var(--accent)}
+  .glo .def{font-size:14.5px}
+  .glo .def .n{color:var(--muted)}
+  .step{font-size:14.5px;color:var(--muted);margin:10px 0}
+  .panel{background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:20px;margin:14px 0}
+  .imgs{display:flex;flex-wrap:wrap;gap:22px;align-items:flex-start}
+  .imgs figure{margin:0;display:flex;flex-direction:column;gap:6px}
+  .imgs figcaption{font-family:var(--mono);font-size:12px;color:var(--muted)}
+  canvas{image-rendering:pixelated;border:1px solid var(--hair2);border-radius:6px;width:196px;height:196px;background:var(--panel)}
+  .figcap{font-family:var(--mono);font-size:12px;color:var(--muted);margin:2px 0 12px}
+  .leg{display:flex;flex-wrap:wrap;gap:8px 18px;font-family:var(--mono);font-size:11px;color:var(--muted);margin:4px 0 0}
+  .leg i{display:inline-block;width:18px;height:0;border-top:2px solid var(--accent);vertical-align:middle;margin-right:5px}
+  .ctrls{display:flex;flex-wrap:wrap;gap:16px 26px;align-items:flex-end;margin:16px 0 6px}
+  .field{display:flex;flex-direction:column;gap:6px;min-width:210px;flex:1}
+  .field label{font-size:12px;color:var(--muted);font-family:var(--mono);letter-spacing:.03em;display:flex;justify-content:space-between}
+  .field label b{color:var(--ink);font-weight:600}
+  input[type=range]{width:100%;accent-color:var(--accent);height:20px}
+  svg{max-width:100%;height:auto;display:block}
+  .tally{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 2px}
+  .stat{flex:1;min-width:120px;background:var(--paper);border-radius:9px;padding:9px 12px}
+  .stat .k{font-size:11px;font-family:var(--mono);letter-spacing:.04em;color:var(--muted);text-transform:uppercase}
+  .stat .v{font-size:19px;font-weight:600;font-family:var(--mono);margin-top:2px}
+  .stat .v.sm{font-size:15px}
+  .stat .v.a{color:var(--accent)}.stat .v.g{color:var(--ok)}.stat .v.s{color:var(--series)}.stat .v.m{color:var(--miss)}
+  .callout{font-size:14px;color:var(--muted);border-left:2px solid var(--accent);padding:2px 0 2px 14px;margin:16px 0 2px;min-height:1.4em}
+  .theorem{background:var(--accent-bg);border-radius:12px;padding:18px 20px;margin:16px 0}
+  .theorem .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
+  .theorem p{font-family:var(--serif);font-size:16px;line-height:1.55;margin:0 0 10px}.theorem p:last-child{margin-bottom:0}
+  .twist{border:1px dashed var(--hair2);border-radius:12px;padding:16px 18px;margin:16px 0;background:var(--panel)}
+  .twist .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+  .twist p{margin:0 0 10px;font-size:14.6px}.twist p:last-child{margin-bottom:0}
+  .vol{background:var(--vol-bg);border:1px solid var(--vol);border-radius:12px;padding:18px 20px;margin:16px 0}
+  .vol .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:var(--vol);margin:0 0 8px}
+  .vol p{margin:0 0 10px;font-size:14.8px}.vol p:last-child{margin-bottom:0}
+  .vol code{font-family:var(--mono);font-size:13px;background:rgba(138,90,43,.12);padding:1px 5px;border-radius:4px}
+  .q{border:1px solid var(--hair);border-radius:12px;padding:16px 18px;margin:12px 0;background:var(--panel)}
+  .q .stem{font-size:15px;font-weight:500;margin:0 0 12px}
+  .opt{display:block;width:100%;text-align:left;font-size:14px;padding:10px 12px;margin:0 0 8px;border:1px solid var(--hair2);border-radius:8px;background:transparent;color:var(--ink);cursor:pointer;line-height:1.45}
+  .opt:last-child{margin-bottom:0}
+  .opt:hover{border-color:var(--accent)}
+  .opt.sel{border-color:var(--accent);background:var(--accent-bg)}
+  .opt.correct{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+  .opt.wrong{background:#F7ECEC;border-color:var(--miss);color:var(--miss)}
+  @media (prefers-color-scheme:dark){.opt.wrong{background:#2E1E1E}}
+  .fb{font-size:13.5px;color:var(--muted);margin:10px 0 0;line-height:1.5;display:none}
+  .fb.show{display:block}
+  .checkRow{display:flex;align-items:center;gap:14px;margin:18px 0 0;flex-wrap:wrap}
+  .hint{font-size:13px;color:var(--miss);display:none}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-family:var(--sans);font-size:14px;padding:8px 14px;border-radius:8px;border:1px solid var(--accent);cursor:pointer}
+  .scoreOut{font-family:var(--mono);font-size:14px;font-weight:600}
+  .done{display:none;align-items:center;gap:10px;background:var(--ok-bg);color:var(--ok);border-radius:10px;padding:12px 16px;font-size:14px;margin:14px 0 0}
+  .done.show{display:flex}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">Lesson 22 · Wing V — training-dynamics mysteries</p>
+  <h1>Double descent<span class="chip" id="chip"></span></h1>
+  <p class="sub">Test error rises, spikes, and then falls again — past the size where the model already fits every training point exactly.</p>
+  <div class="levels">
+    <span class="lk">Level</span>
+    <span class="pill"><b>US</b> Graduate</span>
+    <span class="pill"><b>FR</b> Master 2 – PhD</span>
+  </div>
+
+  <p class="lead">Classical statistics teaches one shape. Add parameters and error falls, because the model can finally represent the truth; keep adding and error rises, because the model starts fitting noise. <b>A U</b>, with the good model at its bottom. Modern practice keeps walking past the bottom, past the right-hand arm, past the point where the model reproduces the training set <b>exactly</b> — and finds that test error, having spiked, <b>falls again</b>. Two descents, with a catastrophe between them. This lesson makes the catastrophe computable in a page of linear algebra: it is not a deep-learning mystery, it is the smallest singular value of a matrix going to zero, and the second descent is <b>which</b> exact fit you choose once there are infinitely many. Lesson 21 told you loss falls smoothly with size; this lesson is about the one place where that promise breaks, and about why it breaks there and nowhere else.</p>
+
+  <div class="sec">The words, before the machinery</div>
+  <ul class="glo">
+    <li><span class="sym w">n, p</span><span class="def"><b>n</b> = training examples, <b>p</b> = parameters (here, features). <span class="n">The whole lesson is about their ratio, not their sizes. We hold n = 40 fixed and sweep p from 1 to 200.</span></span></li>
+    <li><span class="sym w">interpolation</span><span class="def">fitting the training data <b>exactly</b>: every residual zero, training error zero. <span class="n">Classically a symptom of disaster. Here it is the normal operating regime — every model with p &gt; n in this lesson interpolates.</span></span></li>
+    <li><span class="sym w">interpolation threshold</span><span class="def">the smallest p at which exact fitting first becomes possible. <span class="n">For a generic design matrix that is exactly <b>p = n</b>: n equations, n unknowns. Below it you cannot fit; above it you can fit in infinitely many ways.</span></span></li>
+    <li><span class="sym w">min-norm fit</span><span class="def">among all β that interpolate, the one with the smallest Euclidean length ‖β‖₂. <span class="n">It is Lesson 8's pseudoinverse solution X⁺y. Which interpolant you pick is the entire story of the second descent — they all have zero training error, so training error cannot choose for you.</span></span></li>
+    <li><span class="sym w">s₁ … s_r</span><span class="def">the <b>singular values</b> of the feature matrix (Lesson 8), sorted largest first. <span class="n">Written s here, not σ, because σ is reserved for the noise level in this lesson. s_min is the last non-negligible one; r is the rank.</span></span></li>
+    <li><span class="sym w">κ</span><span class="def">the <b>condition number</b> s_max/s_min: how uneven the information is across directions. <span class="n">Lesson 5's κ(XᵀX), square-rooted — same object, one level down.</span></span></li>
+    <li><span class="sym w">γ</span><span class="def">the <b>aspect ratio</b> p/n of the feature matrix. <span class="n">γ &lt; 1 tall (more rows than columns), γ = 1 square, γ &gt; 1 wide. The threshold is γ = 1.</span></span></li>
+    <li><span class="sym w">random features</span><span class="def">a fixed dictionary of p nonlinear functions of the input drawn once at random, then fitted <b>linearly</b>. <span class="n">The standard laboratory animal for this phenomenon: it has the capacity behaviour of a wide network with none of the optimisation mess, because the fit is a closed-form linear solve.</span></span></li>
+    <li><span class="sym w">ridge λ</span><span class="def">the penalty that adds λ‖β‖² to the squared error. <span class="n">λ = 0 is the un-regularized fit; λ &gt; 0 shrinks. Lesson 5 introduced it as the repair for a tiny eigenvalue; here it is the switch that turns double descent off.</span></span></li>
+    <li><span class="sym w">excess test error</span><span class="def">mean squared gap between the fitted function and the <b>noiseless</b> truth, on held-out inputs. <span class="n">Normalised so that predicting zero everywhere scores 1.00. The σ² noise floor is not added in, so the curve shows only the estimator's own damage.</span></span></li>
+    <li><span class="sym w">Marchenko–Pastur</span><span class="def">the limiting law for the eigenvalue histogram of a large random Gram matrix. <span class="n">Its only role here: it says where the spectrum's two edges sit as a function of γ, and the lower edge touches zero exactly at γ = 1.</span></span></li>
+  </ul>
+
+  <div class="sec">The classical picture — and the divergence hiding in it</div>
+  <p class="step">Fit p features to n points by ordinary least squares. Lesson 2's decomposition splits the error into a squared bias that <i>falls</i> with p (a richer model can represent more) and a variance that <i>rises</i> with p (more coefficients, each estimated from the same n points). For an isotropic Gaussian design the variance term is available in closed form, and so is its counterpart on the other side of the threshold:</p>
+  <div class="mblock math" data-tex="\underbrace{R(p)\;=\;A(p)\;+\;\sigma^{2}\,\frac{p}{n-p-1}}_{p\,<\,n-1\ \ (\text{least squares})}\qquad\qquad \underbrace{R(p)\;=\;B(p)\;+\;\sigma^{2}\,\frac{n}{p-n-1}}_{p\,>\,n+1\ \ (\text{min-norm interpolation})}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="A(p)"></span><span class="def">the <b>approximation error</b> of the best p-feature model. <span class="n">Non-increasing in p — this is the first descent, and nothing else is.</span></span></li>
+    <li><span class="sym math" data-tex="\sigma^{2}"></span><span class="def">the <b>noise variance</b> per training label: y = f*(x) + σ·(standard normal). <span class="n">The only thing being amplified. Set σ = 0 in the panel below and the whole spike goes with it.</span></span></li>
+    <li><span class="sym math" data-tex="\frac{p}{n-p-1}"></span><span class="def">the classical <b>variance inflation</b>, from Breiman &amp; Freedman (1983). <span class="n">Read the denominator: it is degrees of freedom left over, and it hits zero as p → n. The classical formula already diverges at the threshold — the U's right arm is not a gentle rise, it is the left face of a cliff.</span></span></li>
+    <li><span class="sym math" data-tex="\frac{n}{p-n-1}"></span><span class="def">the same term <b>mirrored</b> past the threshold (Hastie, Montanari, Rosset &amp; Tibshirani, 2022). <span class="n">Now it is p that grows and the variance that <i>decays</i> — the second descent, in one symbol. Both branches blow up at γ = 1 and calm down away from it.</span></span></li>
+    <li><span class="sym math" data-tex="B(p)"></span><span class="def">the <b>bias of the min-norm interpolant</b>. <span class="n">Not the same as A(p), and it moves the other way: shortening β shrinks the fit toward zero, so B <b>rises</b> with p — in the isotropic model B ∝ 1 − n/p, climbing from nothing at the threshold toward the full signal power. The second descent is the variance term collapsing <i>faster</i> than the bias climbs, not both falling together. Set σ = 0 in the panel below and what is left is B alone: its far end sits well above its value just past the cliff.</span></span></li>
+  </ul>
+
+  <div class="sec">The model you can actually compute</div>
+  <p class="step">Belkin, Hsu, Ma &amp; Mandal (2019) named the shape and, decisively, exhibited it in a model with no network in it at all — random-features regression. That is what the panels below run, because it makes every claim checkable in closed form.</p>
+  <p class="step">Inputs x ∈ ℝ⁸ drawn standard normal; p features φ<sub>j</sub>(x) = √2·cos(ω<sub>j</sub>ᵀx + b<sub>j</sub>) with ω<sub>j</sub>, b<sub>j</sub> drawn once and then frozen, so growing p <b>appends</b> features rather than redrawing them. The target is a fixed combination of the same dictionary with coefficients decaying like 1/j, so the first few features do most of the work. Stack the features into the n×p matrix X and fit:</p>
+  <div class="mblock math" data-tex="\hat\beta_{\lambda}=\arg\min_{\beta}\;\lVert y-X\beta\rVert_2^{2}+\lambda\lVert\beta\rVert_2^{2},\qquad \hat\beta_{0}\;=\;\lim_{\lambda\to0^{+}}\hat\beta_{\lambda}\;=\;X^{+}y\;=\;\arg\min\{\lVert\beta\rVert_2:\;X\beta=y\}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="X"></span><span class="def">the <b>feature matrix</b>, n×p, entry (i,j) = φ<sub>j</sub>(x<sub>i</sub>). <span class="n">The same design matrix as Lesson 5, only now the columns are random nonlinear functions instead of named factors.</span></span></li>
+    <li><span class="sym math" data-tex="X^{+}"></span><span class="def">the <b>Moore–Penrose pseudoinverse</b> VΣ⁺Uᵀ from Lesson 8. <span class="n">When p &gt; n there are infinitely many exact fits; X⁺y is the shortest of them, and that choice is the implicit regularization the second descent runs on.</span></span></li>
+    <li><span class="sym math" data-tex="\lambda"></span><span class="def">the <b>ridge</b> parameter. <span class="n">λ = 0 recovers plain least squares below the threshold and min-norm interpolation above it. Every λ &gt; 0 is a different estimator, and the shape of the curve belongs to the estimator, not to p.</span></span></li>
+  </ul>
+  <p class="step">Everything the panels show comes from one SVD per model size. Writing X = UΣVᵀ, the fitted coefficients and their expected length are exact:</p>
+  <div class="mblock math" data-tex="\hat\beta_{\lambda}=\sum_{i=1}^{r}\frac{s_i}{s_i^{2}+\lambda}\,\big(u_i^{\top}y\big)\,v_i,\qquad \mathbb{E}_{\varepsilon}\big\lVert\hat\beta_{\lambda}\big\rVert^{2}=\sum_{i=1}^{r}\left(\frac{s_i}{s_i^{2}+\lambda}\right)^{\!2}\Big[\big(u_i^{\top}f\big)^{2}+\sigma^{2}\Big]" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="s_i/(s_i^2+\lambda)"></span><span class="def">the <b>filter factor</b> on direction i. <span class="n">At λ = 0 it is 1/s<sub>i</sub> — unbounded. At λ &gt; 0 it never exceeds 1/(2√λ), whatever s<sub>i</sub> does. That single inequality is the whole ridge story.</span></span></li>
+    <li><span class="sym math" data-tex="u_i^{\top}y"></span><span class="def">how much of the labels points along the i-th left singular direction. <span class="n">y = f + ε is the training-label vector, <b>f</b> its noiseless part — the n numbers f*(x₁) … f*(x<sub>n</sub>) stacked — and ε the σ-scaled noise. So u<sub>i</sub>ᵀy splits into signal u<sub>i</sub>ᵀf and noise; averaging over the noise draw gives the (u<sub>i</sub>ᵀf)² + σ² above, exactly.</span></span></li>
+    <li><span class="sym math" data-tex="\mathbb{E}_{\varepsilon}"></span><span class="def">expectation over the <b>noise draw only</b>. <span class="n">The panels plot this closed form rather than a simulated average, so the curves carry no Monte-Carlo jitter: every wiggle you see is real structure in one seeded feature draw. Inputs and features are fixed; nothing is resampled when you move a slider.</span></span></li>
+  </ul>
+
+  <div class="sec">See it — the curve, computed live</div>
+  <div class="panel">
+    <svg id="plot1" viewBox="0 0 680 340" role="img" aria-label="Train and test error against number of features, log-log, with the interpolation threshold marked"></svg>
+    <div class="leg">
+      <span><i style="border-color:var(--accent)"></i>excess test error</span>
+      <span><i style="border-color:var(--series);border-top-style:dashed"></i>training error (log axis — an exact 0 is drawn on the 1e−4 floor)</span>
+      <span>┊ vertical dashed = interpolation threshold p = n = 40</span>
+      <span>● = the size selected in the next panel</span>
+    </div>
+    <div class="ctrls">
+      <div class="field"><label>label noise σ <b id="sigOut">0.30</b></label><input type="range" id="sig" min="0" max="80" value="30" step="2" /></div>
+      <div class="field"><label>ridge λ <b id="lamOut">0 (none)</b></label><input type="range" id="lam" min="0" max="48" value="0" step="1" /></div>
+    </div>
+    <div class="tally">
+      <div class="stat"><div class="k">test error @ selected p</div><div class="v a" id="s1te">—</div></div>
+      <div class="stat"><div class="k">train error @ selected p</div><div class="v s" id="s1tr">—</div></div>
+      <div class="stat"><div class="k">p / n</div><div class="v" id="s1pn">—</div></div>
+      <div class="stat"><div class="k">curve peaks at</div><div class="v m" id="s1pk">—</div></div>
+      <div class="stat"><div class="k">peak ÷ best</div><div class="v" id="s1rg">—</div></div>
+    </div>
+    <p class="callout" id="c1"></p>
+  </div>
+
+  <div class="sec">Why it spikes — divide by the smallest number you have</div>
+  <p class="step">Look again at the expected coefficient length. At λ = 0 every direction contributes [(u<sub>i</sub>ᵀf)² + σ²]/s<sub>i</sub>², and the last term of that sum has s_min² in the denominator. So the question "why does the fit explode at p = n?" reduces to "why does s_min collapse at p = n?" — and that is a fact about the shape of a random matrix, not about learning at all:</p>
+  <div class="mblock math" data-tex="\gamma=\frac{p}{n}:\qquad \operatorname{spec}\!\Big(\tfrac{1}{n}X^{\top}X\Big)\ \longrightarrow\ \big[(1-\sqrt{\gamma})^{2},\,(1+\sqrt{\gamma})^{2}\big] \quad\Longrightarrow\quad \frac{s_{\min}}{\sqrt n}\to\big|1-\sqrt\gamma\big|,\qquad \kappa\to\frac{1+\sqrt\gamma}{\big|1-\sqrt\gamma\big|}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="(1\pm\sqrt{\gamma})^{2}"></span><span class="def">the <b>Marchenko–Pastur edges</b> for a matrix with i.i.d. entries. <span class="n">At γ = 1 the lower edge is exactly 0: a square random matrix has a direction it barely sees. Away from γ = 1, in either direction, the edge lifts off zero — that is why the disaster is local to the threshold.</span></span></li>
+    <li><span class="sym math" data-tex="\kappa\to\infty"></span><span class="def">the <b>conditioning catastrophe</b> at γ = 1. <span class="n">Lesson 5's tiny eigenvalue of XᵀX and Lesson 8's near-zero singular value, arrived at here by counting rather than by correlation: nothing about these features is collinear, there are simply exactly as many of them as there are equations.</span></span></li>
+    <li><span class="sym math" data-tex="\sqrt n"></span><span class="def">the natural <b>scale</b> of a singular value when the entries have unit variance. <span class="n">Honest caveat, worth the ink: random <i>features</i> are not i.i.d. entries — the columns are correlated, so both measured edges sit far from the MP prediction. What survives untouched is the γ = 1 collapse, because it comes from squareness, not from the entry law.</span></span></li>
+  </ul>
+
+  <div class="sec">See it — the spectrum at the threshold</div>
+  <div class="panel">
+    <svg id="plot2" viewBox="0 0 680 260" role="img" aria-label="Singular values of the feature matrix on a log scale with the smallest highlighted"></svg>
+    <div class="leg"><span><i style="border-color:var(--accent);border-top-width:8px"></i>singular values s₁ … s_r</span><span><i style="border-color:var(--miss);border-top-width:8px"></i>s_min — the direction the pseudoinverse divides by</span></div>
+    <div class="ctrls">
+      <div class="field"><label>features p <b id="pOut">40</b></label><input type="range" id="p" min="0" max="41" value="24" step="1" /></div>
+    </div>
+    <div class="tally">
+      <div class="stat"><div class="k">s_max</div><div class="v" id="s2mx">—</div></div>
+      <div class="stat"><div class="k">s_min</div><div class="v m" id="s2mn">—</div></div>
+      <div class="stat"><div class="k">κ = s_max/s_min</div><div class="v a" id="s2kp">—</div></div>
+      <div class="stat"><div class="k">‖β̂‖</div><div class="v s" id="s2bn">—</div></div>
+      <div class="stat"><div class="k">last direction's share of ‖β̂‖²</div><div class="v sm g" id="s2sh">—</div></div>
+    </div>
+    <p class="callout" id="c2"></p>
+  </div>
+
+  <div class="theorem">
+    <p class="lbl">The precise statement</p>
+    <p><b>(i) Minimum-norm interpolation.</b> If rank(X) = n ≤ p, then {β : Xβ = y} is a non-empty affine subspace and X⁺y is its unique element of smallest Euclidean norm; equivalently X⁺y = lim<sub>λ→0⁺</sub>(XᵀX + λI)⁻¹Xᵀy. Every element of that set has zero training error, so the training loss does not distinguish them: the estimator does.</p>
+    <p><b>(ii) Conditioning at the threshold.</b> For X with i.i.d. mean-zero, unit-variance entries and γ = p/n fixed, the spectral measure of n⁻¹XᵀX converges to the Marchenko–Pastur law on [(1−√γ)², (1+√γ)²] — plus, when γ &gt; 1, an atom of mass 1 − 1/γ at zero, contributed by the p − n directions the data never sees; hence s_min/√n → |1−√γ| for the smallest <i>non-zero</i> singular value and κ → (1+√γ)/|1−√γ|, which diverges at γ = 1. For a square random matrix with i.i.d. sub-Gaussian entries the smallest singular value is of order n^(−1/2) times the typical scale (Rudelson–Vershynin), so κ ≍ n across entry distributions and not merely for Gaussians. Since E‖X⁺y‖² = Σᵢ[(uᵢᵀf)² + σ²]/sᵢ², the squared coefficient norm and the variance term diverge with it, at rate σ²/s_min².</p>
+    <p><b>(iii) It is a property of the estimator.</b> Double descent is not a statement that parameters help. Nakkiran, Venkat, Kakade and Ma (2020) prove that for the well-specified isotropic linear model with the ridge penalty tuned optimally at each p, the expected test risk is monotone non-increasing in p — and in n. The spike, and therefore the second descent that undoes it, is what un-regularized minimum-norm interpolation looks like; optimally-regularized fitting has neither.</p>
+  </div>
+
+  <div class="twist">
+    <p class="lbl">The twist — the lesson is not "bigger is better", it is "don't camp on the cliff"</p>
+    <p>The popular reading of double descent is that over-parameterization is free. The curve says something narrower and more useful: <b>the interpolation threshold is a conditioning cliff, and you should not build there</b>. Everything to the right of it is a recovery from a wound you inflicted by choosing γ = 1. In this lesson's model, at the noise level currently on the slider and with the ridge switched off, the best under-parameterized size scores <b id="tw1">—</b> while the best over-parameterized size scores <b id="tw2">—</b>: the second descent recovers, and it still does not get back below what a properly-sized classical model already had. Search the ridge as well and the best error anywhere on the (p, λ) grid is <b id="tw3">—</b> — reached without ever fitting the training set exactly. Double descent is the shadow cast by refusing to regularize.</p>
+    <p>Second barrel, and it is the one that settles the question. The same shape appears where there are no parameters to add. <b>Epoch-wise</b>: hold the architecture fixed, train longer, and test error can rise, spike and fall again — Nakkiran et al. (2019) document this across ResNets and Transformers. <b>Sample-wise</b>: hold the model fixed and add <i>data</i>, and there is a band where more data makes generalization strictly worse. That happens in this lesson's model too — pin p at 60 and grow n through 60 and the error climbs by orders of magnitude before collapsing again — because the cliff is at γ = p/n = 1, and you can drive γ to 1 by growing the denominator just as easily as the numerator. A phenomenon that fires when you add data is not a phenomenon about capacity.</p>
+  </div>
+
+  <div class="sec">Re-applied — the factor zoo is a p/n problem</div>
+  <p class="step">A risk model has p candidate factors and n days. That is this lesson with the labels changed, and desks reach γ ≈ 1 without trying: Cochrane's "factor zoo" is now several hundred published candidates, and a rolling one-year estimation window is 252 observations. Run 250 factors on 252 days and you are standing on the threshold — the feature matrix is effectively square, s_min collapses, and the fitted betas explode. Lesson 5 got you into that state through <i>correlation</i> between a handful of drivers; the zoo gets you there through sheer <i>count</i>, with no two factors especially alike.</p>
+  <p class="step">The symptoms are the ones Lesson 5 catalogued — enormous coefficients, signs that flip on refit, hedge ratios that are individually meaningless while the fitted P&amp;L looks fine — and the fixes are the ones Lesson 8 supplied: ridge, or drop the near-zero singular directions with a truncated pseudoinverse. Note what the panels above just demonstrated about those fixes: they are not merely prudent, they are the exact operation that <b>removes the spike</b>. And note what nobody in finance should take from this lesson: there is no second descent to walk to. Estimating 5,000 factors on 252 days would put you far past the threshold with a min-norm interpolant of one year of returns, which is a machine for fitting one year of noise. The usable half of the curve is the left flank, and the instruction is to stay well clear of its right edge.</p>
+
+  <div class="vol">
+    <p class="lbl">Why this matters · volarixs</p>
+    <p>The Cross-Matrix (Lesson 7) runs into the left flank cell by cell. Its driver panel already carries dispersion at five horizons plus their z-scores plus several country vols — p is not small — while a <b>regime-conditional</b> cell is fitted only on the dates carrying that label, so n is whatever the regime gave you. Rare regimes are exactly the cells where p/n creeps toward 1, and they are the cells whose β you most want to believe. That is a γ diagnostic, and it is cheap: κ of the cell's Gram matrix, per cell, before reading the coefficient.</p>
+    <p>You already have the downstream symptom and the repair. <code>sign_stability</code> is what a near-threshold cell looks like from outside — the coefficient is huge, the fit in-sample is fine, and the sign flips across subperiods, which is precisely the small-s_min direction sliding. <code>bayesian_pooled_elasticity</code> is ridge under another name (shrink toward a sector or index prior), and <code>pca_factors</code> is the truncated-SVD route from Lesson 8: fit on the leading directions and refuse to divide by the last ones. The honest boundary: nothing in the Cross-Matrix interpolates, so the second descent is not yours to use. What is yours is the first half of the curve and the conditioning read that tells you when you have wandered onto its right edge.</p>
+  </div>
+
+  <div class="sec">Check yourself</div>
+  <div class="q" id="q1"><p class="stem">The test-error spike sits at:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q2"><p class="stem">Mechanically, what causes it?</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q3"><p class="stem">Past the threshold infinitely many coefficient vectors fit the training data exactly. The pseudoinverse picks:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q4"><p class="stem">What does an optimally-tuned ridge penalty do to the curve?</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q5"><p class="stem">The finance version of this geometry is:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q6"><p class="stem">The honest one-line takeaway is:</p><div class="opts"></div><p class="fb"></p></div>
+
+  <div class="checkRow">
+    <button class="primary" id="check">Check answers</button>
+    <span class="scoreOut" id="scoreOut"></span>
+    <span class="hint" id="hint">Answer all six first.</span>
+  </div>
+  <div class="done" id="done">Cliff mapped. Next in Wing V: grokking — when generalization arrives late.</div>
+</div>
+
+<script>
+/* storage shim: window.storage (Claude artifacts) or localStorage (web) */
+if(!window.storage){window.storage={async get(k){const v=localStorage.getItem(k);if(v==null)throw new Error('missing');return{key:k,value:v}},async set(k,v){localStorage.setItem(k,v);return{key:k,value:v}},async delete(k){localStorage.removeItem(k);return{key:k,deleted:true}},async list(p){const ks=[];for(let i=0;i<localStorage.length;i++){const kk=localStorage.key(i);if(!p||kk.startsWith(p))ks.push(kk)}return{keys:ks}}};}
+function renderMath(){document.querySelectorAll('.math').forEach(el=>{const tex=el.getAttribute('data-tex');if(!tex||el.dataset.done)return;try{if(window.katex){katex.render(tex,el,{displayMode:el.dataset.display==='1',throwOnError:false});el.dataset.done='1';}else el.textContent=tex;}catch(e){el.textContent=tex;}});}
+function mulberry32(seed){let a=seed>>>0;return function(){a|=0;a=(a+0x6D2B79F5)|0;let t=Math.imul(a^(a>>>15),1|a);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296;}}
+function randn(rng){let u=0,v=0;while(!u)u=rng();while(!v)v=rng();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+
+/* ---------- the world: frozen features, frozen design, decaying teacher ---------- */
+const SEED=122,DIM=8,NTR=40,NTE=200,PMAX=200,WSC=0.7;
+const PGRID=[1,2,3,4,5,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,37,38,39,40,41,42,43,44,46,48,50,55,60,70,80,95,110,130,155,180,200];
+const RNG=mulberry32(SEED),OM=[],BB=new Float64Array(PMAX);
+for(let j=0;j<PMAX;j++){const w=new Float64Array(DIM);for(let k=0;k<DIM;k++)w[k]=randn(RNG)*(WSC/Math.sqrt(DIM));OM.push(w);BB[j]=RNG()*2*Math.PI;}
+function drawRows(m){const R=[];for(let i=0;i<m;i++){const r=new Float64Array(DIM);for(let k=0;k<DIM;k++)r[k]=randn(RNG);R.push(r);}return R;}
+const RTR=drawRows(NTR),RTE=drawRows(NTE);function featMat(rows){const M=new Float64Array(rows.length*PMAX);for(let i=0;i<rows.length;i++){const r=rows[i];for(let j=0;j<PMAX;j++){let s=0;const w=OM[j];for(let k=0;k<DIM;k++)s+=w[k]*r[k];M[i*PMAX+j]=Math.SQRT2*Math.cos(s+BB[j]);}}return M;}
+const FTR=featMat(RTR),FTE=featMat(RTE),TH=new Float64Array(PMAX),ftr=new Float64Array(NTR),fte=new Float64Array(NTE);
+for(let j=0;j<PMAX;j++)TH[j]=1/(j+1);
+for(let i=0;i<NTR;i++){let s=0;for(let j=0;j<PMAX;j++)s+=FTR[i*PMAX+j]*TH[j];ftr[i]=s;}
+for(let i=0;i<NTE;i++){let s=0;for(let j=0;j<PMAX;j++)s+=FTE[i*PMAX+j]*TH[j];fte[i]=s;}
+(function(){let pw=0;for(let i=0;i<NTE;i++)pw+=fte[i]*fte[i];const sc=1/Math.sqrt(pw/NTE);for(let i=0;i<NTR;i++)ftr[i]*=sc;for(let i=0;i<NTE;i++)fte[i]*=sc;})();
+let FTE2=0,FTR2=0;for(let i=0;i<NTE;i++)FTE2+=fte[i]*fte[i];for(let i=0;i<NTR;i++)FTR2+=ftr[i]*ftr[i];
+
+/* ---------- symmetric eigendecomposition by cyclic Jacobi ---------- */
+function jacobiEig(Ain,m){
+  const A=Float64Array.from(Ain),V=new Float64Array(m*m);for(let i=0;i<m;i++)V[i*m+i]=1;
+  for(let sweep=0;sweep<60;sweep++){
+    let off=0;for(let i=0;i<m;i++)for(let j=i+1;j<m;j++)off+=A[i*m+j]*A[i*m+j];
+    if(off<=1e-30)break;
+    for(let a=0;a<m-1;a++)for(let b=a+1;b<m;b++){
+      const apq=A[a*m+b];if(Math.abs(apq)<1e-300)continue;
+      const th=(A[b*m+b]-A[a*m+a])/(2*apq);
+      const t=(th>=0?1:-1)/(Math.abs(th)+Math.sqrt(1+th*th));
+      const c=1/Math.sqrt(1+t*t),s=t*c;
+      for(let k=0;k<m;k++){const x=A[k*m+a],z=A[k*m+b];A[k*m+a]=c*x-s*z;A[k*m+b]=s*x+c*z;}
+      for(let k=0;k<m;k++){const x=A[a*m+k],z=A[b*m+k];A[a*m+k]=c*x-s*z;A[b*m+k]=s*x+c*z;}
+      for(let k=0;k<m;k++){const x=V[k*m+a],z=V[k*m+b];V[k*m+a]=c*x-s*z;V[k*m+b]=s*x+c*z;}
+    }
+  }
+  const raw=new Float64Array(m);for(let i=0;i<m;i++)raw[i]=A[i*m+i];
+  const ord=Array.from({length:m},(_,i)=>i).sort((x,y)=>raw[y]-raw[x]),val=new Float64Array(m),vec=new Float64Array(m*m);
+  ord.forEach((src,dst)=>{val[dst]=raw[src];for(let k=0;k<m;k++)vec[k*m+dst]=V[k*m+src];});
+  return {val,vec};
+}
+
+/* ---------- per-p precompute: singular values, signal projections, test Gram ---------- */
+function prep(p){
+  let s,a,G,h,rank,T;
+  if(p<=NTR){
+    const m=p,Gm=new Float64Array(m*m);
+    for(let i=0;i<m;i++)for(let j=i;j<m;j++){let t=0;for(let r=0;r<NTR;r++)t+=FTR[r*PMAX+i]*FTR[r*PMAX+j];Gm[i*m+j]=t;Gm[j*m+i]=t;}
+    const E=jacobiEig(Gm,m),sa=new Float64Array(m);rank=0;
+    for(let i=0;i<m;i++)sa[i]=Math.sqrt(Math.max(E.val[i],0));
+    for(let i=0;i<m;i++)if(sa[i]>1e-10*sa[0])rank++;
+    s=sa.slice(0,rank);const Xtf=new Float64Array(m);
+    for(let j=0;j<m;j++){let t=0;for(let r=0;r<NTR;r++)t+=FTR[r*PMAX+j]*ftr[r];Xtf[j]=t;}
+    a=new Float64Array(rank);
+    for(let i=0;i<rank;i++){let t=0;for(let k=0;k<m;k++)t+=E.vec[k*m+i]*Xtf[k];a[i]=t/s[i];}
+    T=new Float64Array(NTE*rank);
+    for(let r=0;r<NTE;r++)for(let i=0;i<rank;i++){let t=0;for(let k=0;k<m;k++)t+=FTE[r*PMAX+k]*E.vec[k*m+i];T[r*rank+i]=t;}
+  } else {
+    const m=NTR,K=new Float64Array(m*m);
+    for(let i=0;i<m;i++)for(let j=i;j<m;j++){let t=0;for(let k=0;k<p;k++)t+=FTR[i*PMAX+k]*FTR[j*PMAX+k];K[i*m+j]=t;K[j*m+i]=t;}
+    const E=jacobiEig(K,m),sa=new Float64Array(m);rank=0;
+    for(let i=0;i<m;i++)sa[i]=Math.sqrt(Math.max(E.val[i],0));
+    for(let i=0;i<m;i++)if(sa[i]>1e-10*sa[0])rank++;
+    s=sa.slice(0,rank);a=new Float64Array(rank);
+    for(let i=0;i<rank;i++){let t=0;for(let r=0;r<NTR;r++)t+=E.vec[r*m+i]*ftr[r];a[i]=t;}
+    const M=new Float64Array(NTE*NTR);
+    for(let r=0;r<NTE;r++)for(let q=0;q<NTR;q++){let t=0;for(let k=0;k<p;k++)t+=FTE[r*PMAX+k]*FTR[q*PMAX+k];M[r*NTR+q]=t;}
+    T=new Float64Array(NTE*rank);
+    for(let r=0;r<NTE;r++)for(let i=0;i<rank;i++){let t=0;for(let q=0;q<NTR;q++)t+=M[r*NTR+q]*E.vec[q*m+i];T[r*rank+i]=t/s[i];}
+  }
+  G=new Float64Array(rank*rank);h=new Float64Array(rank);
+  for(let i=0;i<rank;i++){
+    for(let j=i;j<rank;j++){let t=0;for(let r=0;r<NTE;r++)t+=T[r*rank+i]*T[r*rank+j];G[i*rank+j]=t;G[j*rank+i]=t;}
+    let t=0;for(let r=0;r<NTE;r++)t+=T[r*rank+i]*fte[r];h[i]=t;
+  }
+  return {p,rank,s,a,G,h};
+}
+
+/* ---------- exact expectation over the noise draw ---------- */
+function evalAt(pr,sig,lam){
+  const r=pr.rank,f=new Float64Array(r);
+  for(let i=0;i<r;i++)f[i]=pr.s[i]/(pr.s[i]*pr.s[i]+lam);
+  let q=0,qn=0,hc=0;for(let i=0;i<r;i++){let t=0;for(let j=0;j<r;j++)t+=pr.G[i*r+j]*f[j]*pr.a[j];q+=f[i]*pr.a[i]*t;qn+=pr.G[i*r+i]*f[i]*f[i];hc+=f[i]*pr.a[i]*pr.h[i];}
+  const test=Math.max(0,(q+sig*sig*qn-2*hc+FTE2)/NTE);
+  let tr=0;for(let i=0;i<r;i++){const g=1-f[i]*pr.s[i];tr+=(pr.a[i]*pr.a[i]+sig*sig)*(g*g-1);}
+  const train=Math.max(0,(tr+FTR2+NTR*sig*sig)/NTR);
+  let bn=0,last=0;for(let i=0;i<r;i++){const c=f[i]*f[i]*(pr.a[i]*pr.a[i]+sig*sig);bn+=c;if(i===r-1)last=c;}
+  return {test,train,bnorm:Math.sqrt(bn),share:bn>0?last/bn:0};
+}
+const PREP=PGRID.map(prep);
+
+/* ---------- formatting & plotting ---------- */
+function fnum(x){if(!isFinite(x))return '—';if(x===0)return '0';const a=Math.abs(x);if(a>=1e4||a<1e-3)return x.toExponential(2).replace('e-','e−').replace('e+','e');return a>=100?x.toFixed(1):a>=10?x.toFixed(2):a>=1?x.toFixed(3):x.toFixed(4);}
+const LOG10=Math.log(10);function lg(v){return Math.log(v)/LOG10;}function lamOf(i){return i===0?0:Math.pow(10,-4+(i-1)*7/47);}
+function drawCurve(curve,pi){
+  const W=680,H=340,pl=54,pr=14,pt=14,pb=34,iw=W-pl-pr,ih=H-pt-pb;
+  const x0=0,x1=lg(200),y0=-4,y1=lg(400),X=p=>pl+(lg(p)-x0)/(x1-x0)*iw,Y=v=>pt+ih-(lg(Math.max(v,1.05e-4))-y0)/(y1-y0)*ih;let s='';
+  for(let d=-4;d<=2;d++){const y=Y(Math.pow(10,d));s+=`<line x1="${pl}" y1="${y.toFixed(1)}" x2="${W-pr}" y2="${y.toFixed(1)}" stroke="var(--hair)"/>`;
+    s+=`<text x="${pl-7}" y="${(y+3.5).toFixed(1)}" text-anchor="end" font-family="ui-monospace,monospace" font-size="10" fill="var(--faint)">1e${d}</text>`;}
+  [1,2,5,10,20,40,100,200].forEach(t=>{const x=X(t);s+=`<text x="${x.toFixed(1)}" y="${H-10}" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--faint)">${t}</text>`;});
+  s+=`<line x1="${X(NTR)}" y1="${pt}" x2="${X(NTR)}" y2="${pt+ih}" stroke="var(--miss)" stroke-width="1.2" stroke-dasharray="4 3"/>`;
+  s+=`<text x="${(X(NTR)+5).toFixed(1)}" y="${pt+11}" font-family="ui-monospace,monospace" font-size="10" fill="var(--miss)">p = n = 40</text>`;
+  const path=k=>curve.map((c,i)=>`${i?'L':'M'}${X(PGRID[i]).toFixed(1)},${Y(c[k]).toFixed(1)}`).join(' ');
+  s+=`<path d="${path('train')}" fill="none" stroke="var(--series)" stroke-width="1.6" stroke-dasharray="5 3"/>`;
+  s+=`<path d="${path('test')}" fill="none" stroke="var(--accent)" stroke-width="2.2"/>`;
+  s+=`<circle cx="${X(PGRID[pi]).toFixed(1)}" cy="${Y(curve[pi].test).toFixed(1)}" r="4.5" fill="var(--accent)" stroke="var(--panel)" stroke-width="1.5"/>`;
+  s+=`<text x="${pl}" y="${H-10}" font-family="ui-monospace,monospace" font-size="10" fill="var(--faint)">p →</text>`;
+  document.getElementById('plot1').innerHTML=s;
+}
+function drawSpec(pr){
+  const W=680,H=260,pl=54,pR=14,pt=14,pb=28,iw=W-pl-pR,ih=H-pt-pb;
+  const y0=-3,y1=lg(200),r=pr.rank,bw=iw/r,Y=v=>pt+ih-(lg(Math.max(v,1.05e-3))-y0)/(y1-y0)*ih;let s='';
+  for(let d=-3;d<=2;d++){const y=Y(Math.pow(10,d));s+=`<line x1="${pl}" y1="${y.toFixed(1)}" x2="${W-pR}" y2="${y.toFixed(1)}" stroke="var(--hair)"/>`;
+    s+=`<text x="${pl-7}" y="${(y+3.5).toFixed(1)}" text-anchor="end" font-family="ui-monospace,monospace" font-size="10" fill="var(--faint)">1e${d}</text>`;}
+  for(let i=0;i<r;i++){const y=Y(pr.s[i]),x=pl+i*bw,fill=(i===r-1)?'var(--miss)':'var(--accent)';
+    s+=`<rect x="${(x+Math.min(1,bw*0.12)).toFixed(1)}" y="${y.toFixed(1)}" width="${Math.max(1.2,bw-2*Math.min(1,bw*0.12)).toFixed(1)}" height="${(pt+ih-y).toFixed(1)}" fill="${fill}" opacity="${i===r-1?0.95:0.75}"/>`;}
+  s+=`<line x1="${pl}" y1="${pt+ih}" x2="${W-pR}" y2="${pt+ih}" stroke="var(--hair2)"/>`;
+  s+=`<text x="${pl}" y="${H-8}" font-family="ui-monospace,monospace" font-size="10" fill="var(--faint)">i = 1</text>`;
+  s+=`<text x="${W-pR}" y="${H-8}" text-anchor="end" font-family="ui-monospace,monospace" font-size="10" fill="var(--faint)">i = r = ${r}</text>`;
+  document.getElementById('plot2').innerHTML=s;
+}
+
+/* ---------- update ---------- */
+const LGRID=[];for(let i=0;i<=48;i++)LGRID.push(lamOf(i));
+function update(){
+  const sig=+document.getElementById('sig').value/100,lam=lamOf(+document.getElementById('lam').value),pi=+document.getElementById('p').value,p=PGRID[pi];
+  document.getElementById('sigOut').textContent=sig.toFixed(2);
+  document.getElementById('lamOut').textContent=lam===0?'0 (none)':fnum(lam);
+  document.getElementById('pOut').textContent=p;
+  const curve=PREP.map(pp=>evalAt(pp,sig,lam)),te=curve.map(c=>c.test);
+  const pk=te.indexOf(Math.max(...te)),mn=te.indexOf(Math.min(...te)),range=te[mn]>0?te[pk]/te[mn]:Infinity;
+  drawCurve(curve,pi);const here=curve[pi],pr=PREP[pi];
+  document.getElementById('s1te').textContent=fnum(here.test);
+  document.getElementById('s1tr').textContent=here.train<1e-12?'0 (exact)':fnum(here.train);
+  document.getElementById('s1pn').textContent=(p/NTR).toFixed(3);
+  document.getElementById('s1pk').textContent='p = '+PGRID[pk];
+  document.getElementById('s1rg').textContent=fnum(range)+'×';
+  const nIdx=PGRID.indexOf(NTR),thr=te[mn]>0?te[nIdx]/te[mn]:Infinity;
+  const reg = p<NTR ? 'Fewer parameters than points: the fit is a genuine least-squares compromise and the training error stays above zero.'
+    : lam>0 ? (p===NTR ? 'Exactly p = n: the matrix is square, so at λ = 0 the fit would be unique and exact — but the ridge is on, so it is shrunk and the training error is no longer zero.'
+                       : 'More parameters than points, so at λ = 0 infinitely many exact fits would exist and the pseudoinverse would take the shortest — but the ridge is on, and this fit interpolates nothing.')
+    : p===NTR ? 'Exactly p = n: the matrix is square, the fit is unique and exact, and the last singular direction has nowhere to hide.'
+    : 'More parameters than points: infinitely many exact fits exist, and the pseudoinverse takes the shortest one.';
+  const cliff = thr>20 ? `The threshold is a cliff — error at p = n is ${fnum(thr)}× the best point on the curve.`
+    : thr>2 ? `The threshold is a bump — error at p = n is ${fnum(thr)}× the best point on the curve.`
+    : `The threshold is no longer special — error at p = n is only ${fnum(thr)}× the best point on the curve.`;
+  const lever = lam===0
+    ? (sig===0 ? `λ = 0, so nothing damps the small directions — but σ = 0 leaves nothing to amplify except the target’s own unmodelled tail, which costs ${fnum(te[nIdx])} at p = n against a signal power of 1.00.`
+               : 'λ = 0, so the filter factor on the last direction is the full 1/s_min and the σ² term rides it straight up.')
+    : `λ = ${fnum(lam)} caps every filter factor at 1/(2√λ) = ${fnum(1/(2*Math.sqrt(lam)))}, so no direction can be divided by nothing.`;
+  document.getElementById('c1').textContent=`p = ${p} (p/n = ${(p/NTR).toFixed(3)}), noise σ = ${sig.toFixed(2)}. ${reg} Test error here ${fnum(here.test)}; training error ${here.train<1e-12?'exactly 0':fnum(here.train)}. Across the sweep the curve peaks at p = ${PGRID[pk]} (${fnum(te[pk])}) and bottoms at p = ${PGRID[mn]} (${fnum(te[mn])}) — a range of ${fnum(range)}×. ${cliff} ${lever}`;
+  drawSpec(pr);const smin=pr.s[pr.rank-1],smax=pr.s[0];
+  document.getElementById('s2mx').textContent=fnum(smax);
+  document.getElementById('s2mn').textContent=fnum(smin);
+  document.getElementById('s2kp').textContent=fnum(smax/smin);
+  document.getElementById('s2bn').textContent=fnum(here.bnorm);
+  document.getElementById('s2sh').textContent=(100*here.share).toFixed(1)+'%';
+  const shareTxt = pr.rank===1 ? 'There is only one direction, so it carries all of it by default.'
+    : `That single direction carries ${(100*here.share).toFixed(1)}% of the squared coefficient norm, out of ${pr.rank} directions in total.`;
+  const gam=p/NTR,pn40=PREP[nIdx],kThr=pn40.s[0]/pn40.s[pn40.rank-1],ease=kThr/(smax/smin);
+  const mp = Math.abs(gam-1)<1e-9 ? 'At γ = 1 the Marchenko–Pastur lower edge is exactly zero: this is the collapse, and it is a fact about squareness.'
+    : `At γ = ${gam.toFixed(3)} the MP lower edge |1 − √γ| = ${Math.abs(1-Math.sqrt(gam)).toFixed(3)} is off zero — but read the measured number, not the asymptotic one: κ here is ${fnum(ease)}× smaller than at p = n, ${ease<3?'which is barely anything. The cliff has a broad shoulder, and this is still a bad place to stand.':ease<25?'which helps, though the conditioning here is still poor.':'far enough that the collapse is behind you.'}`;
+  document.getElementById('c2').textContent=`p = ${p}: the feature matrix is 40 × ${p} with rank ${pr.rank}. Its singular values run from s_max = ${fnum(smax)} down to s_min = ${fnum(smin)}, so κ = ${fnum(smax/smin)}. The fitted coefficients have length ‖β̂‖ = ${fnum(here.bnorm)}. ${shareTxt} ${mp}`;
+  let bb=Infinity,bp=0,bl=0;for(const L of LGRID)for(let i=0;i<PREP.length;i++){const t=evalAt(PREP[i],sig,L).test;if(t<bb){bb=t;bp=PGRID[i];bl=L;}}
+  const te0=PREP.map(pp=>evalAt(pp,sig,0).test);let preB=Infinity,prePi=0,postB=Infinity,postPi=0;
+  PGRID.forEach((pp,i)=>{if(pp<NTR&&te0[i]<preB){preB=te0[i];prePi=pp;}if(pp>NTR&&te0[i]<postB){postB=te0[i];postPi=pp;}});
+  document.getElementById('tw1').textContent=`${fnum(preB)} at p = ${prePi}`;
+  document.getElementById('tw2').textContent=`${fnum(postB)} at p = ${postPi}`;
+  document.getElementById('tw3').textContent=`${fnum(bb)}, at p = ${bp} with λ = ${bl===0?'0':fnum(bl)}`;
+}
+['sig','lam','p'].forEach(id=>document.getElementById(id).addEventListener('input',update));
+
+/* ---------- retrieval ---------- */
+const QS={
+  q1:{opts:["p = 2n, where there are twice as many parameters as data points","p = n, the interpolation threshold — the first size that can fit all n points exactly","p = d, the input dimension — one feature per coordinate of x","at the largest size on the sweep, where the coefficient vector is longest"],a:1,
+    fb:"The spike sits at the interpolation threshold p = n: n equations, n unknowns, a square feature matrix. Not at p = 2n — that sits on the far side of the spike, where the second descent has already taken hold; not at the input dimension d = 8, which the threshold does not depend on at all; and not at the largest size — panel 2 shows ‖β̂‖ peaking at p = 40 and back near 1 by p = 200. Note that training error cannot be used to find it either: it is exactly zero at p = n and at every larger p, so it distinguishes nothing across the whole right half of the sweep."},
+  q2:{opts:["the model memorises the training set and therefore stops generalising","the parameter count crosses a hard information-theoretic limit","the smallest singular value of the feature matrix collapses, so the pseudoinverse divides by it and the coefficient norm explodes","the optimiser fails to converge near the threshold"],a:2,
+    fb:"E‖β̂₀‖² = Σᵢ[(uᵢᵀf)² + σ²]/sᵢ², so the last direction contributes a term with s_min² in the denominator. At p = n that s_min collapses and the term dominates — Lesson 5's tiny eigenvalue of XᵀX and Lesson 8's near-zero singular value, reached by counting instead of by correlation. Memorisation is not the culprit: every p > n memorises too, and those models are fine. And there is no optimiser here — the fit is a closed-form linear solve."},
+  q3:{opts:["the sparsest exact fit, with as many zero coefficients as possible","the exact fit with the smallest ‖β‖₂ — and past the threshold every added feature can only shrink that minimum","the exact fit with the smallest training error","an arbitrary exact fit, since they are all equivalent"],a:1,
+    fb:"X⁺y minimises ‖β‖₂ over the affine set {β : Xβ = y} — that is part (i) of the theorem box above; X⁺ itself is Lesson 8's pseudoinverse. Adding a feature embeds that set inside a larger one, so the minimum over it can only shrink — the implicit regularization behind the second descent. Every interpolant carries the same zero training error, so training error cannot make the choice; but they differ sharply out of sample, which is why the choice is anything but arbitrary. Sparsity is what an ℓ₁ penalty buys, not the pseudoinverse."},
+  q4:{opts:["it shifts the spike to a larger p","it drives the training error to zero at every p","it deepens the second descent but leaves the spike where it was","it removes the spike: with λ tuned at each p the expected risk is monotone in p, so the threshold stops being special"],a:3,
+    fb:"Ridge replaces the filter factor 1/sᵢ by sᵢ/(sᵢ²+λ), which never exceeds 1/(2√λ) however small sᵢ gets — the divide-by-nothing is capped. Nakkiran, Venkat, Kakade & Ma (2020) prove monotonicity in p for optimally-tuned ridge in the well-specified isotropic model. Drag λ up in the first panel: the peak leaves p = n rather than moving along with it, and ridge raises training error rather than lowering it."},
+  q5:{opts:["p candidate factors regressed on n days of returns — at p ≈ n the betas explode and the fit is worthless out of sample","a requirement that the number of trading days exceed the number of trades","a neural-network-only phenomenon with no linear-model analogue","a statement about transaction costs eroding a signal"],a:0,
+    fb:"A risk model with p candidate factors on n days has exactly this γ = p/n, and 250 factors on a one-year window sits on the threshold. Lesson 5 got there through correlation between a few drivers; the factor zoo gets there through sheer count. The fixes desks already use — ridge, truncated-SVD (Lesson 8) — are precisely the operation that removes the spike."},
+  q6:{opts:["more parameters reliably improve generalization","double descent shows the bias–variance decomposition is wrong","it is a property of the estimator — un-regularized minimum-norm interpolation — not of parameter count as such","the training-error curve tells you where the best model sits"],a:2,
+    fb:"The shape belongs to the rule that picks the interpolant. With ridge tuned at each p the expected risk is monotone, so there is no spike to recover from and no second descent to find. The bias–variance decomposition is an algebraic identity and stays exactly true; what fails is the folklore that variance must keep rising with parameter count. And training error is zero for every p ≥ n, so it distinguishes nothing at all."}
+};
+const sel={q1:null,q2:null,q3:null,q4:null,q5:null,q6:null};let revealed=false;
+Object.keys(QS).forEach(id=>{const holder=document.querySelector('#'+id+' .opts');QS[id].opts.forEach((txt,i)=>{const b=document.createElement('button');b.className='opt';b.textContent=String.fromCharCode(65+i)+'.  '+txt;b.onclick=()=>{if(revealed)return;sel[id]=i;[...holder.children].forEach((c,ci)=>c.classList.toggle('sel',ci===i));document.getElementById('hint').style.display='none';};holder.appendChild(b);});});
+document.getElementById('check').onclick=async()=>{
+  if(revealed)return;if(Object.values(sel).some(v=>v===null)){document.getElementById('hint').style.display='inline';return;}
+  revealed=true;let score=0;
+  Object.keys(QS).forEach(id=>{const a=QS[id].a,holder=document.querySelector('#'+id+' .opts'),fb=document.querySelector('#'+id+' .fb');[...holder.children].forEach((c,ci)=>{c.style.cursor='default';c.classList.remove('sel');if(ci===a)c.classList.add('correct');else if(ci===sel[id])c.classList.add('wrong');});if(sel[id]===a)score++;fb.textContent=QS[id].fb;fb.classList.add('show');});
+  document.getElementById('check').style.opacity='0.5';document.getElementById('check').textContent='Checked';
+  document.getElementById('scoreOut').textContent=score+' / 6';document.getElementById('done').classList.add('show');
+  try{await window.storage.set('mfs:lesson22',JSON.stringify({done:true,retrieval:score+'/6',ts:Date.now()}),false);}catch(e){}
+};
+function boot(){renderMath();update();}
+if(window.katex)boot();else window.addEventListener('load',boot);
+(async()=>{try{const r=await window.storage.get('mfs:lesson22',false);if(r&&r.value){const v=JSON.parse(r.value);if(v.done){const c=document.getElementById('chip');c.classList.add('show');c.textContent='completed · '+v.retrieval;}}}catch(e){}})();
+</script>
+</body>
+</html>
