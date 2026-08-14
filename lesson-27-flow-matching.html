@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lesson 27 — Flow matching &amp; continuous normalizing flows</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<style>
+  :root{
+    --paper:#FAFAF6;--ink:#1A1C22;--muted:#63676E;--faint:#9A9EA4;--hair:#E4E3DB;--hair2:#D4D3CA;--panel:#FFFFFF;
+    --accent:#24507A;--accent-bg:#EAF0F6;--series:#B07A2E;--miss:#B23A3A;--ok:#2F6B4F;--ok-bg:#E9F1EC;
+    --vol:#8A5A2B;--vol-bg:#F6EFE6;--serif:Iowan Old Style,Palatino,Georgia,serif;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme:dark){:root{--paper:#15161A;--ink:#E9E8E2;--muted:#A2A6AC;--faint:#71757B;--hair:#2A2C31;--hair2:#3A3C42;--panel:#1B1D22;--accent:#7FB0E0;--accent-bg:#1E2A38;--series:#D9A85E;--miss:#E07A7A;--ok:#7FC49F;--ok-bg:#1C2A22;--vol:#D9A066;--vol-bg:#2A2115;}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.62;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:750px;margin:0 auto;padding:32px 24px 60px}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 6px}
+  h1{font-family:var(--serif);font-weight:600;font-size:27px;line-height:1.22;margin:0 0 6px;letter-spacing:-.01em}
+  .chip{display:none;font-family:var(--mono);font-size:11px;letter-spacing:.05em;color:var(--ok);border:1px solid var(--ok);border-radius:20px;padding:3px 10px;vertical-align:middle;margin-left:10px}
+  .chip.show{display:inline-block}.sub{color:var(--muted);font-size:15px;margin:0 0 18px}
+  .levels{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 26px}
+  .levels .lk{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+  .levels .pill{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-family:var(--mono);color:var(--muted);background:var(--panel);border:1px solid var(--hair2);border-radius:20px;padding:4px 11px}
+  .levels .pill b{color:var(--accent);font-weight:700;letter-spacing:.03em}
+  p.lead{font-size:16px;margin:0 0 22px}p.lead b{font-weight:600}
+  .sec{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:36px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--hair)}
+  .mblock{margin:16px 0;overflow-x:auto}.glo{list-style:none;padding:0;margin:14px 0 0}
+  .glo li{display:flex;gap:14px;padding:9px 0;border-top:1px solid var(--hair);align-items:baseline}
+  .glo li:first-child{border-top:none}.glo .def{font-size:14.5px}.glo .def .n{color:var(--muted)}
+  .glo .sym{flex:0 0 132px;text-align:right;padding-top:2px;font-size:14px}
+  .step{font-size:14.5px;color:var(--muted);margin:10px 0}.step b{color:var(--ink)}
+  .panel{background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:20px;margin:14px 0}
+  .imgs{display:flex;flex-wrap:wrap;gap:22px;align-items:flex-start}
+  .imgs figure{margin:0;display:flex;flex-direction:column;gap:6px}.imgs figcaption{font-family:var(--mono);font-size:12px;color:var(--muted)}
+  canvas{image-rendering:pixelated;border:1px solid var(--hair2);border-radius:6px;width:196px;height:196px;background:var(--panel)}
+  .seg{display:inline-flex;border:1px solid var(--hair2);border-radius:9px;overflow:hidden;margin:0 0 14px;flex-wrap:wrap}
+  .seg button{font-family:var(--sans);font-size:13.5px;padding:8px 14px;border:none;background:var(--panel);color:var(--muted);cursor:pointer;border-right:1px solid var(--hair2)}
+  .seg button:last-child{border-right:none}.seg button.on{background:var(--accent);color:#fff}
+  .ctrls{display:flex;flex-wrap:wrap;gap:16px 26px;align-items:flex-end;margin:16px 0 6px}
+  .field{display:flex;flex-direction:column;gap:6px;min-width:210px;flex:1}
+  .field label{font-size:12px;color:var(--muted);font-family:var(--mono);letter-spacing:.03em;display:flex;justify-content:space-between}
+  .field label b{color:var(--ink);font-weight:600}
+  input[type=range]{width:100%;accent-color:var(--accent);height:20px}
+  .btns{display:flex;flex-wrap:wrap;gap:8px;margin:2px 0 10px}
+  button.act{font-family:var(--sans);font-size:13.5px;padding:7px 13px;border-radius:8px;border:1px solid var(--hair2);background:var(--panel);color:var(--ink);cursor:pointer}button.act:hover{border-color:var(--accent);color:var(--accent)}
+  svg{max-width:100%;height:auto;display:block}
+  .tally{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 2px}
+  .stat{flex:1;min-width:120px;background:var(--paper);border-radius:9px;padding:9px 12px}
+  .stat .k{font-size:11px;font-family:var(--mono);letter-spacing:.04em;color:var(--muted);text-transform:uppercase}
+  .stat .v{font-size:19px;font-weight:600;font-family:var(--mono);margin-top:2px}
+  .stat .v.a{color:var(--accent)}.stat .v.g{color:var(--ok)}.stat .v.s{color:var(--series)}.stat .v.sm{font-size:16px}
+  .callout{font-size:14px;color:var(--muted);border-left:2px solid var(--accent);padding:2px 0 2px 14px;margin:16px 0 2px;min-height:1.4em}
+  .theorem{background:var(--accent-bg);border-radius:12px;padding:18px 20px;margin:16px 0}
+  .theorem .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
+  .theorem p{font-family:var(--serif);font-size:16px;line-height:1.55;margin:0 0 10px}.theorem p:last-child{margin-bottom:0}
+  .twist{border:1px dashed var(--hair2);border-radius:12px;padding:16px 18px;margin:16px 0;background:var(--panel)}
+  .twist .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+  .twist p{margin:0 0 10px;font-size:14.6px}.twist p:last-child{margin-bottom:0}
+  .vol{background:var(--vol-bg);border:1px solid var(--vol);border-radius:12px;padding:18px 20px;margin:16px 0}
+  .vol .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:var(--vol);margin:0 0 8px}
+  .vol p{margin:0 0 10px;font-size:14.8px}.vol p:last-child{margin-bottom:0}
+  .vol code{font-family:var(--mono);font-size:13px;background:rgba(138,90,43,.12);padding:1px 5px;border-radius:4px}
+  .q{border:1px solid var(--hair);border-radius:12px;padding:16px 18px;margin:12px 0;background:var(--panel)}
+  .q .stem{font-size:15px;font-weight:500;margin:0 0 12px}
+  .opt{display:block;width:100%;text-align:left;font-size:14px;padding:10px 12px;margin:0 0 8px;border:1px solid var(--hair2);border-radius:8px;background:transparent;color:var(--ink);cursor:pointer;line-height:1.45}
+  .opt:last-child{margin-bottom:0}.opt:hover{border-color:var(--accent)}
+  .opt.sel{border-color:var(--accent);background:var(--accent-bg)}
+  .opt.correct{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+  .opt.wrong{background:#F7ECEC;border-color:var(--miss);color:var(--miss)}
+  @media (prefers-color-scheme:dark){.opt.wrong{background:#2E1E1E}}
+  .fb{font-size:13.5px;color:var(--muted);margin:10px 0 0;line-height:1.5;display:none}.fb.show{display:block}
+  .checkRow{display:flex;align-items:center;gap:14px;margin:18px 0 0;flex-wrap:wrap}
+  .hint{font-size:13px;color:var(--miss);display:none}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-family:var(--sans);font-size:14px;padding:8px 14px;border-radius:8px;border:1px solid var(--accent);cursor:pointer}
+  .scoreOut{font-family:var(--mono);font-size:14px;font-weight:600}
+  .done{display:none;align-items:center;gap:10px;background:var(--ok-bg);color:var(--ok);border-radius:10px;padding:12px 16px;font-size:14px;margin:14px 0 0}
+  .done.show{display:flex}.num{font-family:var(--mono)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">Lesson 27 · Wing VI — generative machinery</p>
+  <h1>Flow matching &amp; continuous normalizing flows<span class="chip" id="chip"></span></h1>
+  <p class="sub">Stop learning how to undo noise. Learn the wind that blows noise into data.</p>
+  <div class="levels"><span class="lk">Level</span><span class="pill"><b>US</b> Graduate</span><span class="pill"><b>FR</b> M2 – PhD</span></div>
+
+  <p class="lead">Lesson 26 built a generator by running a noising process backwards. Flow matching throws that framing away and asks a blunter question: if I want to carry a cloud of pure noise onto a cloud of data, <b>what velocity should a particle at position x at time t be travelling at?</b> Learn that velocity field, then release particles from noise and integrate an ordinary differential equation forwards. No stochastic process, no score function, no simulation inside the training loop. The obstacle is that the velocity you want — the one that transports the whole cloud — is an integral you cannot compute. The resolution is a theorem so old it predates all of this: <b>if you regress on a random target, least squares hands you its conditional mean for free.</b> That is Lesson 4's projection theorem, and it is the entire reason modern generative models can be trained at all.</p>
+
+  <div class="sec">The words, before any symbols</div>
+  <ul class="glo">
+    <li><span class="sym"><b>velocity field</b></span><span class="def">a rule <i>v(x,t)</i> that assigns an arrow to every position x at every time t: "a particle sitting here, now, should move this way, this fast". <span class="n">It is a function, not a trajectory. Trajectories are what you get by following it.</span></span></li>
+    <li><span class="sym"><b>flow</b></span><span class="def">the map you obtain by starting a particle at x₀ and following the arrows from t = 0 to t = 1. <span class="n">Deterministic and invertible — run the arrows backwards and you return to where you started. A <b>continuous normalizing flow</b> is exactly this, used as a generative model.</span></span></li>
+    <li><span class="sym"><b>probability path</b></span><span class="def">a schedule of distributions p<sub>t</sub>, one for each time, starting at noise p₀ and ending at the data distribution p₁ = q. <span class="n">You <i>choose</i> it. This is the design freedom the whole lesson is about.</span></span></li>
+    <li><span class="sym"><b>divergence ∇·v</b></span><span class="def">how much the arrows spread apart at a point: the sum of the diagonal entries of the Jacobian ∂v/∂x. <span class="n">Positive means the flow is stretching space there (density thins); negative means it is squeezing (density piles up). The Jacobian is Lesson 13's object; the divergence is its trace.</span></span></li>
+    <li><span class="sym"><b>coupling</b></span><span class="def">the rule that decides <i>which</i> noise point x₀ is paired with <i>which</i> data point x₁ when you build a training example. <span class="n">Drawing them independently is the default. It is not the only choice, and the choice matters — see the twist.</span></span></li>
+    <li><span class="sym"><b>marginal vs conditional</b></span><span class="def">"conditional" = the velocity that moves one particular pair (x₀, x₁) along its own private path. "Marginal" = the single field that correctly transports the whole cloud. <span class="n">You can write down the first. You cannot write down the second. Bridging that gap is the lesson.</span></span></li>
+    <li><span class="sym"><b>Euler step</b></span><span class="def">the crudest ODE integrator: x ← x + h·v(x,t), then t ← t + h. <span class="n">One network evaluation per step. The number of steps you need is the sampling cost of the model — the quantity everyone is fighting over.</span></span></li>
+  </ul>
+
+  <div class="sec">A flow, and what it does to density</div>
+  <p class="step">Fix a velocity field v and push every point along it. Two equations describe what happens — one for a particle, one for the density it carries:</p>
+  <div class="mblock math" data-tex="\frac{d}{dt}x_t \;=\; v(x_t,t),\qquad\quad \frac{\partial p_t}{\partial t} \;+\; \nabla\!\cdot\!\big(p_t\,v\big)\;=\;0,\qquad\quad \frac{d}{dt}\log p_t(x_t)\;=\;-\,\nabla\!\cdot\! v(x_t,t)" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="x_t\in\mathbb{R}^d"></span><span class="def">one particle's position at time t. <span class="n">Here d = 2 so you can watch it; in an image model d is a hundred thousand.</span></span></li>
+    <li><span class="sym math" data-tex="p_t"></span><span class="def">the density of the whole cloud at time t. <span class="n">The middle equation is the <b>continuity equation</b> — mass is conserved, it only moves. It is the statement "v <i>generates</i> p<sub>t</sub>".</span></span></li>
+    <li><span class="sym math" data-tex="\nabla\!\cdot\! v=\operatorname{tr}\!\big(\partial v/\partial x\big)"></span><span class="def">the <b>divergence</b>: the trace of the d×d Jacobian of v with respect to x. <span class="n">Sum of ∂v₁/∂x₁ + … + ∂v_d/∂x_d.</span></span></li>
+    <li><span class="sym math" data-tex="\tfrac{d}{dt}\log p_t(x_t)"></span><span class="def">the <b>instantaneous change of variables</b>: ride along with the particle and watch its own log-density change. <span class="n">The discrete-flow analogue is "subtract log|det J| at every layer"; here the determinant becomes a trace and the layers become time.</span></span></li>
+  </ul>
+  <p class="step">That third identity is what made continuous normalizing flows attractive in 2018 and what made them nearly untrainable. Exact likelihood needs log p₁, which means <b>simulating the ODE inside every training step</b> and accumulating ∇·v along it — and for large d even one divergence is a d-fold Jacobian trace, so practice fell back on a stochastic (Hutchinson) trace estimate built from the vector-Jacobian products of Lesson 13. Slow, noisy, and fragile. Flow matching's entire contribution is that it deletes both costs: no simulation, no divergence, at training time.</p>
+
+  <div class="sec">The objective you want, and the one you can compute</div>
+  <p class="step">Suppose someone hands you the target field u<sub>t</sub>(x) — the true marginal velocity that transports p₀ to q. Then training a network v<sub>θ</sub> would be plain regression:</p>
+  <div class="mblock math" data-tex="\mathcal{L}_{\mathrm{FM}}(\theta)\;=\;\mathbb{E}_{t\sim\mathcal U[0,1],\;x\sim p_t}\Big\lVert v_\theta(x,t)-u_t(x)\Big\rVert^2" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="v_\theta"></span><span class="def">the network, taking a position and a time, returning a vector in ℝ<sup>d</sup>. <span class="n">θ are its weights; ∇<sub>θ</sub> below always means the gradient in those weights.</span></span></li>
+    <li><span class="sym math" data-tex="u_t(x)"></span><span class="def">the <b>marginal velocity</b> — the one field that moves the entire cloud correctly. <span class="n">Unavailable: writing it down requires an integral over the whole data distribution, at every x and every t.</span></span></li>
+  </ul>
+  <p class="step">Now condition. Pick a latent z — a data point x₁, or a whole noise/data pair (x₀,x₁) — and build a path p<sub>t</sub>(·|z) whose velocity u<sub>t</sub>(x|z) you <i>can</i> write in closed form, such that averaging the conditional paths over q gives the marginal path. Regress on that instead:</p>
+  <div class="mblock math" data-tex="\mathcal{L}_{\mathrm{CFM}}(\theta)=\mathbb{E}_{t,\;z\sim q,\;x\sim p_t(\cdot\mid z)}\Big\lVert v_\theta(x,t)-u_t(x\mid z)\Big\rVert^2,\qquad p_t(x)=\int p_t(x\mid z)\,q(z)\,dz" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="u_t(x\mid z)"></span><span class="def">the <b>conditional velocity</b>: elementary, exact, and computable from one sampled z. <span class="n">This is the label the network actually sees. It is a <i>random</i> label — the same (x,t) arrives with different targets on different draws.</span></span></li>
+    <li><span class="sym math" data-tex="z"></span><span class="def">the conditioning latent. <span class="n">z = x₁ recovers Lipman et al.'s form; z = (x₀,x₁) recovers the rectified-flow / OT-coupling form. Both satisfy the theorem below.</span></span></li>
+  </ul>
+  <p class="step">The two losses are not equal. Their <b>gradients</b> are, and the reason is a single line you already own from Lesson 4: the minimiser of a squared error against a random target is the conditional mean of that target. Here the conditioning event is "the particle is at x at time t":</p>
+  <div class="mblock math" data-tex="u_t(x)\;=\;\mathbb{E}\big[\,u_t(x\mid z)\;\big|\;x_t=x\,\big]\;=\;\frac{\displaystyle\int u_t(x\mid z)\,p_t(x\mid z)\,q(z)\,dz}{p_t(x)}\qquad\Longrightarrow\qquad \nabla_\theta\mathcal L_{\mathrm{FM}}=\nabla_\theta\mathcal L_{\mathrm{CFM}}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="\mathbb{E}[\,\cdot\mid x_t=x]"></span><span class="def">the conditional expectation of Lesson 4 — the L² projection onto functions of the conditioning variable. <span class="n">Posterior weights over z, normalised by p<sub>t</sub>(x): the denominator is the tower property doing bookkeeping.</span></span></li>
+    <li><span class="sym math" data-tex="\nabla_\theta"></span><span class="def">gradient in the network's weights. <span class="n">The two losses differ by 𝔼‖u<sub>t</sub>(x|z) − u<sub>t</sub>(x)‖², a number that does not contain θ — so it vanishes under ∇<sub>θ</sub>. That constant is the irreducible noise floor of the training loss, not an error.</span></span></li>
+  </ul>
+  <p class="step">Read that in desk language: <b>no single training example ever shows the network the right answer.</b> Each shows one noisy draw whose average, over everything the network cannot see, is the right answer — and squared-error regression is precisely the machine that extracts that average.</p>
+
+  <div class="sec">Choosing the path — straight lines against the diffusion arc</div>
+  <p class="step">Take Gaussian conditional paths, the family that covers both frameworks. Fix a schedule (α<sub>t</sub>, σ<sub>t</sub>) with α₀ ≈ 0, σ₀ ≈ 1 (noise) and α₁ = 1, σ₁ = 0 (data), and set p<sub>t</sub>(x|x₁) = 𝒩(α<sub>t</sub>x₁, σ<sub>t</sub>²I). Sampling it means drawing x₀ ∼ 𝒩(0,I) and forming x<sub>t</sub>:</p>
+  <div class="mblock math" data-tex="x_t=\alpha_t x_1+\sigma_t x_0,\qquad u_t(x\mid x_0,x_1)=\dot\alpha_t x_1+\dot\sigma_t x_0,\qquad u_t(x\mid x_1)=\Big(\dot\alpha_t-\tfrac{\dot\sigma_t\alpha_t}{\sigma_t}\Big)x_1+\tfrac{\dot\sigma_t}{\sigma_t}\,x" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="\alpha_t,\ \sigma_t"></span><span class="def">the <b>schedule</b>: how much data and how much noise at time t. <span class="n">Dots mean d/dt. Note that x<sub>t</sub> = α<sub>t</sub>x₁ + σ<sub>t</sub>x₀ is exactly Lesson 14's reparameterization — the noise x₀ is frozen and everything else is deterministic, which is what lets you differentiate the loss at all. The two conditional velocities above are the same random variable given x<sub>t</sub> = x: substitute x₀ = (x − α<sub>t</sub>x₁)/σ<sub>t</sub>.</span></span></li>
+    <li><span class="sym math" data-tex="\alpha_t=t,\ \sigma_t=1-t"></span><span class="def">the <b>linear / optimal-transport path</b>. <span class="n">Then u<sub>t</sub>(x|x₀,x₁) = x₁ − x₀ exactly: a constant. The conditional trajectory is the straight segment from x₀ to x₁ at constant speed, and its kinetic energy ∫₀¹‖u‖²dt is exactly ‖x₁ − x₀‖² — the squared-distance cost optimal transport minimises. Hence the name; this is also the rectified-flow path.</span></span></li>
+    <li><span class="sym math" data-tex="\alpha_t=e^{-\frac12 T(1-t)}"></span><span class="def">the <b>variance-preserving diffusion path</b> of Lesson 26, where β is that lesson's noise-rate schedule — taken linear from 0.1 to 20 — T(s) = ∫₀ˢβ(r)dr, and σ<sub>t</sub> = √(1−α<sub>t</sub>²). <span class="n">Two honest details. α₀ = <span class="num" id="a0Txt">—</span> rather than 0 — the well-known, small VP mismatch: the path only <i>approaches</i> pure noise. And σ̇<sub>t</sub> ∼ −(1−t)<sup>−1/2</sup> as t → 1, so its conditional paths have finite length but <b>infinite</b> kinetic energy. There is no transport cost to quote for it.</span></span></li>
+  </ul>
+  <p class="step">And the bridge back to Lesson 26. For any Gaussian path, the score ∇<sub>x</sub> log p<sub>t</sub>(x) — the object score matching learns — and the marginal velocity are the same information in different coordinates, related by an affine map with time-dependent coefficients:</p>
+  <div class="mblock math" data-tex="u_t(x)=\frac{\dot\alpha_t}{\alpha_t}\,x\;+\;\sigma_t^{2}\Big(\frac{\dot\alpha_t}{\alpha_t}-\frac{\dot\sigma_t}{\sigma_t}\Big)\,\nabla_x\log p_t(x)" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="\nabla_x\log p_t(x)"></span><span class="def">the <b>score</b> — the gradient in <i>x</i> of the log-density. <span class="n">Not Lesson 14's score, which is the gradient in the <i>parameters</i>. Same word, different derivative; keep them apart.</span></span></li>
+    <li><span class="sym math" data-tex="\sigma_t^{2}\big(\tfrac{\dot\alpha_t}{\alpha_t}-\tfrac{\dot\sigma_t}{\sigma_t}\big)"></span><span class="def">the <b>conversion coefficient</b> multiplying the score; the relation inverts wherever it is finite and non-zero — that is, α<sub>t</sub> &gt; 0 and σ<sub>t</sub> &gt; 0. <span class="n">Substitute the VP schedule and it collapses to u<sub>t</sub>(x) = ½β(1−t)[x + ∇<sub>x</sub> log p<sub>t</sub>(x)] — Lesson 26's probability-flow ODE exactly, with the sign flipped because <b>L26 runs time data → noise and this lesson runs noise → data</b>; mind that when you move between the two. So a score model is a velocity model wearing different clothes, and what flow matching adds is the freedom to choose a different (α<sub>t</sub>, σ<sub>t</sub>) altogether.</span></span></li>
+  </ul>
+
+  <div class="sec">See it — the same two clouds, two paths between them</div>
+  <p class="step">A seeded 2-D toy: p₀ = 𝒩(0, I), and q a three-regime mixture — <b>calm</b> (55%), <b>rally</b> (27%), <b>crash</b> (18%) — rescaled so the data cloud carries exactly the same total variance as the noise. Thin lines are <b>training paths</b>, the conditional trajectories the loss is built from, drawn for nine fixed (x₀,x₁) pairs. Thick green lines are <b>sampling trajectories</b>: the actual ODE, integrated through the exact marginal field. Dots are the cloud p<sub>t</sub>. The accuracy slider fixes a target endpoint error and the panel counts the Euler steps each path needs to hit it.</p>
+  <div class="panel">
+    <svg id="plot1" viewBox="0 0 700 372" role="img" aria-label="Linear and diffusion probability paths between a noise cloud and a three-regime data mixture"></svg>
+    <div class="ctrls"><div class="field"><label>time t <b id="tOut">0.35</b></label><input type="range" id="t1" min="0" max="100" value="35" step="1" /></div>
+      <div class="field"><label>endpoint accuracy target ε <b id="tauOut">0.10</b></label><input type="range" id="tau" min="0" max="14" value="7" step="1" /></div></div>
+    <div class="btns"><button class="act" id="mid">Jump to the midpoint (t = 0.50)</button><button class="act" id="rst">Back to t = 0.35</button></div>
+    <div class="tally"><div class="stat"><div class="k">cloud spread at t · lin / vp</div><div class="v sm" id="s1">—</div></div><div class="stat"><div class="k">training arc ÷ chord</div><div class="v sm a" id="s2">—</div></div><div class="stat"><div class="k">cost E‖x₁−x₀‖² · indep / OT</div><div class="v sm" id="s3">—</div></div><div class="stat"><div class="k">sampling arc ÷ chord</div><div class="v sm g" id="s4">—</div></div><div class="stat"><div class="k">Euler steps to ε</div><div class="v sm s" id="s5">—</div></div></div>
+    <p class="callout" id="note1"></p>
+  </div>
+
+  <div class="theorem">
+    <p class="lbl">The precise statement</p>
+    <p><b>(i) Instantaneous change of variables.</b> Let v(·,t) be continuously differentiable in x, uniformly Lipschitz on compacts, and let x<sub>t</sub> solve ẋ<sub>t</sub> = v(x<sub>t</sub>,t) from x₀ ∼ p₀. Then the law p<sub>t</sub> of x<sub>t</sub> satisfies the continuity equation ∂<sub>t</sub>p<sub>t</sub> + ∇·(p<sub>t</sub>v) = 0, and along any trajectory d/dt log p<sub>t</sub>(x<sub>t</sub>) = −∇·v(x<sub>t</sub>,t) = −tr(∂v/∂x) (Chen et al., 2018).</p>
+    <p><b>(ii) Marginalisation and gradient equality.</b> Let q be the data distribution and, for q-almost every latent z, let u<sub>t</sub>(·|z) generate p<sub>t</sub>(·|z), with p<sub>t</sub>(x) = ∫p<sub>t</sub>(x|z)q(z)dz &gt; 0 and the integrands bounded and integrable. Define u<sub>t</sub>(x) = ∫u<sub>t</sub>(x|z)p<sub>t</sub>(x|z)q(z)dz / p<sub>t</sub>(x), which is exactly E[u<sub>t</sub>(x|z) | x<sub>t</sub> = x]. Then u<sub>t</sub> generates the marginal path p<sub>t</sub>, and ℒ<sub>FM</sub>(θ) = ℒ<sub>CFM</sub>(θ) − c with c = 𝔼‖u<sub>t</sub>(x|z) − u<sub>t</sub>(x)‖² independent of θ; hence ∇<sub>θ</sub>ℒ<sub>FM</sub> = ∇<sub>θ</sub>ℒ<sub>CFM</sub> whenever both are finite (Lipman et al., 2023, for z = x₁; the same argument with z = (x₀,x₁) gives the rectified-flow form).</p>
+    <p><b>(iii) The linear path.</b> For α<sub>t</sub> = t, σ<sub>t</sub> = 1−t and x<sub>t</sub> = (1−t)x₀ + tx₁, the conditional velocity is ẋ<sub>t</sub> = x₁ − x₀, constant in t; equivalently u<sub>t</sub>(x|x₁) = (x₁ − x)/(1−t) for t &lt; 1. Every conditional trajectory is a straight segment. This does <b>not</b> imply that the marginal field's trajectories are straight — that depends on the coupling of x₀ to x₁.</p>
+  </div>
+
+  <div class="sec">See it — what the network is actually shown</div>
+  <p class="step">This is the crux, so watch it happen. Stand at one point x on the path toward a chosen regime at time t. Every grey arrow is a legal training target: the conditional velocity u<sub>t</sub>(x|x₁) = (x₁ − x)/(1−t) for one sampled endpoint x₁, with opacity set by that endpoint's posterior weight. The <b>blue</b> arrow is their weighted average. The <b>green</b> arrow is the exact marginal field u<sub>t</sub>(x), computed in closed form. The network never sees blue or green — it sees one grey arrow at a time, and squared-error regression drives it to their mean.</p>
+  <div class="panel">
+    <div class="seg" id="seg2"><button data-a="0" class="on">toward calm</button><button data-a="1">toward rally</button><button data-a="2">toward crash</button></div>
+    <svg id="plot2" viewBox="0 0 700 380" role="img" aria-label="Fan of conditional velocity arrows at one point, with their weighted average and the exact marginal field"></svg>
+    <div class="ctrls"><div class="field"><label>time t <b id="t2Out">0.35</b></label><input type="range" id="t2" min="5" max="80" value="35" step="1" /></div>
+      <div class="field"><label>endpoints sampled <b id="mOut">240</b></label><input type="range" id="mSl" min="0" max="9" value="9" step="1" /></div></div>
+    <div class="tally"><div class="stat"><div class="k">endpoints in play</div><div class="v a" id="f1">—</div></div><div class="stat"><div class="k">destination spread</div><div class="v" id="f2">—</div></div><div class="stat"><div class="k">one arrow ↔ the mean</div><div class="v s" id="f3">—</div></div><div class="stat"><div class="k">mean vs exact field</div><div class="v g" id="f4">—</div></div></div>
+    <p class="callout" id="note2"></p>
+  </div>
+
+  <div class="twist">
+    <p class="lbl">The twist — a 1930s theorem is holding up the whole building</p>
+    <p>Strip flow matching to its load-bearing beam and it reads: <i>regress on a random target, receive its conditional mean.</i> That is the L² projection theorem — Kolmogorov-era probability, the same fact that makes a regression coefficient a hedge ratio in Lesson 4. Simulation-free training of every modern continuous generative model rests on it. Nothing about the trick is neural; the network is only the function class in which the projection is carried out.</p>
+    <p>Second barrel, and it is sharper than it looks. The theorem constrains only the <b>marginal</b> field, so the coupling between noise and data is <i>yours to choose</i> — draw the pair independently, or pair them cleverly, and both are valid flow-matching objectives that generate the same q. On this page's 600 seeded pairs, replacing the independent coupling with minibatch optimal transport (exact assignment inside batches of six) cuts the mean transport cost from <span class="num" id="otA">—</span> to <span class="num" id="otB">—</span> and the number of crossing pairs — counted within each batch of six and summed over all hundred of them — from <span class="num" id="otC">—</span> to <span class="num" id="otD">—</span>, while changing neither endpoint marginal, since it is only a permutation. What it <i>does</i> change is the field: a different coupling means a different p<sub>t</sub> in between, and so a different u<sub>t</sub> to learn. And this matters because of the fact the first interactive measures: the linear path's <i>training</i> trajectories are perfectly straight (arc ÷ chord = <span class="num" id="twA">—</span>) yet under an independent coupling its <i>sampling</i> trajectories are the more curved of the two (<span class="num" id="twB">—</span> against the diffusion path's <span class="num" id="twC">—</span>), because independently-paired straight lines cross, and the marginal field has to average the crossing. Straight conditional paths are not a straight flow. Rectified flow closes the gap by iterating — sample the flow, re-pair each noise point with the endpoint it actually reached, refit — and each pass provably does not increase the transport cost while straightening the field.</p>
+  </div>
+
+  <div class="sec">Re-applied — the regression you already trust</div>
+  <p class="step">The mechanism is not new to you, and it is not new to finance. Price an American option by Longstaff–Schwartz: at each exercise date you need the <b>continuation value</b>, E[discounted future payoff | today's state] — and you cannot compute it. What you can do is simulate one path forward, record the single realised discounted payoff, and regress that scrappy number on functions of the current state. The realised payoff is a hopeless predictor of itself; the regression does not care, because least squares returns the conditional mean of whatever target you feed it. Same for a minimum-variance hedge ratio, a factor beta, a fitted expected shortfall: in every case the label is one draw and the estimand is its conditional expectation. Flow matching is that scheme applied to velocity fields — an intractable conditional expectation replaced by a computable random draw whose mean is the thing you wanted, and the only novelty is what sits in the regressand.</p>
+
+  <div class="vol">
+    <p class="lbl">Why this matters · volarixs</p>
+    <p>The transferable part is not the generative model — the platform has no path-generator, and pretending otherwise would be inventing a connection. It is the target-variance argument. Every <code>Cross-Matrix</code> cell is Lesson 4's projection fitted on a target you only ever observe as one realisation, so its estimand is fixed by the conditioning and its <b>precision</b> is set by the conditional variance of the label. Flow matching's second half is the observation that the label's variance is a design variable: the OT coupling above keeps both endpoint marginals, so the model still generates the same q, while shrinking the spread of the target the regression sees. Be exact about what survives, though — re-pairing leaves the endpoints alone but <b>does</b> change the intermediate field, which is precisely what rectified flow exploits; it buys variance by moving to a different, straighter estimand, not by holding the old one fixed.</p>
+    <p>Operationally that is the question to ask of any cell whose <code>sign_stability</code> is marginal: before more history or more shrinkage, is there a re-pairing or a control variate that leaves the estimand alone and cuts the label's variance — differencing against a sector or index leg, matching on a covariate, using an overlapping-window construction with the right correction? The honest boundary: a variance reduction that also moves the conditional mean is not a variance reduction, it is a different estimator, and the burden is on you to show which one you built.</p>
+  </div>
+
+  <div class="sec">Check yourself</div>
+  <div class="q" id="q1"><p class="stem">Flow matching's usable training loss regresses the network's output onto:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q2"><p class="stem">Why is it legitimate to train on ℒ<sub>CFM</sub> when what you care about is ℒ<sub>FM</sub>?</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q3"><p class="stem">On the linear path x<sub>t</sub> = (1−t)x₀ + t·x₁, the conditional velocity of that pair is:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q4"><p class="stem">Two probability paths reach the same data distribution, but one has sampling trajectories that bend more. On the same Euler step budget, the bendier one will:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q5"><p class="stem">Why does the identity d/dt log p<sub>t</sub>(x<sub>t</sub>) = −∇·v(x<sub>t</sub>,t) matter to the flow-matching story?</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q6"><p class="stem">How does flow matching relate to the diffusion models of Lesson 26?</p><div class="opts"></div><p class="fb"></p></div>
+
+  <div class="checkRow"><button class="primary" id="check">Check answers</button><span class="scoreOut" id="scoreOut"></span><span class="hint" id="hint">Answer all six first.</span></div>
+  <div class="done" id="done">Transport laid down. Next in Wing VI: VAEs &amp; the ELBO.</div>
+</div>
+
+<script>
+/* storage shim: window.storage (Claude artifacts) or localStorage (web) */
+if(!window.storage){window.storage={async get(k){const v=localStorage.getItem(k);if(v==null)throw new Error('missing');return{key:k,value:v}},async set(k,v){localStorage.setItem(k,v);return{key:k,value:v}},async delete(k){localStorage.removeItem(k);return{key:k,deleted:true}},async list(p){const ks=[];for(let i=0;i<localStorage.length;i++){const kk=localStorage.key(i);if(!p||kk.startsWith(p))ks.push(kk)}return{keys:ks}}};}
+function renderMath(){document.querySelectorAll('.math').forEach(el=>{const tex=el.getAttribute('data-tex');if(!tex||el.dataset.done)return;try{if(window.katex){katex.render(tex,el,{displayMode:el.dataset.display==='1',throwOnError:false});el.dataset.done='1';}else el.textContent=tex;}catch(e){el.textContent=tex;}});}
+function mulberry32(seed){let a=seed>>>0;return function(){a|=0;a=(a+0x6D2B79F5)|0;let t=Math.imul(a^(a>>>15),1|a);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296;}}
+function randn(rng){let u=0,v=0;while(!u)u=rng();while(!v)v=rng();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+
+/* ---------- the toy target: three regimes, centred so that trace(Cov) = 2 ---------- */
+const W=[0.55,0.27,0.18], RAWMU=[[0.25,-0.30],[1.30,-0.85],[-1.85,1.95]], RAWSG=[0.28,0.32,0.45], REG=['calm','rally','crash'];
+let cmx=0,cmy=0,vvx=0,vvy=0;
+for(let k=0;k<3;k++){cmx+=W[k]*RAWMU[k][0];cmy+=W[k]*RAWMU[k][1];}
+for(let k=0;k<3;k++){const dx=RAWMU[k][0]-cmx,dy=RAWMU[k][1]-cmy;vvx+=W[k]*(dx*dx+RAWSG[k]*RAWSG[k]);vvy+=W[k]*(dy*dy+RAWSG[k]*RAWSG[k]);}
+const SCL=1/Math.sqrt((vvx+vvy)/2), MU=RAWMU.map(m=>[(m[0]-cmx)*SCL,(m[1]-cmy)*SCL]), SG=RAWSG.map(s=>s*SCL);
+
+/* ---------- the two Gaussian probability paths p_t(x|x1) = N(alpha_t x1, sigma_t^2 I) ---------- */
+const BMIN=0.1,BMAX=20, Tin=s=>BMIN*s+0.5*(BMAX-BMIN)*s*s, bet=s=>BMIN+(BMAX-BMIN)*s;
+const PATH={
+  lin:{a:t=>t, s:t=>1-t, da:_=>1, ds:_=>-1},
+  vp :{a:t=>Math.exp(-0.5*Tin(1-t)), s:t=>Math.sqrt(Math.max(0,1-Math.exp(-Tin(1-t)))), da:t=>0.5*Math.exp(-0.5*Tin(1-t))*bet(1-t),
+       ds:t=>{const al=Math.exp(-0.5*Tin(1-t)),sg=Math.sqrt(Math.max(1e-300,1-al*al));return -al*(0.5*al*bet(1-t))/sg;}}
+};
+function post(P,t,x){ /* posterior over regimes, then E[x1 | x_t = x] in closed form */
+  const al=P.a(t), sg=P.s(t), s2=sg*sg, lg=[], S2=[];
+  for(let k=0;k<3;k++){const S=al*al*SG[k]*SG[k]+s2, dx=x[0]-al*MU[k][0], dy=x[1]-al*MU[k][1];
+    S2.push(S); lg.push(Math.log(W[k])-0.5*(dx*dx+dy*dy)/S-Math.log(2*Math.PI*S));}
+  const M=Math.max(lg[0],lg[1],lg[2]); let Z=0,m0=0,m1=0; for(let k=0;k<3;k++)Z+=Math.exp(lg[k]-M);
+  for(let k=0;k<3;k++){const r=Math.exp(lg[k]-M)/Z, g=al*SG[k]*SG[k]/S2[k];
+    m0+=r*(MU[k][0]+g*(x[0]-al*MU[k][0])); m1+=r*(MU[k][1]+g*(x[1]-al*MU[k][1]));}
+  return [m0,m1];}
+function ab(P,t){const al=P.a(t),sg=P.s(t);return[P.da(t)-P.ds(t)*al/sg, P.ds(t)/sg];}
+function umarg(P,t,x){const c=ab(P,t), m=post(P,t,x);return[c[0]*m[0]+c[1]*x[0], c[0]*m[1]+c[1]*x[1]];}
+
+/* ---------- seeded noise/data pairs, and the endpoint pool of interactive 2 ---------- */
+const SEED=127, NPAIR=600, NEUL=64, NDOT=150, NTRAJ=9, NODE=5, MPOOL=240, X0=[], X1=[], POOL=[];
+(function(){const rng=mulberry32(SEED);
+  for(let i=0;i<NPAIR;i++){const a=randn(rng), b=randn(rng), u=rng(); let k=0,c=0; for(;k<2;k++){c+=W[k];if(u<c)break;}
+    X0.push([a,b]); X1.push([MU[k][0]+SG[k]*randn(rng), MU[k][1]+SG[k]*randn(rng)]);}
+  const rp=mulberry32(SEED+1);
+  for(let i=0;i<MPOOL;i++){const u=rp(); let k=0,c=0; for(;k<2;k++){c+=W[k];if(u<c)break;} POOL.push([MU[k][0]+SG[k]*randn(rp), MU[k][1]+SG[k]*randn(rp)]);}
+})();
+
+/* ---------- geometry of the training (conditional) paths ---------- */
+const GEO={};
+for(const P of ['lin','vp']){
+  const p=PATH[P]; let ratio=0,turn=0;
+  for(let i=0;i<NPAIR;i++){
+    const A=X0[i],B=X1[i],NS=400; let L=0, pr=[p.a(0)*B[0]+p.s(0)*A[0], p.a(0)*B[1]+p.s(0)*A[1]];
+    for(let n=1;n<=NS;n++){const t=n/NS, cu=[p.a(t)*B[0]+p.s(t)*A[0], p.a(t)*B[1]+p.s(t)*A[1]];
+      L+=Math.hypot(cu[0]-pr[0],cu[1]-pr[1]); pr=cu;}
+    const v0=[p.da(0)*B[0]+p.ds(0)*A[0], p.da(0)*B[1]+p.ds(0)*A[1]], v1=[p.da(1)*B[0]+p.ds(1)*A[0], p.da(1)*B[1]+p.ds(1)*A[1]];
+    const cs=(v0[0]*v1[0]+v0[1]*v1[1])/(Math.hypot(v0[0],v0[1])*Math.hypot(v1[0],v1[1])); turn+=Math.acos(Math.max(-1,Math.min(1,cs)))*180/Math.PI; ratio+=L/Math.hypot(B[0]-A[0],B[1]-A[1]);}
+  GEO[P]={ratio:ratio/NPAIR, turn:turn/NPAIR};
+}
+
+/* ---------- minibatch-OT coupling: exact assignment inside batches of six ---------- */
+const OT=(function(){
+  const perms=[]; (function gen(a,rest){if(!rest.length){perms.push(a.slice());return;}
+    for(let i=0;i<rest.length;i++)gen(a.concat(rest[i]),rest.filter((_,j)=>j!==i));})([],[0,1,2,3,4,5]);
+  const B=6, idn=[0,1,2,3,4,5], sgn=(a,b,c)=>Math.sign((b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0])), cost=(pi,o)=>{let s=0;for(let i=0;i<B;i++){const A=X0[o+i],C=X1[o+pi[i]];s+=(C[0]-A[0])**2+(C[1]-A[1])**2;}return s;};
+  const cross=(pi,o)=>{let n=0;for(let i=0;i<B;i++)for(let j=i+1;j<B;j++){const a=X0[o+i],b=X1[o+pi[i]],c=X0[o+j],d=X1[o+pi[j]];
+      if(sgn(a,b,c)*sgn(a,b,d)<0 && sgn(c,d,a)*sgn(c,d,b)<0)n++;} return n;};
+  let cI=0,cO=0,xI=0,xO=0;
+  for(let o=0;o<NPAIR;o+=B){let bc=Infinity,best=idn;
+    for(const pi of perms){const c=cost(pi,o); if(c<bc){bc=c;best=pi;}} cI+=cost(idn,o); cO+=bc; xI+=cross(idn,o); xO+=cross(best,o);}
+  return {costI:cI/NPAIR, costO:cO/NPAIR, crossI:xI, crossO:xO};
+})();
+
+/* ---------- sampling ODE: reference map, Euler error ladder, trajectory curvature ---------- */
+const LADDER=[1,2,3,4,6,8,12,16,24,32,48,64,96,128,192,256], ERR={}, MRAT={}, ODE={};
+const TAUS=[0.50,0.40,0.32,0.26,0.20,0.16,0.12,0.10,0.08,0.06,0.05,0.04,0.03,0.025,0.02];
+(function(){
+  const euler=(P,x,N)=>{const p=PATH[P];let y=[x[0],x[1]];const h=1/N;
+    for(let n=0;n<N;n++){const v=umarg(p,n*h,y);y=[y[0]+h*v[0],y[1]+h*v[1]];}return y;};
+  const ref=(P,x)=>{const p=PATH[P];let y=[x[0],x[1]];const N=512,h=1/N;
+    for(let n=0;n<N;n++){const t=n*h;
+      if(n===N-1){const v=umarg(p,t,y);y=[y[0]+h*v[0],y[1]+h*v[1]];}
+      else{const k1=umarg(p,t,y),ym=[y[0]+0.5*h*k1[0],y[1]+0.5*h*k1[1]],k2=umarg(p,t+h/2,ym);y=[y[0]+h*k2[0],y[1]+h*k2[1]];}} return y;};
+  for(const P of ['lin','vp']){
+    const R=[]; for(let i=0;i<NEUL;i++)R.push(ref(P,X0[i]));
+    ERR[P]=LADDER.map(N=>{let s=0;for(let i=0;i<NEUL;i++){const y=euler(P,X0[i],N);s+=Math.hypot(y[0]-R[i][0],y[1]-R[i][1]);}return s/NEUL;});
+    let acc=0; const paths=[];
+    for(let i=0;i<NEUL;i++){
+      const p=PATH[P]; let y=[X0[i][0],X0[i][1]]; const N=256,h=1/N,poly=(i<NODE)?[[y[0],y[1]]]:null; let L=0;
+      for(let n=0;n<N;n++){const v=umarg(p,n*h,y); y=[y[0]+h*v[0],y[1]+h*v[1]]; L+=Math.hypot(h*v[0],h*v[1]); if(poly&&n%4===3)poly.push([y[0],y[1]]);}
+      if(poly)paths.push(poly); acc+=L/Math.max(1e-9,Math.hypot(y[0]-X0[i][0],y[1]-X0[i][1]));}
+    MRAT[P]=acc/NEUL; ODE[P]=paths;}
+})();
+function stepsFor(P,tau){for(let j=0;j<LADDER.length;j++)if(ERR[P][j]<=tau)return LADDER[j];return null;}
+
+/* ---------- interactive 1: the two paths, side by side ---------- */
+const PW=340,PH=300,PY=34,SS=Math.min(PW/7.0,PH/6.2), pan=(o,x,y)=>[o+PW/2+x*SS, PY+PH/2-y*SS];
+function spreadAt(P,t){
+  const p=PATH[P],al=p.a(t),sg=p.s(t); let mx=0,my=0,s=0;
+  for(let i=0;i<NPAIR;i++){mx+=al*X1[i][0]+sg*X0[i][0];my+=al*X1[i][1]+sg*X0[i][1];} mx/=NPAIR;my/=NPAIR;
+  for(let i=0;i<NPAIR;i++){const a=al*X1[i][0]+sg*X0[i][0]-mx,b=al*X1[i][1]+sg*X0[i][1]-my;s+=a*a+b*b;}
+  return Math.sqrt(s/NPAIR);}
+function drawPanel(P,ox,t,title,col){
+  const p=PATH[P];
+  let s=`<rect x="${ox}" y="${PY}" width="${PW}" height="${PH}" fill="none" stroke="var(--hair2)" rx="8"/><text x="${ox+PW/2}" y="${PY-14}" text-anchor="middle" font-family="var(--mono)" font-size="12" fill="${col}">${title}</text>`;
+  for(let k=0;k<3;k++){const c=pan(ox,MU[k][0],MU[k][1]);
+    s+=`<circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="${(2*SG[k]*SS).toFixed(1)}" fill="none" stroke="var(--series)" stroke-width="1" stroke-dasharray="3 3" opacity="0.5"/>`;}
+  for(let i=0;i<NTRAJ;i++){
+    const A=X0[i],B=X1[i]; let done='',rest='';
+    for(let n=0;n<=40;n++){const tt=n/40, q=pan(ox,p.a(tt)*B[0]+p.s(tt)*A[0], p.a(tt)*B[1]+p.s(tt)*A[1]), seg=`${q[0].toFixed(1)} ${q[1].toFixed(1)} `;
+      if(tt<=t+1e-9)done+=(done?'L':'M')+seg; if(tt>=t-1/40-1e-9)rest+=(rest?'L':'M')+seg;}
+    s+=`<path d="${rest}" fill="none" stroke="${col}" stroke-width="1" opacity="0.22"/>`;
+    if(done)s+=`<path d="${done}" fill="none" stroke="${col}" stroke-width="1.5" opacity="0.85"/>`;}
+  for(const poly of ODE[P]){
+    const n=Math.max(1,Math.round(t*(poly.length-1))); let d='';
+    for(let j=0;j<=n;j++){const q=pan(ox,poly[j][0],poly[j][1]);d+=(j?'L':'M')+q[0].toFixed(1)+' '+q[1].toFixed(1)+' ';} s+=`<path d="${d}" fill="none" stroke="var(--ok)" stroke-width="2.1" opacity="0.9"/>`;}
+  const al=p.a(t),sg=p.s(t);
+  for(let i=0;i<NDOT;i++){const q=pan(ox,al*X1[i][0]+sg*X0[i][0], al*X1[i][1]+sg*X0[i][1]);
+    s+=`<circle cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="1.7" fill="var(--ink)" opacity="0.34"/>`;}
+  return s+`<text x="${ox+8}" y="${PY+PH-8}" font-family="var(--mono)" font-size="10.5" fill="var(--faint)">a=${p.a(t).toFixed(3)}  s=${p.s(t).toFixed(3)}</text>`;
+}
+function render1(){
+  const t=+document.getElementById('t1').value/100, tau=TAUS[+document.getElementById('tau').value];
+  document.getElementById('tOut').textContent=t.toFixed(2); document.getElementById('tauOut').textContent=tau.toFixed(3).replace(/0$/,'');
+  let s=drawPanel('lin',0,t,'linear / OT path','var(--accent)')+drawPanel('vp',360,t,'VP diffusion path','var(--series)');
+  [['var(--accent)','training path'],['var(--ok)','sampling ODE'],['var(--series)','data regimes']].forEach((L,i)=>{const lx=14+i*180;
+    s+=`<line x1="${lx}" y1="${PY+PH+22}" x2="${lx+22}" y2="${PY+PH+22}" stroke="${L[0]}" stroke-width="2.4"/>`+
+       `<text x="${lx+28}" y="${PY+PH+26}" font-family="var(--mono)" font-size="11" fill="var(--muted)">${L[1]}</text>`;});
+  document.getElementById('plot1').innerHTML=s;
+  const spL=spreadAt('lin',t), spV=spreadAt('vp',t), nl=stepsFor('lin',tau), nv=stepsFor('vp',tau);
+  document.getElementById('s1').textContent=spL.toFixed(2)+' / '+spV.toFixed(2); document.getElementById('s2').textContent=GEO.lin.ratio.toFixed(3)+' / '+GEO.vp.ratio.toFixed(3);
+  document.getElementById('s3').textContent=OT.costI.toFixed(2)+' / '+OT.costO.toFixed(2); document.getElementById('s4').textContent=MRAT.lin.toFixed(3)+' / '+MRAT.vp.toFixed(3);
+  document.getElementById('s5').textContent=nl+' / '+nv;
+  const cloud = (spV-spL>0.02)
+    ? `the linear cloud has pinched to ${spL.toFixed(2)} against the diffusion cloud's ${spV.toFixed(2)} — an independent mix (1−t)x₀ + t·x₁ of two equal-variance clouds carries only (1−t)²+t² of their variance, while the VP schedule holds α²+σ²=1 and never contracts`
+    : `both clouds span ${spL.toFixed(2)} and ${spV.toFixed(2)} — the two paths agree here`;
+  const cmp = nl===nv ? `both need ${nl} Euler steps` : nl<nv ? `the linear path needs ${nl} steps and the diffusion path ${nv}`
+                     : `the linear path needs ${nl} steps and the diffusion path only ${nv}`;
+  const bend = MRAT.lin>MRAT.vp ? `the linear path's are the bendier pair (${MRAT.lin.toFixed(3)} against ${MRAT.vp.toFixed(3)})`
+                                : `the diffusion path's are the bendier pair (${MRAT.vp.toFixed(3)} against ${MRAT.lin.toFixed(3)})`;
+  document.getElementById('note1').textContent =
+    `At t = ${t.toFixed(2)} the linear path holds ${(1-t).toFixed(2)} noise to ${t.toFixed(2)} data, the VP path ${PATH.vp.s(t).toFixed(2)} to ${PATH.vp.a(t).toFixed(2)}; ${cloud}. `+
+    `The thin training paths tell the clean story — arc ÷ chord ${GEO.lin.ratio.toFixed(3)} against ${GEO.vp.ratio.toFixed(3)}, start-to-end turn of the tangent ${GEO.lin.turn.toFixed(1)}° against ${GEO.vp.turn.toFixed(1)}° — but the green sampling trajectories are what an ODE solver has to follow, and there ${bend}. `+
+    `To bring the average endpoint error below ${tau.toFixed(3).replace(/0$/,'')}, ${cmp}.`;
+}
+
+/* ---------- interactive 2: the fan of conditional targets and their mean ---------- */
+const MLIST=[12,16,24,32,48,64,96,128,180,240], OFF=[0.558,0.702];
+const sg2=v=>{const s=v.toFixed(2);return s==='-0.00'?'0.00':s;};
+let anchor=0;
+function fanAt(t,M,A){
+  const p=PATH.lin, al=p.a(t), sg=p.s(t), c=ab(p,t);
+  const x=[al*MU[A][0]+sg*OFF[0], al*MU[A][1]+sg*OFF[1]], w=[], U=[]; let Z=0;
+  for(let i=0;i<M;i++){const dx=x[0]-al*POOL[i][0],dy=x[1]-al*POOL[i][1];w.push(Math.exp(-0.5*(dx*dx+dy*dy)/(sg*sg))); Z+=w[i];}
+  for(let i=0;i<M;i++)w[i]/=Z;
+  let ess=0; for(let i=0;i<M;i++)ess+=w[i]*w[i]; ess=1/ess;
+  for(let i=0;i<M;i++)U.push([c[0]*POOL[i][0]+c[1]*x[0], c[0]*POOL[i][1]+c[1]*x[1]]);
+  const ub=[0,0], xh=[0,0], ex=umarg(p,t,x); let vr=0,dv=0;
+  for(let i=0;i<M;i++){ub[0]+=w[i]*U[i][0];ub[1]+=w[i]*U[i][1];xh[0]+=w[i]*POOL[i][0];xh[1]+=w[i]*POOL[i][1];}
+  for(let i=0;i<M;i++){vr+=w[i]*((U[i][0]-ub[0])**2+(U[i][1]-ub[1])**2); dv+=w[i]*((POOL[i][0]-xh[0])**2+(POOL[i][1]-xh[1])**2);}
+  return {x,al,sg,w,U,ub,ex,ess,dest:Math.sqrt(dv),rms:Math.sqrt(vr),nub:Math.hypot(ub[0],ub[1]), nex:Math.hypot(ex[0],ex[1]), gap:Math.hypot(ub[0]-ex[0],ub[1]-ex[1])};}
+const P2W=700,P2H=380,S2=Math.min(P2W/6.3,(P2H-30)/6.0), pan2=(x,y)=>[P2W/2+x*S2, (P2H-30)/2+14-y*S2];
+function render2(){
+  const t=+document.getElementById('t2').value/100, M=MLIST[+document.getElementById('mSl').value];
+  document.getElementById('t2Out').textContent=t.toFixed(2); document.getElementById('mOut').textContent=M;
+  const F=fanAt(t,M,anchor), q=pan2(F.x[0],F.x[1]);
+  let mx=1e-9; for(let i=0;i<M;i++)mx=Math.max(mx,Math.hypot(F.U[i][0],F.U[i][1])); mx=Math.max(mx,F.nub,F.nex);
+  const AS=(0.42*Math.min(P2W,P2H))/mx, wmax=Math.max(...F.w); let s='';
+  for(let k=0;k<3;k++){const c=pan2(F.al*MU[k][0],F.al*MU[k][1]);
+    s+=`<circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="${(2*F.al*SG[k]*S2+F.sg*S2*0.35).toFixed(1)}" fill="none" stroke="var(--series)" stroke-width="1" stroke-dasharray="3 3" opacity="0.45"/>`;}
+  for(let i=0;i<M;i++){const e=pan2(F.al*POOL[i][0],F.al*POOL[i][1]);
+    s+=`<circle cx="${e[0].toFixed(1)}" cy="${e[1].toFixed(1)}" r="2" fill="var(--ink)" opacity="${(0.12+0.68*Math.sqrt(F.w[i]/wmax)).toFixed(3)}"/>`;}
+  for(let i=0;i<M;i++)
+    s+=`<line x1="${q[0].toFixed(1)}" y1="${q[1].toFixed(1)}" x2="${(q[0]+F.U[i][0]*AS).toFixed(1)}" y2="${(q[1]-F.U[i][1]*AS).toFixed(1)}" stroke="var(--ink)" stroke-width="1.1" opacity="${(0.07+0.75*Math.sqrt(F.w[i]/wmax)).toFixed(3)}"/>`;
+  const arrow=(v,col,wid)=>{const ex=q[0]+v[0]*AS, ey=q[1]-v[1]*AS, L=Math.hypot(v[0],v[1])*AS||1e-9;
+    const ux=(v[0]*AS)/L, uy=(-v[1]*AS)/L, hl=Math.min(11,L*0.4);
+    return `<line x1="${q[0].toFixed(1)}" y1="${q[1].toFixed(1)}" x2="${ex.toFixed(1)}" y2="${ey.toFixed(1)}" stroke="${col}" stroke-width="${wid}"/>`+
+      `<path d="M ${ex.toFixed(1)} ${ey.toFixed(1)} L ${(ex-hl*ux+hl*0.45*uy).toFixed(1)} ${(ey-hl*uy-hl*0.45*ux).toFixed(1)} L ${(ex-hl*ux-hl*0.45*uy).toFixed(1)} ${(ey-hl*uy+hl*0.45*ux).toFixed(1)} Z" fill="${col}"/>`;};
+  s+=arrow(F.ex,'var(--ok)',3.4)+arrow(F.ub,'var(--accent)',2.6)+
+     `<circle cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="4.4" fill="var(--paper)" stroke="var(--ink)" stroke-width="1.6"/>`;
+  [['var(--ink)','one training target'],['var(--accent)','their weighted mean'],['var(--ok)','exact field u_t(x)']].forEach((L,i)=>{const lx=14+i*200;
+    s+=`<line x1="${lx}" y1="${P2H-10}" x2="${lx+22}" y2="${P2H-10}" stroke="${L[0]}" stroke-width="2.4"/>`+
+       `<text x="${lx+28}" y="${P2H-6}" font-family="var(--mono)" font-size="11" fill="var(--muted)">${L[1]}</text>`;});
+  document.getElementById('plot2').innerHTML=s+
+    `<text x="${P2W-10}" y="16" text-anchor="end" font-family="var(--mono)" font-size="10.5" fill="var(--faint)">arrows share one scale, refit each frame</text>`;
+  document.getElementById('f1').textContent=F.ess.toFixed(1)+' of '+M; document.getElementById('f2').textContent=F.dest.toFixed(2);
+  document.getElementById('f3').textContent=F.rms.toFixed(2); document.getElementById('f4').textContent=F.gap.toFixed(2);
+  const dS=F.dest.toFixed(2), rS=F.rms.toFixed(2), dE=fanAt(0.80,M,anchor).dest.toFixed(2), ref=Math.max(F.nex,0.2);
+  const verdict = (F.gap*AS<4&&F.gap<0.15*ref) ? 'close enough that the two arrows overlap on screen' : F.gap<0.40*ref ? 'already the right direction, still visibly short of it' : 'still a crude estimate: this many endpoints does not pin the field down here';
+  const noise = rS==='0.00' ? `the posterior weight has collapsed onto one endpoint, so a single arrow is the whole fan and its length ${F.nub.toFixed(2)} is the mean`
+    : F.rms>F.nub ? `a single one sits ${rS} from their mean in velocity units, larger than the mean's own length of ${F.nub.toFixed(2)} — the label is mostly noise`
+    : `a single one sits ${rS} from their mean in velocity units, against a mean of length ${F.nub.toFixed(2)}`;
+  const where = dS==='0.00' ? 'and the posterior has already pinned where the particle ends up' : `and where the particle will finish is still uncertain to ${dS} in data units`;
+  const tail = t>=0.795 ? `At the top of this range the destination spread is down to ${dS}, its narrowest here: the conditioning has all but fixed where the particle ends up.`
+    : dE===dS ? `Push t to the top of the range and the destination spread holds at ${dS} — by here the conditioning has already fixed the endpoint.`
+    : +dE<+dS ? `Push t to the top of the range and the destination spread falls from ${dS} to ${dE} — the conditioning tightens, and with it the ambiguity the network has to average over.`
+    : `Push t to the top of the range and the destination spread moves from ${dS} to ${dE} — between the modes it can widen before it collapses.`;
+  document.getElementById('note2').textContent =
+    `Standing at x = (${sg2(F.x[0])}, ${sg2(F.x[1])}) at t = ${t.toFixed(2)}, on the path toward the ${REG[anchor]} regime. `+
+    `Of the ${M} sampled endpoints the posterior gives real weight to ${F.ess.toFixed(1)}, ${where}. `+
+    `Every grey arrow is a target the loss might hand the network; ${noise}. `+
+    `The mean is ${F.nub.toFixed(2)} long against the exact field's ${F.nex.toFixed(2)} and lands ${F.gap.toFixed(2)} away — ${verdict}. `+tail;
+}
+
+/* ---------- retrieval ---------- */
+const QS={
+  q1:{opts:["the score ∇ₓ log p_t(x) of the marginal probability path", "the conditional velocity u_t(x|z) of one sampled latent — a random target whose conditional mean given x_t = x is the marginal field", "the exact marginal velocity u_t(x), evaluated in closed form from the data distribution", "the negative log-likelihood of the sample x under p_t"],a:1,
+    fb:"You never compute the marginal field — that is ℒ_FM, the intractable one. Each example carries a conditional velocity computed from one sampled latent, and squared-error regression returns the conditional mean of whatever target you feed it (Lesson 4). Score matching (option A) is the diffusion route; the likelihood (option D) is the old CNF route that required simulating the ODE."},
+  q2:{opts:["ℒ_CFM is a lower bound on ℒ_FM, so pushing it down pushes ℒ_FM down.", "ℒ_CFM equals ℒ_FM at the optimum, though not anywhere else.", "They differ by a constant that contains no θ, so their gradients in θ are identical.", "ℒ_CFM is an unbiased Monte-Carlo estimate of ℒ_FM."],a:2,
+    fb:"ℒ_CFM = ℒ_FM + 𝔼‖u_t(x|z) − u_t(x)‖², and that extra term is a property of the path and the data, not of the weights — it vanishes under ∇_θ. It is an upper bound, not a lower one; it is strictly larger than ℒ_FM everywhere, including at the optimum; and its expectation is ℒ_FM plus that constant, so it is not an unbiased estimate of ℒ_FM."},
+  q3:{opts:["exactly x₁ − x₀ — the same vector at every t", "t·x₁ − (1−t)·x₀, which rotates as t grows", "(x₁ − x_t)/t", "−x_t/(1−t)"],a:0,
+    fb:"Differentiate x_t = (1−t)x₀ + t·x₁ in t and you get x₁ − x₀, with no t left in it: the trajectory is the straight segment traversed at constant speed. Conditioning on x₁ alone gives the equivalent form (x₁ − x_t)/(1−t) — note the denominator is 1−t, not t."},
+  q4:{opts:["converge, under exact integration, to a different data distribution", "need more training steps to fit, but the same number of sampling steps", "require a smaller learning rate during training", "carry more integration error, because Euler's local error grows with the trajectory's second derivative"],a:3,
+    fb:"Euler's local truncation error is (h²/2)·ẍ, so a perfectly straight trajectory is integrated exactly at any step size and a bending one is not. Both paths still transport p₀ to the same q under exact integration — the curvature is a cost of discretisation, not of the model. Note the interactive's warning: the linear path's conditional paths are straight while its marginal trajectories, under an independent coupling, are not."},
+  q5:{opts:["it is the only way to draw samples from p_t", "maximum-likelihood training of a CNF needs log p₁, which forces you to simulate the ODE and accumulate the divergence — a Jacobian trace — at every training step, and that is exactly the cost flow matching removes", "it proves the velocity field generating a given path is unique", "it shows the divergence must vanish for the flow to be valid"],a:1,
+    fb:"The identity is what makes a CNF a likelihood model, and what made it expensive: log p₁ = log p₀ − ∫∇·v dt demands ODE simulation inside the loop plus a d-dimensional trace, usually estimated stochastically. Flow matching replaces likelihood with regression and never touches either. Sampling needs only the ODE, not the density; the generating field is not unique (many fields generate the same path); and a non-zero divergence is exactly how density changes."},
+  q6:{opts:["flow matching is a diffusion model with the noise schedule set to zero", "the two are unrelated — one learns a score, the other a velocity, and no transformation connects them", "diffusion's probability-flow ODE is itself a continuous normalizing flow; flow matching keeps the ODE and generalises the choice of probability path, and for Gaussian paths the score and the velocity are an affine map apart", "flow matching, like diffusion, requires simulating a stochastic process during training"],a:2,
+    fb:"Both frameworks end at an ODE sampler; the VP diffusion path is one member of the Gaussian family, and u_t(x) = (α̇/α)x + σ²(α̇/α − σ̇/σ)∇ₓ log p_t(x) converts between the two representations wherever α_t > 0. What flow matching adds is freedom over (α_t, σ_t) and over the coupling — and no simulation of anything during training."}
+};
+const sel={q1:null,q2:null,q3:null,q4:null,q5:null,q6:null};let revealed=false;
+Object.keys(QS).forEach(id=>{const holder=document.querySelector('#'+id+' .opts');QS[id].opts.forEach((txt,i)=>{const b=document.createElement('button');b.className='opt';b.textContent=String.fromCharCode(65+i)+'.  '+txt;b.onclick=()=>{if(revealed)return;sel[id]=i;[...holder.children].forEach((c,ci)=>c.classList.toggle('sel',ci===i));document.getElementById('hint').style.display='none';};holder.appendChild(b);});});
+document.getElementById('check').onclick=async()=>{
+  if(revealed)return;if(Object.values(sel).some(v=>v===null)){document.getElementById('hint').style.display='inline';return;}
+  revealed=true;let score=0;
+  Object.keys(QS).forEach(id=>{const a=QS[id].a,holder=document.querySelector('#'+id+' .opts'),fb=document.querySelector('#'+id+' .fb');[...holder.children].forEach((c,ci)=>{c.style.cursor='default';c.classList.remove('sel');if(ci===a)c.classList.add('correct');else if(ci===sel[id])c.classList.add('wrong');});if(sel[id]===a)score++;fb.textContent=QS[id].fb;fb.classList.add('show');});
+  document.getElementById('check').style.opacity='0.5';document.getElementById('check').textContent='Checked';
+  document.getElementById('scoreOut').textContent=score+' / 6';document.getElementById('done').classList.add('show');
+  try{await window.storage.set('mfs:lesson27',JSON.stringify({done:true,retrieval:score+'/6',ts:Date.now()}),false);}catch(e){}
+};
+['t1','tau'].forEach(id=>document.getElementById(id).addEventListener('input',render1));
+['t2','mSl'].forEach(id=>document.getElementById(id).addEventListener('input',render2));
+document.getElementById('mid').onclick=()=>{document.getElementById('t1').value='50';render1();};
+document.getElementById('rst').onclick=()=>{document.getElementById('t1').value='35';render1();};
+document.querySelectorAll('#seg2 button').forEach(b=>b.onclick=()=>{anchor=+b.dataset.a;
+  document.querySelectorAll('#seg2 button').forEach(x=>x.classList.toggle('on',x===b));render2();});
+function boot(){
+  renderMath();
+  const put=(id,v)=>document.getElementById(id).textContent=v;
+  put('a0Txt',PATH.vp.a(0).toFixed(4)); put('otA',OT.costI.toFixed(2)); put('otB',OT.costO.toFixed(2));
+  put('otC',OT.crossI); put('otD',OT.crossO); put('twA',GEO.lin.ratio.toFixed(3));
+  put('twB',MRAT.lin.toFixed(3)); put('twC',MRAT.vp.toFixed(3));
+  render1();render2();
+}
+if(window.katex)boot();else window.addEventListener('load',boot);
+(async()=>{try{const r=await window.storage.get('mfs:lesson27',false);if(r&&r.value){const v=JSON.parse(r.value);if(v.done){const c=document.getElementById('chip');c.classList.add('show');c.textContent='completed · '+v.retrieval;}}}catch(e){}})();
+</script>
+</body>
+</html>
