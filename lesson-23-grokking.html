@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lesson 23 — Grokking</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<style>
+  :root{
+    --paper:#FAFAF6;--ink:#1A1C22;--muted:#63676E;--faint:#9A9EA4;--hair:#E4E3DB;--hair2:#D4D3CA;--panel:#FFFFFF;
+    --accent:#24507A;--accent-bg:#EAF0F6;--series:#B07A2E;--miss:#B23A3A;--ok:#2F6B4F;--ok-bg:#E9F1EC;
+    --vol:#8A5A2B;--vol-bg:#F6EFE6;--serif:Iowan Old Style,Palatino,Georgia,serif;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme:dark){:root{--paper:#15161A;--ink:#E9E8E2;--muted:#A2A6AC;--faint:#71757B;--hair:#2A2C31;--hair2:#3A3C42;--panel:#1B1D22;--accent:#7FB0E0;--accent-bg:#1E2A38;--series:#D9A85E;--miss:#E07A7A;--ok:#7FC49F;--ok-bg:#1C2A22;--vol:#D9A066;--vol-bg:#2A2115;}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.62;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:750px;margin:0 auto;padding:32px 24px 60px}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 6px}
+  h1{font-family:var(--serif);font-weight:600;font-size:27px;line-height:1.22;margin:0 0 6px;letter-spacing:-.01em}
+  .chip{display:none;font-family:var(--mono);font-size:11px;letter-spacing:.05em;color:var(--ok);border:1px solid var(--ok);border-radius:20px;padding:3px 10px;vertical-align:middle;margin-left:10px}
+  .chip.show{display:inline-block}
+  .sub{color:var(--muted);font-size:15px;margin:0 0 18px}
+  .levels{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 26px}
+  .levels .lk{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+  .levels .pill{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-family:var(--mono);color:var(--muted);background:var(--panel);border:1px solid var(--hair2);border-radius:20px;padding:4px 11px}
+  .levels .pill b{color:var(--accent);font-weight:700;letter-spacing:.03em}
+  p.lead{font-size:16px;margin:0 0 22px}
+  p.lead b{font-weight:600}
+  .sec{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:36px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--hair)}
+  .mblock{margin:16px 0;overflow-x:auto}
+  .glo{list-style:none;padding:0;margin:14px 0 0}
+  .glo li{display:flex;gap:14px;padding:9px 0;border-top:1px solid var(--hair);align-items:baseline}
+  .glo li:first-child{border-top:none}
+  .glo .sym{flex:0 0 92px;text-align:right;padding-top:2px}
+  .glo .sym.w{font-family:var(--mono);font-size:12.5px;color:var(--accent)}
+  .glo .def{font-size:14.5px}
+  .glo .def .n{color:var(--muted)}
+  .step{font-size:14.5px;color:var(--muted);margin:10px 0}
+  .panel{background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:20px;margin:14px 0}
+  .imgs{display:flex;flex-wrap:wrap;gap:22px;align-items:flex-start}
+  .imgs figure{margin:0;display:flex;flex-direction:column;gap:6px}
+  .imgs figcaption{font-family:var(--mono);font-size:12px;color:var(--muted)}
+  canvas{image-rendering:pixelated;border:1px solid var(--hair2);border-radius:6px;width:196px;height:196px;background:var(--panel)}
+  .figcap{font-family:var(--mono);font-size:12px;color:var(--muted);margin:2px 0 12px}
+  .leg{display:flex;flex-wrap:wrap;gap:8px 18px;font-family:var(--mono);font-size:11px;color:var(--muted);margin:4px 0 0}
+  .leg i{display:inline-block;width:18px;height:0;border-top:2px solid var(--accent);vertical-align:middle;margin-right:5px}
+  .ctrls{display:flex;flex-wrap:wrap;gap:16px 26px;align-items:flex-end;margin:16px 0 6px}
+  .field{display:flex;flex-direction:column;gap:6px;min-width:210px;flex:1}
+  .field label{font-size:12px;color:var(--muted);font-family:var(--mono);letter-spacing:.03em;display:flex;justify-content:space-between}
+  .field label b{color:var(--ink);font-weight:600}
+  input[type=range]{width:100%;accent-color:var(--accent);height:20px}
+  svg{max-width:100%;height:auto;display:block}
+  .btnrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0 2px}
+  button.ghost{background:transparent;color:var(--accent);border:1px solid var(--hair2);font-family:var(--mono);font-size:12.5px;padding:7px 12px;border-radius:8px;cursor:pointer}
+  button.ghost:hover{border-color:var(--accent)}
+  .tally{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 2px}
+  .stat{flex:1;min-width:120px;background:var(--paper);border-radius:9px;padding:9px 12px}
+  .stat .k{font-size:11px;font-family:var(--mono);letter-spacing:.04em;color:var(--muted);text-transform:uppercase}
+  .stat .v{font-size:19px;font-weight:600;font-family:var(--mono);margin-top:2px}
+  .stat .v.sm{font-size:15px}
+  .stat .v.a{color:var(--accent)}.stat .v.g{color:var(--ok)}.stat .v.s{color:var(--series)}.stat .v.m{color:var(--miss)}
+  .callout{font-size:14px;color:var(--muted);border-left:2px solid var(--accent);padding:2px 0 2px 14px;margin:16px 0 2px;min-height:1.4em}
+  .theorem{background:var(--accent-bg);border-radius:12px;padding:18px 20px;margin:16px 0}
+  .theorem .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
+  .theorem p{font-family:var(--serif);font-size:16px;line-height:1.55;margin:0}
+  .twist{border:1px dashed var(--hair2);border-radius:12px;padding:16px 18px;margin:16px 0;background:var(--panel)}
+  .twist .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+  .twist p{margin:0 0 10px;font-size:14.6px}.twist p:last-child{margin-bottom:0}
+  .vol{background:var(--vol-bg);border:1px solid var(--vol);border-radius:12px;padding:18px 20px;margin:16px 0}
+  .vol .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:var(--vol);margin:0 0 8px}
+  .vol p{margin:0 0 10px;font-size:14.8px}.vol p:last-child{margin-bottom:0}
+  .vol code{font-family:var(--mono);font-size:13px;background:rgba(138,90,43,.12);padding:1px 5px;border-radius:4px}
+  .q{border:1px solid var(--hair);border-radius:12px;padding:16px 18px;margin:12px 0;background:var(--panel)}
+  .q .stem{font-size:15px;font-weight:500;margin:0 0 12px}
+  .opt{display:block;width:100%;text-align:left;font-size:14px;padding:10px 12px;margin:0 0 8px;border:1px solid var(--hair2);border-radius:8px;background:transparent;color:var(--ink);cursor:pointer;line-height:1.45}
+  .opt:last-child{margin-bottom:0}
+  .opt:hover{border-color:var(--accent)}
+  .opt.sel{border-color:var(--accent);background:var(--accent-bg)}
+  .opt.correct{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+  .opt.wrong{background:#F7ECEC;border-color:var(--miss);color:var(--miss)}
+  @media (prefers-color-scheme:dark){.opt.wrong{background:#2E1E1E}}
+  .fb{font-size:13.5px;color:var(--muted);margin:10px 0 0;line-height:1.5;display:none}
+  .fb.show{display:block}
+  .checkRow{display:flex;align-items:center;gap:14px;margin:18px 0 0;flex-wrap:wrap}
+  .hint{font-size:13px;color:var(--miss);display:none}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-family:var(--sans);font-size:14px;padding:8px 14px;border-radius:8px;border:1px solid var(--accent);cursor:pointer}
+  .scoreOut{font-family:var(--mono);font-size:14px;font-weight:600}
+  .done{display:none;align-items:center;gap:10px;background:var(--ok-bg);color:var(--ok);border-radius:10px;padding:12px 16px;font-size:14px;margin:14px 0 0}
+  .done.show{display:flex}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">Lesson 23 · Wing V — training-dynamics mysteries</p>
+  <h1>Grokking<span class="chip" id="chip"></span></h1>
+  <p class="sub">The training loss finished two thousand steps ago. Keep going anyway — something is still moving.</p>
+  <div class="levels"><span class="lk">Level</span>
+    <span class="pill"><b>US</b> Graduate</span><span class="pill"><b>FR</b> Master 2 – PhD</span></div>
+
+  <p class="lead">Give a small network a task that has a <b>rule</b> — add two numbers modulo 13 — and show it only some of the pairs. Within a hundred optimizer steps it fits every training pair perfectly; three hundred steps later it is wrong on <i>all 68</i> held-out pairs. It has built a lookup table. Keep training. The training loss keeps falling — 1.3 × 10<sup>−3</sup> by step 800, 2.3 × 10<sup>−7</sup> by step 2,000 — long past the point where there is anything left to fit. And two thousand steps after the training set was first mastered, the held-out accuracy that spent its first five hundred steps at or below the 7.7% of pure guessing crosses 90% — 63 of the 68 — and by step 2,750 it has every pair right. The network <b>groks</b>: it swaps the memorised table for an algorithm. Two things make this worth a lesson. The mechanism is now understood — it is <b>weight decay</b>, still pulling on parameters the fit term has stopped constraining. And the algorithm has been read out of the weights: the network puts its inputs on a <b>circle</b> and adds angles, the trick Lesson 18's RoPE hard-codes by hand. Everything below trains live in your browser from a fixed seed; nothing here is a drawn curve.</p>
+
+  <div class="sec">The words, before the machinery</div>
+  <p class="step">Nine plain-English terms. Nothing is a theorem yet.</p>
+  <ul class="glo">
+    <li><span class="sym w">modular addition</span><span class="def">the task: given a and b in {0, 1, …, P−1}, output <b>(a + b) mod P</b> — the remainder after dividing by P. <span class="n">Here P = 13, so there are 13 × 13 = <b>169</b> possible pairs and 13 possible answers. Guessing scores 1/13 = 7.7%.</span></span></li>
+    <li><span class="sym w">memorise</span><span class="def">fit the training pairs by storing them, one at a time, with nothing carried over to unseen pairs. <span class="n">A perfectly legal solution: with enough parameters a network can hold an arbitrary table. It scores 100% on what it saw and chance on what it did not.</span></span></li>
+    <li><span class="sym w">generalise</span><span class="def">fit the training pairs by computing something that happens to be right everywhere. <span class="n">Also 100% on the training set — the two solutions are <i>indistinguishable</i> from the training loss alone. That indistinguishability is the whole lesson.</span></span></li>
+    <li><span class="sym w">weight decay</span><span class="def">a term <b>λ‖θ‖²/2</b> added to the loss, where θ is every parameter stacked into one long vector and ‖θ‖ its Euclidean length. <span class="n">λ ≥ 0 sets the price of size — λ/2 per unit of squared parameter. It is ridge regression's penalty (Lesson 5) applied to a network, and its gradient is simply λθ — a constant pull toward the origin.</span></span></li>
+    <li><span class="sym w">zero-loss manifold</span><span class="def">the <b>set</b> of parameter vectors that fit the training data exactly. <span class="n">Not a point: an overparameterised model has a whole surface of exact fits, and both the memoriser and the generaliser live on it. Moving along it changes nothing about the training loss and everything about the test loss.</span></span></li>
+    <li><span class="sym w">grok step</span><span class="def">the first step at which <b>held-out</b> accuracy exceeds 90%. <span class="n">An arbitrary but fixed threshold — the panels use it as a stopwatch. The interesting number is its <i>gap</i> from the step where training accuracy first hit 100%. The phenomenon was first reported by Power et al. (2022) on exactly this family of small algorithmic datasets.</span></span></li>
+    <li><span class="sym w">nats</span><span class="def">natural-log units of surprise, the units of the cross-entropy loss of Lesson 15. <span class="n">Divide by ln 2 ≈ 0.693 for bits. A model that guesses uniformly among 13 answers pays ln 13 = 2.565 nats per example.</span></span></li>
+    <li><span class="sym w">frequency, DFT power</span><span class="def">write a list of 13 numbers indexed by a as a sum of waves cos(2πka/13) and sin(2πka/13) for k = 1 … 6; the <b>power</b> at k is how much of the list that wave pair explains. <span class="n">The discrete Fourier transform, on 13 points. Six frequencies is all there is: k and 13 − k are the same wave.</span></span></li>
+    <li><span class="sym w">progress measure</span><span class="def">a number computed from the weights that moves <b>smoothly</b> while accuracy is flat. <span class="n">Nanda et al. (2023) built their account of exactly this phenomenon around one; the panels below use the same idea, and it is what turns "sudden jump" into "visible ramp".</span></span></li>
+  </ul>
+
+  <div class="sec">The task, the model, and the two ways to solve it</div>
+  <p class="step">Inputs are one-hot: the pair (a, b) picks row a of one embedding table and row b of a second. The two rows are added, the result is squared coordinate-wise, and a linear read-out produces 13 logits. Squaring is the cheapest activation that can multiply two things together, and multiplying is what an angle-addition identity needs; it is also the setting in which Gromov (2023) writes the generalising solution in closed form.</p>
+  <div class="mblock math" data-tex="h_j=\big(W^{a}_{a,j}+W^{b}_{b,j}\big)^{2},\qquad z_c=\sum_{j=1}^{H}U_{c,j}\,h_j,\qquad q_c=\frac{e^{z_c}}{\sum_{c'}e^{z_{c'}}},\qquad \theta=\big(W^{a},W^{b},U\big)\in\mathbb{R}^{1872}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="W^{a},W^{b}"></span><span class="def">two <b>embedding tables</b>, each 13 × 48: row a is the vector the network uses to stand for the input a. <span class="n">These are the objects the second panel dissects. Lesson 20's slogan — a feature is a direction — is the reason looking at rows is the right move.</span></span></li>
+    <li><span class="sym math" data-tex="h_j"></span><span class="def">hidden unit j, H = 48 of them: the <b>square</b> of the summed embeddings. <span class="n">Expanding (u+v)² = u² + 2uv + v² manufactures the cross term uv from an addition — the only nonlinearity in the model, and the one that lets a and b interact at all.</span></span></li>
+    <li><span class="sym math" data-tex="U"></span><span class="def">the <b>read-out</b>, 13 × 48: logit for answer c is a weighted sum of hidden units. <span class="n">Because h is quadratic in the embeddings, z<sub>c</sub> is a quadratic form; neurons taken in ± pairs cancel the u² and v² halves and leave the cross term alone, so with H = 48 ≥ 2P the logits for any <i>one</i> answer can be an arbitrary 13 × 13 table — which is exactly why memorising is available to this model.</span></span></li>
+    <li><span class="sym math" data-tex="q_c"></span><span class="def">the predicted <b>probability</b> of answer c — softmax of the logits, Lesson 17's normaliser used as a classifier head. <span class="n">1,872 parameters in total: 2 × 13 × 48 embedding entries plus 13 × 48 read-out entries.</span></span></li>
+  </ul>
+  <p class="step">The fitting loss is Lesson 15's cross-entropy in nats, averaged over the training pairs, and the objective actually descended adds the decay term:</p>
+  <div class="mblock math" data-tex="\mathcal{L}_{\text{fit}}(\theta)=-\frac{1}{|S|}\sum_{(a,b)\in S}\log q_{(a+b)\bmod P}\,,\qquad \mathcal{L}(\theta)=\mathcal{L}_{\text{fit}}(\theta)+\frac{\lambda}{2}\lVert\theta\rVert^{2}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="S"></span><span class="def">the <b>training subset</b> of the 169 pairs, a fixed seeded random sample of size ρ·169. <span class="n">ρ is the second slider below. The remaining pairs are the held-out set — never touched by a gradient.</span></span></li>
+    <li><span class="sym math" data-tex="\lambda"></span><span class="def">the <b>decay strength</b>, the first slider. <span class="n">λ = 0 removes the second term entirely and the objective becomes pure fit. Everything this lesson is about is downstream of that one switch.</span></span></li>
+    <li><span class="sym math" data-tex="\lVert\theta\rVert^{2}"></span><span class="def">the squared Euclidean <b>norm</b> of all 1,872 parameters. <span class="n">A single scalar summarising "how big are the weights". At the seeded initialisation used here it is 65.19² — the panels print ‖θ‖ itself, not its square.</span></span></li>
+  </ul>
+
+  <div class="sec">See it — the grokking curve</div>
+  <p class="step">A real run, not a picture of one: 13 × 48 tables initialised from seed 123 with every weight drawn from N(0, 1.5²) — deliberately large, because Liu et al. (2023) showed the size of the initial weights is what sets how pronounced the delay is — then AdamW at learning rate 0.01, full-batch, up to 6,000 steps, evaluated every 50. Both sliders reset the run when you release them; the buttons advance it. The step axis is logarithmic from 50, which is the only way the memorisation and the grok fit on one page.</p>
+  <div class="panel">
+    <svg id="p1" viewBox="0 0 680 300" role="img" aria-label="Train and test accuracy and weight norm against training step on a logarithmic step axis"></svg>
+    <div class="leg"><span><i></i>train accuracy</span><span><i style="border-color:var(--series)"></i>test accuracy</span><span><i style="border-color:var(--miss);border-top-style:dotted"></i>‖θ‖ (right axis)</span><span><i style="border-color:var(--ok);border-top-style:dashed"></i>grok step</span></div>
+    <div class="ctrls">
+      <div class="field"><label>weight decay λ <b id="lamOut">—</b></label><input type="range" id="lam" min="0" max="1.6" value="0.7" step="0.05" /></div>
+      <div class="field"><label>training fraction ρ <b id="froOut">—</b></label><input type="range" id="fro" min="0.25" max="0.85" value="0.6" step="0.05" /></div></div>
+    <div class="btnrow"><button class="ghost" id="b1">train +250</button><button class="ghost" id="b2">train +1,000</button>
+      <button class="ghost" id="b3">run to 6,000</button><span style="font-family:var(--mono);font-size:12px;color:var(--faint)" id="busy"></span></div>
+    <div class="tally"><div class="stat"><div class="k">step</div><div class="v a" id="s1s">—</div></div>
+      <div class="stat"><div class="k">train accuracy</div><div class="v a" id="s1tr">—</div></div>
+      <div class="stat"><div class="k">test accuracy</div><div class="v s" id="s1te">—</div></div>
+      <div class="stat"><div class="k">‖θ‖</div><div class="v m" id="s1n">—</div></div></div>
+    <div class="tally"><div class="stat"><div class="k">train 100% at step</div><div class="v sm" id="s1p">—</div></div>
+      <div class="stat"><div class="k">grok step (test &gt; 90%)</div><div class="v g sm" id="s1g">—</div></div>
+      <div class="stat"><div class="k">gap after fitting</div><div class="v sm" id="s1gap">—</div></div>
+      <div class="stat"><div class="k">train / test loss (nats)</div><div class="v sm" id="s1l">—</div></div></div>
+    <p class="callout" id="c1"></p>
+  </div>
+  <p class="step">Run it to the end and the default does not sit at a clean sweep: it takes all 68 at step 2,750, gives two back, and holds 66 of 68 — 97.1% — from step 3,500 to the end of the budget. Grokked means the algorithm is in place, not that the last pair is nailed down forever. Three settings are worth doing by hand. <b>λ = 0</b>: the run memorises at step 100 and stays there — at step 6,000 it is right on 2 of the 68 held-out pairs, worse than the 5.2 that guessing would give, and its test loss is 109.5 nats against a training loss of 10<sup>−11</sup>. That is not a model on its way somewhere; that is a finished lookup table. <b>ρ = 0.40</b> (68 training pairs): still a memoriser at 6,000 steps, 12.9% test. <b>ρ = 0.55</b> (93 pairs) reaches 84.2% but never crosses the 90% line inside the budget, while <b>ρ = 0.60</b> (101 pairs) crosses it at step 2,100 — the data-quantity boundary is between those two, and it is sharp.</p>
+
+  <div class="sec">The mechanism — norm descent on the zero-loss manifold</div>
+  <p class="step">Once the training loss is numerically zero its gradient is numerically zero too, and the descent direction is whatever is left:</p>
+  <div class="mblock math" data-tex="\nabla\mathcal{L}(\theta)=\underbrace{\nabla\mathcal{L}_{\text{fit}}(\theta)}_{\approx\,0\ \text{on the manifold}}+\;\lambda\theta\qquad\Longrightarrow\qquad \dot\theta=-\lambda\theta \quad\Longrightarrow\quad \lVert\theta_t\rVert=e^{-\lambda t}\lVert\theta_0\rVert" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="\nabla\mathcal{L}_{\text{fit}}\approx0"></span><span class="def">the fit term has <b>stopped talking</b>. <span class="n">In the default run the training loss is 5.7 × 10<sup>−2</sup> at step 400, 1.3 × 10<sup>−3</sup> at step 800 and 2.3 × 10<sup>−7</sup> at step 2,000 — five orders of magnitude gone while held-out accuracy is still climbing.</span></span></li>
+    <li><span class="sym math" data-tex="\dot\theta=-\lambda\theta"></span><span class="def">the <b>only surviving force</b>: shrink, uniformly, toward the origin. <span class="n">Exponential decay of the norm is what this says in isolation. In practice the fit term reasserts itself the moment shrinking starts to break the fit, so the true motion is a slide <i>along</i> the zero-loss set — decay tangentially, fit normally. The dotted line above shows the difference: ‖θ‖ drops 65.19 → 17.8 by step 250 while decay dominates, then climbs back to 26.1 by step 1,800 as the fit term re-tightens. The exponential is the isolated force, not the trajectory.</span></span></li>
+    <li><span class="sym w">AdamW</span><span class="def">the optimizer these panels use. <span class="n">Loshchilov &amp; Hutter's decoupled form applies the decay as θ ← (1 − ηλ)θ outside the adaptive rescaling, so when the fit gradient vanishes the update is <i>exactly</i> a multiplicative shrink. Plain gradient descent on 𝓛 gives the same force; Adam's normalised steps (Lesson 9) are what keep the run moving at all when the raw gradient is 10<sup>−7</sup>.</span></span></li>
+  </ul>
+  <p class="step">So the question stops being "which minimum does the optimizer find" and becomes "which point on the zero-loss set has the smallest norm". The measured answer, from the two runs above: the memoriser sits at ‖θ‖ = 62.8 and the generaliser at ‖θ‖ = 25.2 — both with training loss below 10<sup>−6</sup> (9.7 × 10<sup>−12</sup> and 1.8 × 10<sup>−7</sup> respectively), a factor 2.5 apart in size. The generalising circuit produces the same training logits out of a smaller parameter vector, which is the argument Varma et al. (2023) make quantitatively under the name <b>circuit efficiency</b>. Weight decay is not repairing overfitting here; it is a preference over solutions that only becomes decisive once fitting is finished.</p>
+
+  <div class="theorem">
+    <p class="lbl">The precise statement</p>
+    <p>Three claims of three different kinds. <b>(i) Elementary.</b> For the regularised objective 𝓛(θ) = 𝓛<sub>fit</sub>(θ) + (λ/2)‖θ‖², gradient flow obeys d‖θ‖²/dt = −2⟨θ, ∇𝓛<sub>fit</sub>⟩ − 2λ‖θ‖². On the interpolating set M = {θ : 𝓛<sub>fit</sub>(θ) = 0}, which for a smooth overparameterised model is generically a manifold of positive dimension rather than a point, ∇𝓛<sub>fit</sub> vanishes, so at a point of M the only force is −λθ; whatever part of it points off M is opposed by the fit term the instant it acts, and the surviving displacement is tangential — a slide <i>along</i> M, not out of a basin. Grokking is therefore not an escape from a local minimum — nothing is escaped, because nothing was trapped; it is displacement along a set on which the training objective is constant. <b>(ii) Empirical, and the point of the panels.</b> Memorising and generalising parameter vectors both lie in M, so the training loss cannot separate them; they are separated by ‖θ‖, and in the run above by a factor of 2.5 (62.8 against 25.2, both at 𝓛<sub>fit</sub> &lt; 10<sup>−6</sup>). With λ = 0 the run initialised at ‖θ‖ = 65.2 reaches M at a memorising point and stays there indefinitely. That the generalising solution has the smaller norm is a measured fact about this task and this architecture, not a theorem. <b>(iii) Empirical reverse-engineering (Nanda et al., 2023).</b> For modular addition, trained networks implement a discrete Fourier transform: input a is embedded as (cos 2πk a/P, sin 2πk a/P) for a small set of key frequencies k, hidden units combine the two embeddings through a product-to-sum identity so that a term in 2πk(a+b)/P appears, and the read-out scores answer c by Σ<sub>k</sub> cos(2πk(a+b−c)/P), which is maximised exactly at c ≡ a + b (mod P). Morwani et al. (2024) prove that for one-hidden-layer networks on this task the <i>maximum-margin</i> solutions are of this Fourier form, which is the closest thing to a theorem in the neighbourhood; the claim that trained networks converge to it remains an experimental finding.</p>
+  </div>
+
+  <div class="sec">The algorithm it finds — angle addition</div>
+  <p class="step">Why should a circle be the efficient answer? Because modular addition <i>is</i> rotation. Put input a at angle 2πka/13 on a circle; then adding a and b modulo 13 is composing two rotations, and rotations compose by adding angles. The model has one nonlinearity, squaring, and squaring a sum of two cosines produces exactly the required cross term:</p>
+  <div class="mblock math" data-tex="\big(\cos\alpha+\cos\beta\big)^{2}=\underbrace{\cos^{2}\alpha+\cos^{2}\beta}_{\text{depends on }a\text{ or }b\text{ alone}}+\underbrace{\cos(\alpha-\beta)}_{\text{the difference}}+\underbrace{\cos(\alpha+\beta)}_{\alpha+\beta=2\pi k(a+b)/13}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="\alpha=2\pi k a/13+\psi_j"></span><span class="def">the <b>phase</b> neuron j assigns to input a: a wave of frequency k with the neuron's own offset ψ<sub>j</sub>. <span class="n">This is what "row a of the embedding table" becomes once the table is sinusoidal — the same object Lesson 18 builds by hand, except here nobody built it.</span></span></li>
+    <li><span class="sym math" data-tex="\cos(\alpha+\beta)"></span><span class="def">the <b>only useful term</b>: it depends on a and b solely through a + b. <span class="n">Product-to-sum, 2cos α cos β = cos(α−β) + cos(α+β) — the identity a trigonometry course teaches and a network rediscovers. The other three terms are noise the read-out must cancel, which it does by summing neurons whose offsets ψ<sub>j</sub> are spread around the circle.</span></span></li>
+    <li><span class="sym math" data-tex="\textstyle\sum_{k}\cos\!\big(2\pi k(a+b-c)/13\big)"></span><span class="def">the <b>score for answer c</b>, summed over key frequencies. <span class="n">Every term is 1 when c ≡ a + b and the terms interfere destructively otherwise — a Dirichlet kernel peaked at the right answer. Take the argmax and you have the algorithm.</span></span></li>
+  </ul>
+  <p class="step">Lesson 18 is the same identity used the other way round. RoPE hard-codes rotations so that attention scores depend on the gap n − m; here the network <i>discovers</i> the encoding because it is the cheapest way to compute a sum. Two different pressures, one geometry.</p>
+
+  <div class="sec">See it — the circle</div>
+  <p class="step">Same run, same seed, same sliders as above — this panel reads the embedding table W<sup>a</sup> out of whichever checkpoint you select. Each of the 48 neurons is scored for which of the six frequencies dominates its column, and the panel projects the 13 input rows of one such group onto their top two principal components (Lesson 8's SVD, applied to a 13 × n<sub>k</sub> matrix). The 13 points are joined in input order 0 → 1 → … → 12 → 0, so a frequency-k circle is drawn as a star polygon that wraps k times.</p>
+  <div class="panel">
+    <div class="imgs">
+      <figure><svg id="p2a" viewBox="0 0 260 260" style="width:250px" role="img" aria-label="The thirteen input embeddings projected onto two principal components"></svg><figcaption id="cap2a">inputs in the top-2 PC plane</figcaption></figure>
+      <figure style="flex:1;min-width:280px"><svg id="p2b" viewBox="0 0 340 260" role="img" aria-label="Discrete Fourier power of the embedding table by frequency"></svg><figcaption>DFT power of W<sup>a</sup> by frequency k (neurons per group beneath)</figcaption></figure></div>
+    <div class="ctrls">
+      <div class="field"><label>checkpoint <b id="ckOut">—</b></label><input type="range" id="ck" min="0" max="8" value="8" step="1" /></div>
+      <div class="field"><label>frequency group k <b id="kfOut">—</b></label><input type="range" id="kf" min="1" max="6" value="1" step="1" /></div></div>
+    <div class="tally"><div class="stat"><div class="k">neurons with this k</div><div class="v a" id="s2n">—</div></div>
+      <div class="stat"><div class="k">variance in top-2 PCs</div><div class="v g" id="s2v">—</div></div>
+      <div class="stat"><div class="k">radius spread</div><div class="v s" id="s2r">—</div></div>
+      <div class="stat"><div class="k">angular step ± spread</div><div class="v sm" id="s2a">—</div></div>
+      <div class="stat"><div class="k">Fourier purity φ (null 0.408)</div><div class="v m sm" id="s2p">—</div></div></div>
+    <p class="callout" id="c2"></p>
+  </div>
+  <p class="step">One honest deflation. Nanda et al. found about <b>five</b> key frequencies out of the 56 available at P = 113 — genuine sparsity, most of the Fourier basis unused. At P = 13 there are only six frequencies in existence and this run uses all six, roughly evenly. What survives at this scale is not the sparsity of the frequency set but the <b>purity of each neuron</b>: at the end of the default run the mean single-frequency share φ is 0.862, against 0.408 for random weights — and 0.408 is not a fudge, it is the exact expectation H<sub>6</sub>/6 = (1 + ½ + ⅓ + ¼ + ⅕ + ⅙)/6 of max-over-sum for six i.i.d. exponential powers, which is what the DFT of a Gaussian column gives. The λ = 0 memoriser finishes at φ = 0.423. Statistically, its embedding is noise.</p>
+
+  <div class="twist">
+    <p class="lbl">The twist — the discontinuity is in the metric, not in the model</p>
+    <p>Grokking looks like a switch flipping. It is not. Run the default configuration and watch φ, the Fourier purity, rather than the accuracy: it is 0.435 at initialisation, 0.548 at step 400, and <b>0.648 at step 600</b> — exactly half of the journey from that starting value to its final 0.862 is already complete. At step 600 the held-out accuracy is 7.4%, which is 5 pairs out of 68, below the 7.7% you get by guessing. The structure was being built the whole time; accuracy could not see it, because accuracy is an <b>argmax</b> — a thresholded functional of the logits, blind to the difference between a wrong answer and a nearly-right one. This is precisely the illusion behind the emergent abilities of Lesson 24 and the loss-versus-capability split at the end of Lesson 21: a smooth internal quantity read through a threshold produces a step. Progress measures exist to undo that, and the panel above is one.</p>
+    <p>Second barrel: grokking is not exotic. Lesson 22's double descent is the story of test error getting <i>worse</i> and then better as parameters increase past the interpolation point, with regularisation deciding which of the many interpolating solutions you land on. Grokking is that same story told along the <b>time</b> axis instead of the parameter axis. In both, the model reaches zero training error early; in both, the interesting motion afterwards is a slide among solutions that are indistinguishable to the training loss; in both, regularisation is the tiebreaker and it wins slowly. The units on the horizontal axis differ. The mechanism does not.</p>
+  </div>
+
+  <div class="sec">Re-applied — the backtest that stops too early</div>
+  <p class="step">Strip the modular arithmetic away and the structure is a familiar one. A strategy can fit an in-sample window perfectly two ways: by <b>memorising idiosyncratic events</b> — this drawdown, that squeeze, the specific week the correlation inverted — or by <b>capturing a mechanism</b> that happens to have produced those events. Both reach the same in-sample objective, so the in-sample number cannot tell you which you have, exactly as the training loss above cannot separate the memoriser from the generaliser. What separates them is size: the memorising fit needs large, finely-tuned, mutually-cancelling coefficients, and the mechanism fit does not. That is why the honest search is over 𝓛<sub>fit</sub> + (λ/2)‖θ‖² and not over 𝓛<sub>fit</sub>, and it is the same ridge penalty of Lesson 5 doing the same job.</p>
+  <p class="step">The transferable observation is narrower than the analogy, so state it narrowly. The signature that the panels above make visible — <b>out-of-sample performance improving long after in-sample performance stopped improving</b> — is a signature a conventional backtest is structurally incapable of showing you, because a conventional backtest stops when in-sample convergence stops. Whether anything analogous to grokking actually occurs in a returns model is a different and much weaker claim, and I would not make it: grokking as a phenomenon needs an exact rule to be discovered, and returns do not have one. What does carry over is the design instruction — do not use in-sample convergence as the stopping rule, and do not read a stable in-sample fit as evidence that the search has finished choosing.</p>
+
+  <div class="vol">
+    <p class="lbl">Why this matters · volarixs</p>
+    <p>The Cross-Matrix (Lesson 7) fits one elasticity per regime cell, and a thinly-populated cell is precisely a small dataset on which an unpenalised fit will memorise. The mechanism above says what to do about it and why: two coefficient vectors can hit the same in-sample residual, and the one with the smaller norm is the one that will still be there next quarter. <code>bayesian_pooled_elasticity</code> is that norm preference implemented as shrinkage toward the pooled estimate — the λ term of this lesson, with a prior instead of the origin as the target.</p>
+    <p><code>sign_stability</code> — the share of subperiods in which β̂ keeps its sign — is then the diagnostic that plays the role held-out accuracy plays here: it is the number that separates the two solutions after the in-sample fit has stopped distinguishing them. The boundary worth respecting: nothing in this lesson licenses training a cell longer and expecting a late transition. The transferable content is the ordering — fit first, then choose among fits by norm — not the timing.</p>
+  </div>
+
+  <div class="sec">Check yourself</div>
+  <div class="q" id="q1"><p class="stem">You run the panel above with λ = 0 for the full 6,000 steps. What happens, and why?</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q2"><p class="stem">The training loss has been at 10<sup>−7</sup> for a thousand steps. What is still moving the parameters?</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q3"><p class="stem">Held-out accuracy jumps from chance to 100% over a few hundred steps, yet the Fourier purity φ rises smoothly from step one. The best explanation is:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q4"><p class="stem">Reverse-engineered, the algorithm a grokked modular-addition network runs is:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q5"><p class="stem">Holding λ fixed and lowering the training fraction ρ from 0.60 to 0.40, the run no longer groks within the budget. The right reading is:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q6"><p class="stem">What is the relationship between grokking and the double descent of Lesson 22?</p><div class="opts"></div><p class="fb"></p></div>
+
+  <div class="checkRow"><button class="primary" id="check">Check answers</button>
+    <span class="scoreOut" id="scoreOut"></span><span class="hint" id="hint">Answer all six first.</span></div>
+  <div class="done" id="done">Algorithm found. Next in Wing V: emergence as phase transitions.</div>
+</div>
+
+<script>
+/* storage shim: window.storage (Claude artifacts) or localStorage (web) */
+if(!window.storage){window.storage={async get(k){const v=localStorage.getItem(k);if(v==null)throw new Error('missing');return{key:k,value:v}},async set(k,v){localStorage.setItem(k,v);return{key:k,value:v}},async delete(k){localStorage.removeItem(k);return{key:k,deleted:true}},async list(p){const ks=[];for(let i=0;i<localStorage.length;i++){const kk=localStorage.key(i);if(!p||kk.startsWith(p))ks.push(kk)}return{keys:ks}}};}
+function renderMath(){document.querySelectorAll('.math').forEach(el=>{const tex=el.getAttribute('data-tex');if(!tex||el.dataset.done)return;try{if(window.katex){katex.render(tex,el,{displayMode:el.dataset.display==='1',throwOnError:false});el.dataset.done='1';}else el.textContent=tex;}catch(e){el.textContent=tex;}});}
+const id=x=>document.getElementById(x);
+
+/* ---------- deterministic randomness (seed 123) ---------- */
+function mulberry32(seed){let a=seed>>>0;return function(){a|=0;a=(a+0x6D2B79F5)|0;let t=Math.imul(a^(a>>>15),1|a);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296;}}
+function randn(rng){let u=0,v=0;while(!u)u=rng();while(!v)v=rng();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+
+/* ---------- fixed world: split permutation then initial parameters ---------- */
+const P=13,H=48,SC=1.5,LR=0.01,B1=0.9,B2=0.98,EPSA=1e-8,MAXS=6000,EVERY=50,INIT0=400,KM=(P-1)/2;
+const NPAR=3*P*H,oA=0,oB=P*H,oU=2*P*H,MPAIR=P*P,PERM=new Int32Array(MPAIR),TH0=new Float64Array(NPAR);
+(function(){const rng=mulberry32(123);
+  for(let i=0;i<MPAIR;i++)PERM[i]=i;
+  for(let i=MPAIR-1;i>0;i--){const j=Math.floor(rng()*(i+1)),t=PERM[i];PERM[i]=PERM[j];PERM[j]=t;}
+  for(let i=0;i<NPAR;i++)TH0[i]=SC*randn(rng);})();
+const NORM0=Math.sqrt(TH0.reduce((s,x)=>s+x*x,0)),NULLPHI=(1+1/2+1/3+1/4+1/5+1/6)/6;  /* H6/6: max-over-sum of 6 iid exponential powers */
+
+/* ---------- the training run ---------- */
+const th=new Float64Array(NPAR),mom=new Float64Array(NPAR),vel=new Float64Array(NPAR),gr=new Float64Array(NPAR);
+const pre=new Float64Array(H),hid=new Float64Array(H),lgt=new Float64Array(P),dh=new Float64Array(H);
+let TR=[],TE=[],CK=[],step=0,trPerf=-1,grokS=-1,LAM=0.7,RHO=0.6;
+function evalSet(set){let ok=0,L=0;for(let q=0;q<set.length;q++){const ix=set[q],a=(ix/P)|0,b=ix%P,y=(a+b)%P,ia=oA+a*H,ib=oB+b*H;
+    for(let j=0;j<H;j++){const p=th[ia+j]+th[ib+j];hid[j]=p*p;}
+    let mx=-1e300,am=0;
+    for(let c=0;c<P;c++){const ic=oU+c*H;let s=0;for(let j=0;j<H;j++)s+=hid[j]*th[ic+j];lgt[c]=s;if(s>mx){mx=s;am=c;}}
+    let z=0;for(let c=0;c<P;c++)z+=Math.exp(lgt[c]-mx);
+    L+=-(lgt[y]-mx-Math.log(z));if(am===y)ok++;}
+  return{a:ok/set.length,n:ok,l:L/set.length};}
+function purity(){let acc=0;for(let j=0;j<H;j++){let mu=0,s=0,mx=0;for(let a=0;a<P;a++)mu+=th[oA+a*H+j]/P;
+    for(let k=1;k<=KM;k++){let re=0,im=0;
+      for(let a=0;a<P;a++){const c=th[oA+a*H+j]-mu,g=2*Math.PI*k*a/P;re+=c*Math.cos(g);im-=c*Math.sin(g);}
+      const p=re*re+im*im;s+=p;if(p>mx)mx=p;}
+    acc+=mx/(s+1e-300);}
+  return acc/H;}
+function record(){const A=evalSet(TR),B=evalSet(TE);let nn=0;
+  for(let i=0;i<NPAR;i++)nn+=th[i]*th[i];if(trPerf<0&&A.n===TR.length)trPerf=step;if(grokS<0&&B.a>0.9)grokS=step;
+  CK.push({s:step,tr:A.a,trn:A.n,te:B.a,ten:B.n,trl:A.l,tel:B.l,nrm:Math.sqrt(nn),phi:purity(),emb:th.slice(oA,oA+P*H)});}
+function reset(lam,rho){LAM=lam;RHO=rho;th.set(TH0);mom.fill(0);vel.fill(0);step=0;trPerf=-1;grokS=-1;CK=[];
+  const ntr=Math.max(2,Math.round(rho*MPAIR));
+  TR=Array.from(PERM.slice(0,ntr));TE=Array.from(PERM.slice(ntr));record();advance(INIT0);}
+function advance(n){const target=Math.min(MAXS,step+n);
+  while(step<target){gr.fill(0);const ntr=TR.length;
+    for(let q=0;q<ntr;q++){const ix=TR[q],a=(ix/P)|0,b=ix%P,y=(a+b)%P,ia=oA+a*H,ib=oB+b*H;
+      for(let j=0;j<H;j++){const p=th[ia+j]+th[ib+j];pre[j]=p;hid[j]=p*p;}
+      let mx=-1e300;
+      for(let c=0;c<P;c++){const ic=oU+c*H;let s=0;for(let j=0;j<H;j++)s+=hid[j]*th[ic+j];lgt[c]=s;if(s>mx)mx=s;}
+      let z=0;for(let c=0;c<P;c++)z+=Math.exp(lgt[c]-mx);
+      dh.fill(0);
+      for(let c=0;c<P;c++){const d=(Math.exp(lgt[c]-mx)/z-(c===y?1:0))/ntr,ic=oU+c*H;
+        for(let j=0;j<H;j++){gr[ic+j]+=hid[j]*d;dh[j]+=th[ic+j]*d;}}
+      for(let j=0;j<H;j++){const dp=2*pre[j]*dh[j];gr[ia+j]+=dp;gr[ib+j]+=dp;}}
+    const t1=step+1,c1=1-Math.pow(B1,t1),c2=1-Math.pow(B2,t1);   /* AdamW: decoupled decay LR*LAM*th */
+    for(let i=0;i<NPAR;i++){mom[i]=B1*mom[i]+(1-B1)*gr[i];vel[i]=B2*vel[i]+(1-B2)*gr[i]*gr[i];
+      th[i]-=LR*((mom[i]/c1)/(Math.sqrt(vel[i]/c2)+EPSA)+LAM*th[i]);}
+    step++;if(step%EVERY===0)record();}}
+
+/* ---------- embedding analysis for panel 2 ---------- */
+function dissect(emb){const cols=[],grp=[],pw=new Float64Array(KM+1);let tot=0;for(let k=0;k<=KM;k++)grp.push([]);
+  for(let j=0;j<H;j++){let mu=0,mx=-1,am=1;for(let a=0;a<P;a++)mu+=emb[a*H+j]/P;
+    const col=new Float64Array(P);for(let a=0;a<P;a++)col[a]=emb[a*H+j]-mu;
+    for(let k=1;k<=KM;k++){let re=0,im=0;
+      for(let a=0;a<P;a++){const g=2*Math.PI*k*a/P;re+=col[a]*Math.cos(g);im-=col[a]*Math.sin(g);}
+      const p=re*re+im*im;pw[k]+=p;tot+=p;if(p>mx){mx=p;am=k;}}
+    grp[am].push(j);cols.push(col);}
+  return{cols,grp,pw,tot};}
+function pca2(cols,idx){const n=idx.length,G=[];for(let a=0;a<P;a++)G.push(new Float64Array(P));  /* top-2 eigenpairs: power iteration + deflation */
+  for(let a=0;a<P;a++)for(let b=0;b<P;b++){let s=0;for(let t=0;t<n;t++)s+=cols[idx[t]][a]*cols[idx[t]][b];G[a][b]=s;}
+  let tot=0;for(let a=0;a<P;a++)tot+=G[a][a];
+  const R=G.map(r=>Float64Array.from(r)),V=[],ev=[],rng=mulberry32(7);
+  for(let t=0;t<2;t++){let v=new Float64Array(P),lam=0;for(let a=0;a<P;a++)v[a]=randn(rng);
+    const nv=Math.hypot(...v);for(let a=0;a<P;a++)v[a]/=nv;
+    for(let it=0;it<300;it++){const w=new Float64Array(P);
+      for(let a=0;a<P;a++){let s=0;for(let b=0;b<P;b++)s+=R[a][b]*v[b];w[a]=s;}
+      const nw=Math.hypot(...w)||1e-300;lam=nw;for(let a=0;a<P;a++)v[a]=w[a]/nw;}
+    V.push(v);ev.push(lam);
+    for(let a=0;a<P;a++)for(let b=0;b<P;b++)R[a][b]-=lam*v[a]*v[b];}
+  const pts=[];for(let a=0;a<P;a++)pts.push([V[0][a]*Math.sqrt(ev[0]),V[1][a]*Math.sqrt(ev[1])]);
+  return{pts,frac:tot>0?(ev[0]+ev[1])/tot:0};}
+
+/* ---------- panel 1 ---------- */
+const W1=680,H1=300,L1=46,R1=48,T1=14,BB=34,IW=W1-L1-R1,IH=H1-T1-BB;
+const XL=Math.log10(EVERY),XH=Math.log10(MAXS),NRMAX=70,fmt=n=>n.toLocaleString('en-US');
+const XX=s=>L1+(Math.log10(s)-XL)/(XH-XL)*IW,YA=v=>T1+(1-v)*IH,YN=v=>T1+(1-Math.min(1,v/NRMAX))*IH;
+function draw1(){const pts=CK.filter(c=>c.s>=EVERY);let s='';
+  for(let k=2;k<=Math.floor(XH);k++)s+='<line x1="'+XX(Math.pow(10,k)).toFixed(1)+'" y1="'+T1+'" x2="'+XX(Math.pow(10,k)).toFixed(1)+'" y2="'+(T1+IH)+'" stroke="var(--hair)"/>'
+    +'<text x="'+XX(Math.pow(10,k)).toFixed(1)+'" y="'+(H1-12)+'" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--faint)">'+fmt(Math.pow(10,k))+'</text>';
+  for(let t=0;t<=4;t++){const y=YA(t/4);s+='<line x1="'+L1+'" y1="'+y.toFixed(1)+'" x2="'+(W1-R1)+'" y2="'+y.toFixed(1)+'" stroke="var(--hair)"/>'
+      +'<text x="'+(L1-6)+'" y="'+(y+3.5).toFixed(1)+'" text-anchor="end" font-family="var(--mono)" font-size="10" fill="var(--faint)">'+(25*t)+'%</text>'
+      +'<text x="'+(W1-R1+6)+'" y="'+(y+3.5).toFixed(1)+'" font-family="var(--mono)" font-size="10" fill="var(--miss)">'+(NRMAX*t/4).toFixed(0)+'</text>';}
+  const line=(f,col,dash)=>{let p='';pts.forEach(c=>{p+=XX(c.s).toFixed(1)+','+f(c).toFixed(1)+' ';});
+    return p?'<polyline points="'+p+'" fill="none" stroke="'+col+'" stroke-width="1.9"'+(dash?' stroke-dasharray="'+dash+'"':'')+'/>':'';};
+  s+=line(c=>YN(c.nrm),'var(--miss)','2 3')+line(c=>YA(c.tr),'var(--accent)','')+line(c=>YA(c.te),'var(--series)','');
+  if(trPerf>=EVERY)s+='<line x1="'+XX(trPerf).toFixed(1)+'" y1="'+T1+'" x2="'+XX(trPerf).toFixed(1)+'" y2="'+(T1+IH)+'" stroke="var(--accent)" stroke-dasharray="4 3" opacity="0.55"/>';
+  if(grokS>=EVERY)s+='<line x1="'+XX(grokS).toFixed(1)+'" y1="'+T1+'" x2="'+XX(grokS).toFixed(1)+'" y2="'+(T1+IH)+'" stroke="var(--ok)" stroke-dasharray="6 3"/>'
+    +'<text x="'+(XX(grokS)+6).toFixed(1)+'" y="'+(T1+13)+'" font-family="var(--mono)" font-size="10" fill="var(--ok)">grok '+fmt(grokS)+'</text>';
+  if(step<MAXS)s+='<line x1="'+XX(Math.max(EVERY,step)).toFixed(1)+'" y1="'+T1+'" x2="'+XX(Math.max(EVERY,step)).toFixed(1)+'" y2="'+(T1+IH)+'" stroke="var(--hair2)"/>';
+  s+='<text x="'+(L1+6)+'" y="'+(T1+IH-8)+'" font-family="var(--mono)" font-size="10" fill="var(--faint)">accuracy (left) and ‖θ‖ (right) vs step — step axis logarithmic from 50</text>';
+  id('p1').innerHTML=s;}
+function stats1(){const c=CK[CK.length-1];
+  id('s1s').textContent=fmt(c.s);id('s1tr').textContent=(100*c.tr).toFixed(1)+'%';
+  id('s1te').textContent=(100*c.te).toFixed(1)+'%';id('s1n').textContent=c.nrm.toFixed(2);
+  id('s1p').textContent=trPerf<0?'not reached':fmt(trPerf);
+  id('s1g').textContent=grokS<0?(step>=MAXS?'never (6,000)':'not yet'):fmt(grokS);
+  id('s1gap').textContent=(grokS<0||trPerf<0)?(step>=MAXS?'no grok':'still open'):'+'+fmt(grokS-trPerf)+' steps';
+  id('s1l').textContent=c.trl.toExponential(1)+' / '+c.tel.toFixed(2);
+  const nte=TE.length,ntr=TR.length,chance=nte/P;
+  let m='Step '+fmt(c.s)+' of '+fmt(MAXS)+' at λ = '+LAM.toFixed(2)+', ρ = '+RHO.toFixed(2)+' ('+fmt(ntr)+' training pairs, '+fmt(nte)+' held out). '
+   +'Train '+(100*c.tr).toFixed(1)+'% ('+c.trn+'/'+ntr+'), test '+(100*c.te).toFixed(1)+'% ('+c.ten+'/'+nte+' — guessing gives '+chance.toFixed(1)+'), ‖θ‖ = '+c.nrm.toFixed(2)
+   +' against '+NORM0.toFixed(2)+' at initialisation. ';
+  if(trPerf<0) m+='The training set is not memorised yet (training loss '+c.trl.toExponential(1)+' nats), so nothing here is about grokking — λ = '+LAM.toFixed(2)+' is strong enough to be still fighting the fit. Train further or lower λ.';
+  else if(grokS<0){
+    const fitw=c.trl<1e-4?'far below anything the optimizer can still act on':(c.trl<1e-2?'small and shrinking fast':'small, but not yet negligible — perfect by argmax, not yet by loss');
+    m+='Training accuracy first hit 100% at step '+fmt(trPerf)+' and the training loss is now '+c.trl.toExponential(1)+' nats, '+fitw+' — yet '+(nte-c.ten)+' of the '+nte+' held-out pairs are still wrong. ';
+    if(LAM===0) m+='With λ = 0 that is the end of the story: no decay term, no residual force, and the norm has stayed at '+c.nrm.toFixed(2)+' (against '+NORM0.toFixed(2)+' at the start). This run will memorise forever.';
+    else m+='The only surviving gradient is the decay λθ, and it is still moving the parameters along the zero-loss set'+(step<MAXS?' — there are '+fmt(MAXS-step)+' steps left in the budget.':'; it did not get far enough in 6,000 steps at this λ and ρ.');
+  } else m+='Test accuracy first crossed 90% at step '+fmt(grokS)+' — '+fmt(grokS-trPerf)+' steps after the training set was already perfect, a factor of '+(grokS/Math.max(1,trPerf)).toFixed(1)+' in step count. That gap is the grokking, and the decay term λ = '+LAM.toFixed(2)+' is the only force in the objective that can prefer one exact fit over another.';
+  id('c1').textContent=m;}
+
+/* ---------- panel 2 ---------- */
+function draw2(){const i=Math.min(+id('ck').value,CK.length-1),k=+id('kf').value,c=CK[i];
+  id('ckOut').textContent='step '+fmt(c.s);id('kfOut').textContent='k = '+k;
+  const D=dissect(c.emb),idx=D.grp[k];                    /* --- the frequency spectrum --- */
+  const W2=340,H2=260,PL=34,PR=8,PT=12,PB=40,iw=W2-PL-PR,ih=H2-PT-PB,bw=iw/KM,mxp=Math.max(...Array.from(D.pw).slice(1));
+  let s='';
+  for(let q=1;q<=KM;q++){const x=PL+(q-1)*bw,hh=D.pw[q]/mxp*ih;
+    s+='<rect x="'+(x+3).toFixed(1)+'" y="'+(PT+ih-hh).toFixed(1)+'" width="'+(bw-6).toFixed(1)+'" height="'+hh.toFixed(1)+'" fill="'+(q===k?'var(--accent)':'var(--hair2)')+'" opacity="'+(q===k?0.9:0.6)+'"/>'
+      +'<text x="'+(x+bw/2).toFixed(1)+'" y="'+(PT+ih+14)+'" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="'+(q===k?'var(--accent)':'var(--faint)')+'">'+q+'</text>'
+      +'<text x="'+(x+bw/2).toFixed(1)+'" y="'+(PT+ih+27)+'" text-anchor="middle" font-family="var(--mono)" font-size="9.5" fill="var(--faint)">'+D.grp[q].length+'</text>'
+      +'<text x="'+(x+bw/2).toFixed(1)+'" y="'+(PT+ih-hh-4).toFixed(1)+'" text-anchor="middle" font-family="var(--mono)" font-size="9" fill="var(--muted)">'+(100*D.pw[q]/D.tot).toFixed(0)+'%</text>';}
+  s+='<line x1="'+PL+'" y1="'+(PT+ih)+'" x2="'+(W2-PR)+'" y2="'+(PT+ih)+'" stroke="var(--hair2)"/>'
+    +'<text x="'+PL+'" y="'+(H2-6)+'" font-family="var(--mono)" font-size="10" fill="var(--faint)">share of embedding power at each frequency</text>';
+  id('p2b').innerHTML=s;                                  /* --- the circle --- */
+  const CX=130,CY=126,RR=92;let t='',v=0,rcv=0,mstep=0,sstep=0,mr=0;
+  if(idx.length<3){
+    t='<text x="130" y="126" text-anchor="middle" font-family="var(--mono)" font-size="11" fill="var(--faint)">only '+idx.length+' neuron(s) at k = '+k+'</text>';
+    id('cap2a').textContent='too few neurons for a plane';
+  } else {
+    const A=pca2(D.cols,idx),rad=A.pts.map(p=>Math.hypot(p[0],p[1]));v=A.frac;
+    mr=rad.reduce((x,y)=>x+y,0)/P;
+    rcv=Math.sqrt(rad.reduce((x,y)=>x+(y-mr)*(y-mr),0)/P)/(mr||1e-300);
+    const mxr=Math.max(...rad)||1e-300,ang=A.pts.map(p=>Math.atan2(p[1],p[0]));let zr=0,zi=0;
+    for(let a=0;a<P;a++){const g=ang[(a+1)%P]-ang[a];zr+=Math.cos(g)/P;zi+=Math.sin(g)/P;}
+    const RS=Math.hypot(zr,zi);                       /* circular statistics: wrap-safe at any k */
+    mstep=Math.abs(Math.atan2(zi,zr))*180/Math.PI;sstep=Math.sqrt(2*(1-RS))*180/Math.PI;  /* deviation 0°…81° */
+    const XY=a=>[CX+A.pts[a][0]/mxr*RR,CY-A.pts[a][1]/mxr*RR];
+    t+='<circle cx="'+CX+'" cy="'+CY+'" r="'+(RR*mr/mxr).toFixed(1)+'" fill="none" stroke="var(--hair2)" stroke-dasharray="3 4"/>';
+    let poly='';for(let a=0;a<P;a++){const p=XY(a);poly+=p[0].toFixed(1)+','+p[1].toFixed(1)+' ';}
+    t+='<polygon points="'+poly+'" fill="none" stroke="var(--accent)" stroke-width="1.2" opacity="0.6"/>';
+    for(let a=0;a<P;a++){const p=XY(a);
+      t+='<circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="4" fill="var(--series)"/>'
+        +'<text x="'+(p[0]+(p[0]>=CX?7:-7)).toFixed(1)+'" y="'+(p[1]+3.5).toFixed(1)+'" text-anchor="'+(p[0]>=CX?'start':'end')+'" font-family="var(--mono)" font-size="9.5" fill="var(--muted)">'+a+'</text>';}
+    id('cap2a').textContent='inputs 0…12 joined in order, k = '+k;
+  }
+  id('p2a').innerHTML=t;
+  const pred=360*k/P,few=idx.length<3;
+  id('s2n').textContent=idx.length+' / '+H;id('s2p').textContent=c.phi.toFixed(3);
+  id('s2v').textContent=few?'n/a':(100*v).toFixed(1)+'%';
+  id('s2r').textContent=few?'n/a':(100*rcv).toFixed(1)+'%';
+  id('s2a').textContent=few?'n/a':mstep.toFixed(1)+'° ± '+sstep.toFixed(1)+'°';
+  let m='At step '+fmt(c.s)+', '+idx.length+' of the '+H+' neurons have k = '+k+' as their strongest frequency, and that group carries '+(100*D.pw[k]/D.tot).toFixed(1)+'% of the table’s Fourier power. ';
+  if(few) m+='Three points do not determine a plane, so the projection is not drawn — move the frequency slider to a populated group.';
+  else{
+    m+='Projected onto their top two principal components, the 13 inputs put '+(100*v).toFixed(1)+'% of the group’s variance in those two dimensions, sit at a common radius to within '+(100*rcv).toFixed(1)+'%, and turn '+mstep.toFixed(1)+'° per input on average — spread ±'+sstep.toFixed(1)+'° — against the '+pred.toFixed(1)+'° a perfect frequency-'+k+' circle demands of every single step. ';
+    m+=(v>=0.8&&rcv<=0.15&&sstep<=20)?'That is a circle, traversed '+k+' step'+(k>1?'s':'')+' at a time — the algorithm, visible in the weights.'
+      :'That is not a circle: a blob in the plane, with the radius wandering by '+(100*rcv).toFixed(1)+'%, the turn per input scattered by ±'+sstep.toFixed(1)+'°, and '+(100*(1-v)).toFixed(1)+'% of the variance living outside the plane entirely.';}
+  m+=' Across all '+H+' neurons the mean single-frequency share is φ = '+c.phi.toFixed(3)+', against '+NULLPHI.toFixed(3)+' for random weights.';
+  id('c2').textContent=m;}                                /* phi: mean share of a column's DFT power in its top frequency */
+function syncCk(toEnd){const sl=id('ck');sl.max=String(CK.length-1);
+  if(toEnd||+sl.value>CK.length-1)sl.value=String(CK.length-1);}
+function redraw(toEnd){draw1();stats1();syncCk(toEnd);draw2();}
+
+/* ---------- controls ---------- */
+function chunk(total){const btns=[id('b1'),id('b2'),id('b3'),id('lam'),id('fro')];btns.forEach(b=>b.disabled=true);
+  let left=total;id('busy').textContent='training…';   /* chunked so the curve animates instead of freezing */
+  const go=()=>{const n=Math.min(400,left);advance(n);left-=n;
+    if(left>0&&step<MAXS){redraw(true);requestAnimationFrame(go);}
+    else{id('busy').textContent='';btns.forEach(b=>b.disabled=false);redraw(true);}};
+  requestAnimationFrame(go);}
+id('lam').addEventListener('input',()=>{id('lamOut').textContent=(+id('lam').value).toFixed(2);});
+id('fro').addEventListener('input',()=>{id('froOut').textContent=(+id('fro').value).toFixed(2)+' · '+Math.round(+id('fro').value*MPAIR)+' pairs';});
+const doReset=()=>{reset(+id('lam').value,+id('fro').value);redraw(true);};
+id('lam').addEventListener('change',doReset);id('fro').addEventListener('change',doReset);
+id('b1').onclick=()=>chunk(250);id('b2').onclick=()=>chunk(1000);id('b3').onclick=()=>chunk(MAXS-step);
+id('ck').addEventListener('input',draw2);id('kf').addEventListener('input',draw2);
+
+/* ---------- retrieval ---------- */
+const QS={
+  q1:{opts:["it groks, but much later than with λ > 0 — decay only sets the timing","training accuracy never reaches 100%, because there is nothing to stop the weights growing","it memorises within a hundred steps and stays memorised: 2 of 68 held-out pairs at step 6,000, test loss 109.5 nats against a training loss of 10⁻¹¹ — with the fit gradient at zero and no decay term, no force remains to move the parameters","it groks immediately, since removing the penalty lets the network use all its capacity"],a:2,
+    fb:"Grokking is not slow generalisation; it is generalisation driven by a term that λ = 0 deletes. Once 𝓛_fit ≈ 0 the gradient is ∇𝓛_fit + λθ = 0 + 0, so the parameters stop moving in any meaningful sense and the run stays at whatever interpolating point it first reached — here a memorising one, right on 2 of 68 pairs, worse than the 5.2 that guessing gives. The panel reproduces this exactly."},
+  q2:{opts:["the weight-decay gradient λθ, which is the only non-vanishing term left; it slides the parameters along the zero-loss set toward smaller-norm solutions","stochastic gradient noise from mini-batch sampling, which keeps exploring","the learning-rate schedule, which increases the step size late in training","nothing — the parameters are stationary, and the later jump comes from the evaluation code"],a:0,
+    fb:"∇𝓛 = ∇𝓛_fit + λθ. With 𝓛_fit ≈ 10⁻⁷ the first term is negligible and the second is not, so the motion is θ̇ ≈ −λθ constrained to keep the fit — a slide along the interpolating manifold, not an escape from a basin. The panels are full-batch, so there is no sampling noise to appeal to, and the learning rate is constant."},
+  q3:{opts:["the model genuinely changes discontinuously; smooth internal measures are averaging artifacts","the held-out set is too small for accuracy to be meaningful","evaluation happens only every 50 steps, so the jump is an aliasing effect of the sampling grid","accuracy is a thresholded functional — an argmax over logits — so a smoothly improving internal structure can leave it pinned at chance and then move it all at once; progress measures like φ are built to see through exactly that"],a:3,
+    fb:"φ is 0.435 at initialisation, 0.548 at step 400 and 0.648 at step 600 — half the journey to its final 0.862 — while held-out accuracy at step 600 is 7.4%, five pairs of 68, below the 7.7% of guessing. Nothing in the model is discontinuous; the argmax is. This is the same metric illusion as Lesson 24's emergence and the loss-versus-capability split of Lesson 21. A finer evaluation grid would not smooth the accuracy curve, and a larger held-out set would not either."},
+  q4:{opts:["nearest-neighbour lookup in a compressed table of the training pairs","embed each input on a circle as cos/sin at a few key frequencies, use a product-to-sum identity so the hidden units carry a term in 2πk(a+b)/P, and read off the answer by argmax of Σ_k cos(2πk(a+b−c)/P) — a discrete Fourier transform","a learned decision tree over the binary digits of a and b","repeated addition implemented as a chain of increments across the layers"],a:1,
+    fb:"Nanda et al. (2023) reverse-engineered exactly this for modular addition, and Morwani et al. (2024) prove the maximum-margin solutions of one-hidden-layer networks on the task have this Fourier form. Angle addition is why a circle is the efficient encoding: composing rotations adds angles, which is what the task asks for — the same identity Lesson 18's RoPE hard-codes, except discovered rather than imposed. The panel shows the circle in the embedding's principal plane."},
+  q5:{opts:["the model has too little capacity to represent the algorithm at ρ = 0.40","the learning rate must be raised in proportion to the number of training pairs","below a critical amount of data, memorising remains available at a norm the decay never beats, so the norm-descent has no generalising solution to move toward — the run is still a memoriser at 12.9% test after 6,000 steps, and the crossing here sits between ρ = 0.55 and ρ = 0.60","the training loss never reaches zero with fewer pairs, so the mechanism cannot start"],a:2,
+    fb:"Capacity is unchanged — the same 1,872 parameters, and the training set is memorised within 150 steps at every ρ in the panel, so the fit does reach zero. What changes is which solutions interpolate: with few pairs, an interpolating memoriser is easy and the generalising circuit is not uniquely selected, so shrinking the norm does not lead anywhere useful. The panel's own numbers: 12.9% test at ρ = 0.40, 84.2% at 0.55, grok at step 2,100 at 0.60."},
+  q6:{opts:["they are the same mechanism on different axes: both have the model interpolating early, both then slide among solutions the training loss cannot distinguish, and in both the tiebreaker is regularisation — double descent traces it against parameter count, grokking against training step","they are unrelated; double descent is about model size and grokking is about optimizers","grokking is double descent observed in the training loss rather than the test loss","double descent is a special case of grokking that occurs only in linear models"],a:0,
+    fb:"Double descent (Lesson 22) sweeps the parameter axis: test error rises to a peak at the interpolation threshold and falls again beyond it, because in the overparameterised regime there are many interpolating solutions and the implicit or explicit regularisation picks a benign one. Grokking sweeps the time axis with the model fixed: zero training error arrives early, and the subsequent motion is the same selection among interpolating solutions, driven here by λ. Double descent also appears in linear regression, so it is not a special case of anything about deep networks, and neither phenomenon lives in the training loss."}
+};
+const sel={q1:null,q2:null,q3:null,q4:null,q5:null,q6:null};let revealed=false;
+Object.keys(QS).forEach(qid=>{const holder=document.querySelector('#'+qid+' .opts');QS[qid].opts.forEach((txt,i)=>{const b=document.createElement('button');b.className='opt';b.textContent=String.fromCharCode(65+i)+'.  '+txt;b.onclick=()=>{if(revealed)return;sel[qid]=i;[...holder.children].forEach((c,ci)=>c.classList.toggle('sel',ci===i));id('hint').style.display='none';};holder.appendChild(b);});});
+id('check').onclick=async()=>{
+  if(revealed)return;if(Object.values(sel).some(v=>v===null)){id('hint').style.display='inline';return;}
+  revealed=true;let score=0;
+  Object.keys(QS).forEach(qid=>{const a=QS[qid].a,holder=document.querySelector('#'+qid+' .opts'),fb=document.querySelector('#'+qid+' .fb');[...holder.children].forEach((c,ci)=>{c.style.cursor='default';c.classList.remove('sel');if(ci===a)c.classList.add('correct');else if(ci===sel[qid])c.classList.add('wrong');});if(sel[qid]===a)score++;fb.textContent=QS[qid].fb;fb.classList.add('show');});
+  id('check').style.opacity='0.5';id('check').textContent='Checked';
+  id('scoreOut').textContent=score+' / 6';id('done').classList.add('show');
+  try{await window.storage.set('mfs:lesson23',JSON.stringify({done:true,retrieval:score+'/6',ts:Date.now()}),false);}catch(e){}
+};
+function boot(){renderMath();
+  id('lamOut').textContent=(+id('lam').value).toFixed(2);
+  id('froOut').textContent=(+id('fro').value).toFixed(2)+' · '+Math.round(+id('fro').value*MPAIR)+' pairs';
+  reset(+id('lam').value,+id('fro').value);redraw(true);}
+if(window.katex)boot();else window.addEventListener('load',boot);
+(async()=>{try{const r=await window.storage.get('mfs:lesson23',false);if(r&&r.value){const v=JSON.parse(r.value);if(v.done){const c=id('chip');c.classList.add('show');c.textContent='completed · '+v.retrieval;}}}catch(e){}})();
+</script>
+</body>
+</html>
