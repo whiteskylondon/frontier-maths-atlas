@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lesson 26 — Diffusion as SDEs + score matching</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<style>
+  :root{
+    --paper:#FAFAF6;--ink:#1A1C22;--muted:#63676E;--faint:#9A9EA4;--hair:#E4E3DB;--hair2:#D4D3CA;--panel:#FFFFFF;
+    --accent:#24507A;--accent-bg:#EAF0F6;--series:#B07A2E;--miss:#B23A3A;--ok:#2F6B4F;--ok-bg:#E9F1EC;
+    --vol:#8A5A2B;--vol-bg:#F6EFE6;--serif:Iowan Old Style,Palatino,Georgia,serif;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme:dark){:root{--paper:#15161A;--ink:#E9E8E2;--muted:#A2A6AC;--faint:#71757B;--hair:#2A2C31;--hair2:#3A3C42;--panel:#1B1D22;--accent:#7FB0E0;--accent-bg:#1E2A38;--series:#D9A85E;--miss:#E07A7A;--ok:#7FC49F;--ok-bg:#1C2A22;--vol:#D9A066;--vol-bg:#2A2115;}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.62;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:750px;margin:0 auto;padding:32px 24px 60px}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 6px}
+  h1{font-family:var(--serif);font-weight:600;font-size:27px;line-height:1.22;margin:0 0 6px;letter-spacing:-.01em}
+  .chip{display:none;font-family:var(--mono);font-size:11px;letter-spacing:.05em;color:var(--ok);border:1px solid var(--ok);border-radius:20px;padding:3px 10px;vertical-align:middle;margin-left:10px}
+  .chip.show{display:inline-block}
+  .sub{color:var(--muted);font-size:15px;margin:0 0 18px}
+  .levels{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 26px}
+  .levels .lk{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+  .levels .pill{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-family:var(--mono);color:var(--muted);background:var(--panel);border:1px solid var(--hair2);border-radius:20px;padding:4px 11px}
+  .levels .pill b{color:var(--accent);font-weight:700;letter-spacing:.03em}
+  p.lead{font-size:16px;margin:0 0 22px}
+  p.lead b{font-weight:600}
+  .sec{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:36px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--hair)}
+  .mblock{margin:16px 0;overflow-x:auto}
+  .glo{list-style:none;padding:0;margin:14px 0 0}
+  .glo li{display:flex;gap:14px;padding:9px 0;border-top:1px solid var(--hair);align-items:baseline}
+  .glo li:first-child{border-top:none}
+  .glo .sym{flex:0 0 92px;text-align:right;padding-top:2px}
+  .glo .sym.w{font-family:var(--mono);font-size:12.5px;color:var(--accent)}
+  .glo .def{font-size:14.5px}
+  .glo .def .n{color:var(--muted)}
+  .step{font-size:14.5px;color:var(--muted);margin:10px 0}
+  .panel{background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:20px;margin:14px 0}
+  .imgs{display:flex;flex-wrap:wrap;gap:22px;align-items:flex-start}
+  .imgs figure{margin:0;display:flex;flex-direction:column;gap:6px}
+  .imgs figcaption{font-family:var(--mono);font-size:12px;color:var(--muted)}
+  canvas{image-rendering:pixelated;border:1px solid var(--hair2);border-radius:6px;width:196px;height:196px;background:var(--panel)}
+  .figcap{font-family:var(--mono);font-size:12px;color:var(--muted);margin:2px 0 12px}
+  .leg{display:flex;flex-wrap:wrap;gap:8px 18px;font-family:var(--mono);font-size:11px;color:var(--muted);margin:4px 0 0}
+  .leg i{display:inline-block;width:18px;height:0;border-top:2px solid var(--accent);vertical-align:middle;margin-right:5px}
+  .ctrls{display:flex;flex-wrap:wrap;gap:16px 26px;align-items:flex-end;margin:16px 0 6px}
+  .field{display:flex;flex-direction:column;gap:6px;min-width:210px;flex:1}
+  .field label{font-size:12px;color:var(--muted);font-family:var(--mono);letter-spacing:.03em;display:flex;justify-content:space-between}
+  .field label b{color:var(--ink);font-weight:600}
+  input[type=range]{width:100%;accent-color:var(--accent);height:20px}
+  svg{max-width:100%;height:auto;display:block}
+  .seg{display:inline-flex;border:1px solid var(--hair2);border-radius:8px;overflow:hidden}
+  .seg button{font-family:var(--mono);font-size:12px;padding:7px 12px;border:0;background:transparent;color:var(--muted);cursor:pointer}
+  .seg button.on{background:var(--accent-bg);color:var(--accent);font-weight:600}
+  button.ghost{background:transparent;border:1px solid var(--hair2);color:var(--muted);font-family:var(--mono);font-size:12px;padding:7px 12px;border-radius:8px;cursor:pointer}
+  .tally{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 2px}
+  .stat{flex:1;min-width:120px;background:var(--paper);border-radius:9px;padding:9px 12px}
+  .stat .k{font-size:11px;font-family:var(--mono);letter-spacing:.04em;color:var(--muted);text-transform:uppercase}
+  .stat .v{font-size:19px;font-weight:600;font-family:var(--mono);margin-top:2px}
+  .stat .v.sm{font-size:15px}
+  .stat .v.a{color:var(--accent)}.stat .v.g{color:var(--ok)}.stat .v.s{color:var(--series)}.stat .v.m{color:var(--miss)}
+  .callout{font-size:14px;color:var(--muted);border-left:2px solid var(--accent);padding:2px 0 2px 14px;margin:16px 0 2px;min-height:1.4em}
+  .theorem{background:var(--accent-bg);border-radius:12px;padding:18px 20px;margin:16px 0}
+  .theorem .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
+  .theorem p{font-family:var(--serif);font-size:16px;line-height:1.55;margin:0 0 10px}.theorem p:last-child{margin-bottom:0}
+  .twist{border:1px dashed var(--hair2);border-radius:12px;padding:16px 18px;margin:16px 0;background:var(--panel)}
+  .twist .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+  .twist p{margin:0 0 10px;font-size:14.6px}.twist p:last-child{margin-bottom:0}
+  .vol{background:var(--vol-bg);border:1px solid var(--vol);border-radius:12px;padding:18px 20px;margin:16px 0}
+  .vol .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:var(--vol);margin:0 0 8px}
+  .vol p{margin:0 0 10px;font-size:14.8px}.vol p:last-child{margin-bottom:0}
+  .vol code{font-family:var(--mono);font-size:13px;background:rgba(138,90,43,.12);padding:1px 5px;border-radius:4px}
+  .q{border:1px solid var(--hair);border-radius:12px;padding:16px 18px;margin:12px 0;background:var(--panel)}
+  .q .stem{font-size:15px;font-weight:500;margin:0 0 12px}
+  .opt{display:block;width:100%;text-align:left;font-size:14px;padding:10px 12px;margin:0 0 8px;border:1px solid var(--hair2);border-radius:8px;background:transparent;color:var(--ink);cursor:pointer;line-height:1.45}
+  .opt:last-child{margin-bottom:0}
+  .opt:hover{border-color:var(--accent)}
+  .opt.sel{border-color:var(--accent);background:var(--accent-bg)}
+  .opt.correct{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+  .opt.wrong{background:#F7ECEC;border-color:var(--miss);color:var(--miss)}
+  @media (prefers-color-scheme:dark){.opt.wrong{background:#2E1E1E}}
+  .fb{font-size:13.5px;color:var(--muted);margin:10px 0 0;line-height:1.5;display:none}
+  .fb.show{display:block}
+  .checkRow{display:flex;align-items:center;gap:14px;margin:18px 0 0;flex-wrap:wrap}
+  .hint{font-size:13px;color:var(--miss);display:none}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-family:var(--sans);font-size:14px;padding:8px 14px;border-radius:8px;border:1px solid var(--accent);cursor:pointer}
+  .scoreOut{font-family:var(--mono);font-size:14px;font-weight:600}
+  .done{display:none;align-items:center;gap:10px;background:var(--ok-bg);color:var(--ok);border-radius:10px;padding:12px 16px;font-size:14px;margin:14px 0 0}
+  .done.show{display:flex}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">Lesson 26 · Wing VI — generative machinery</p>
+  <h1>Diffusion as SDEs + score matching<span class="chip" id="chip"></span></h1>
+  <p class="sub">Destroy the structure on purpose, in a process you can write down in closed form — then learn the one unknown you need to run it backwards.</p>
+  <div class="levels">
+    <span class="lk">Level</span>
+    <span class="pill"><b>US</b> Graduate</span>
+    <span class="pill"><b>FR</b> Master 2 – PhD</span>
+  </div>
+
+  <p class="lead">Take any data distribution and stir noise into it, gradually, until nothing is left but a standard Gaussian. That destruction is easy: it is a mean-reverting stochastic differential equation whose solution at every intermediate time is available in closed form, so you can jump to any noise level in one line without simulating anything. The remarkable part is that the destruction is <b>reversible</b>, and that reversing it needs exactly one object you do not already have — the <b>score</b>, the gradient of the log density in <i>x</i>. Learn the score, integrate the reverse process, and noise becomes samples. This lesson builds the four load-bearing pieces: the forward SDE and its closed-form marginal, the identity that makes "predict the noise" and "predict the score" the same task, the theorem that lets you replace an uncomputable objective with a computable one at zero cost, and the deterministic ODE that turns the whole apparatus into an exactly invertible flow.</p>
+
+  <div class="sec">The words, before the machinery</div>
+  <ul class="glo">
+    <li><span class="sym w">SDE, dW</span><span class="def">a <b>stochastic differential equation</b> is a rule d<b>x</b> = <i>f</i>(<b>x</b>,t)dt + <i>g</i>(t)d<b>W</b>: over a tiny interval dt, move by <i>f</i>·dt and add an independent random kick. <i>f</i> is the <b>drift</b>, <i>g</i> the <b>diffusion coefficient</b>, and d<b>W</b> the increment of a <b>Wiener process</b> (Brownian motion) — a draw from 𝒩(0, dt·I), independent of everything before it. The <b>Fokker–Planck</b> equation is the deterministic PDE governing how the <i>density</i> of the solution evolves, ∂<sub>t</sub>p = −∇·(<i>f</i>p) + ½<i>g</i>²Δp, with Δ the Laplacian and ∇· the divergence. <span class="n">Two facts we lean on: variances of independent increments add, so integrating √β d<b>W</b> from 0 to t accumulates variance ∫β and not (∫√β)²; and Fokker–Planck, used once, gives the probability-flow ODE.</span></span></li>
+    <li><span class="sym w">Ornstein–Uhlenbeck</span><span class="def">the mean-reverting SDE d<b>x</b> = −κ(<b>x</b> − θ̄)dt + σd<b>W</b>: pulled back toward a level θ̄ at speed κ while being shaken. <span class="n">A rates desk calls the same equation <b>Vasicek</b>. Everything below is the θ̄ = 0 case with a time-varying speed.</span></span></li>
+    <li><span class="sym w">β(t), ᾱ<sub>t</sub></span><span class="def"><b>β</b> is the <b>noise schedule</b>, a positive function on [0,1] setting both the pull-back speed (β/2) and the shaking (√β). <b>ᾱ<sub>t</sub></b> ("alpha-bar") = exp(−∫<sub>0</sub><sup>t</sup>β) is the fraction of the original signal's <i>variance</i> still present at time t. <span class="n">We use the standard linear schedule β(t) = 0.1 + (20 − 0.1)t — a design choice, not a law. On it ᾱ<sub>t</sub> falls from 1 to 4.32×10⁻⁵.</span></span></li>
+    <li><span class="sym w">kernel, marginal</span><span class="def">the <b>perturbation kernel</b> p(<b>x</b><sub>t</sub>|<b>x</b><sub>0</sub>) is the law of the noised point given the clean one; the <b>marginal</b> p<sub>t</sub>(<b>x</b>) = ∫p(<b>x</b>|<b>x</b><sub>0</sub>)p<sub>0</sub>(<b>x</b><sub>0</sub>)d<b>x</b><sub>0</sub> integrates the clean point out. <span class="n">The kernel is Gaussian and known exactly. The marginal is easy to sample from and, for anything real, impossible to write down. That gap is the whole difficulty.</span></span></li>
+    <li><span class="sym w">score, s<sub>θ</sub></span><span class="def">the <b>score</b> is ∇<sub><b>x</b></sub>log p(<b>x</b>): the direction at <b>x</b> in which the log density rises fastest, and how fast — a <b>vector field</b>, one arrow per point. <b>s<sub>θ</sub></b> is a neural network trained to output it given (<b>x</b>, t). <span class="n">Careful with the name: classical statistics (Lesson 3) calls ∇<sub>θ</sub>log p<sub>θ</sub> the score. This is the other one, the gradient in <i>x</i>, sometimes called the Stein score. In the panels below nothing is trained — the toy's score is closed-form, so the demonstrations are exact.</span></span></li>
+    <li><span class="sym w">ε</span><span class="def">the standard Gaussian draw, ε ∼ 𝒩(0,I), used to jump straight to noise level t. <span class="n">Writing <b>x</b><sub>t</sub> as a deterministic function of (<b>x</b><sub>0</sub>, t, ε) is exactly Lesson 14's <b>reparameterization</b>: the randomness is frozen, the parameters enter smoothly, and gradients (Lesson 13) flow.</span></span></li>
+    <li><span class="sym w">denoiser</span><span class="def">𝔼[<b>x</b><sub>0</sub>|<b>x</b><sub>t</sub>], the conditional mean of the clean point given the noisy one — the minimum-mean-squared-error estimator. <span class="n">Lesson 4's conditional expectation wearing a different hat. Tweedie's formula below says it is the score in disguise.</span></span></li>
+    <li><span class="sym w">the toy</span><span class="def">everything is demonstrated on one fixed 2-D mixture of three Gaussians: weights w<sub>k</sub> = (0.45, 0.32, 0.23), means <b>μ</b><sub>k</sub> = (−1.55, −0.85), (1.45, −0.75), (0.10, 1.70), each isotropic with σ<sub>0</sub> = 0.28. <span class="n">Chosen because a Gaussian mixture stays a Gaussian mixture under the kernel, so p<sub>t</sub> and its exact score are closed-form at every t. No network, no approximation, nothing to distrust.</span></span></li>
+  </ul>
+
+  <div class="sec">The forward process, and why you never have to run it</div>
+  <p class="step">The variance-preserving (VP) forward diffusion is an Ornstein–Uhlenbeck process pulled toward the origin, with the pull and the shaking tied together by one schedule. Its drift is linear and its diffusion depends only on t, so — unusually — it integrates in closed form, and the second line below is the only line of code diffusion training ever needs:</p>
+  <div class="mblock math" data-tex="\begin{aligned}d\mathbf{x}&amp;=-\tfrac12\,\beta(t)\,\mathbf{x}\,dt+\sqrt{\beta(t)}\,d\mathbf{W},\qquad t\in[0,1]\\[4pt] p(\mathbf{x}_t\mid\mathbf{x}_0)&amp;=\mathcal N\big(\sqrt{\bar\alpha_t}\,\mathbf{x}_0,\,(1-\bar\alpha_t)I\big)\iff \mathbf{x}_t=\sqrt{\bar\alpha_t}\,\mathbf{x}_0+\sqrt{1-\bar\alpha_t}\,\boldsymbol\varepsilon,\quad \bar\alpha_t=\exp\Big(\!-\!\int_0^t\!\beta(s)ds\Big)\end{aligned}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="-\tfrac12\beta(t)\mathbf{x}"></span><span class="def">the <b>drift</b>: a pull toward the origin at speed β(t)/2. <span class="n">The ½ is chosen precisely so signal decay and noise injection balance — writing d for the dimension of <b>x</b> (d = 2 in the panels), if 𝔼‖<b>x</b><sub>0</sub>‖²/d = 1 then 𝔼‖<b>x</b><sub>t</sub>‖²/d = 1 for every t, since ᾱ<sub>t</sub> + (1 − ᾱ<sub>t</sub>) = 1. That balance is what "variance preserving" names.</span></span></li>
+    <li><span class="sym math" data-tex="\sqrt{\beta(t)}\,d\mathbf{W}"></span><span class="def">the <b>shaking</b>: independent Gaussian kicks of variance β(t)dt per coordinate. <span class="n">The same β as the drift — one schedule controls both, which is what makes ᾱ<sub>t</sub> a single sufficient summary of "how far along" you are.</span></span></li>
+    <li><span class="sym math" data-tex="\bar\alpha_t"></span><span class="def">the closed-form <b>signal fraction</b>. <span class="n">On our linear β, ∫<sub>0</sub><sup>t</sup>β = 0.1t + 9.95t², so ᾱ<sub>t</sub> = exp(−0.1t − 9.95t²) with no numerical integration. ᾱ<sub>1</sub> = e<sup>−10.05</sup> = 4.32×10⁻⁵, so whatever p<sub>0</sub> was, p<sub>1</sub> differs from 𝒩(0,I) by under 1.6×10⁻³ in each mean coordinate and 4.1×10⁻⁵ in every covariance entry.</span></span></li>
+    <li><span class="sym math" data-tex="\boldsymbol\varepsilon"></span><span class="def">the frozen noise. <span class="n">This is why diffusion is cheap to train: to build a training pair at noise level t you draw one ε and add, rather than stepping an SDE. The forward process is <i>never simulated</i>.</span></span></li>
+  </ul>
+
+  <div class="sec">The one identity that makes it trainable</div>
+  <p class="step">Differentiate the log of that Gaussian kernel in <b>x</b><sub>t</sub>. Two lines of algebra, and the result is the pivot of the entire field:</p>
+  <div class="mblock math" data-tex="\nabla_{\mathbf{x}_t}\log p(\mathbf{x}_t\mid\mathbf{x}_0)\;=\;-\,\frac{\mathbf{x}_t-\sqrt{\bar\alpha_t}\,\mathbf{x}_0}{1-\bar\alpha_t}\;=\;-\,\frac{\boldsymbol\varepsilon}{\sqrt{1-\bar\alpha_t}}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="-\tfrac{\mathbf{x}_t-\sqrt{\bar\alpha_t}\mathbf{x}_0}{1-\bar\alpha_t}"></span><span class="def">the score of a Gaussian: <b>minus the residual over the variance</b>. <span class="n">For 𝒩(m, vI), ∇log p(x) = −(x − m)/v. Here m = √ᾱ<sub>t</sub><b>x</b><sub>0</sub> and v = 1 − ᾱ<sub>t</sub>. Nothing deeper is happening.</span></span></li>
+    <li><span class="sym math" data-tex="-\boldsymbol\varepsilon/\sqrt{1-\bar\alpha_t}"></span><span class="def">the same thing rewritten through the reparameterization. <span class="n">The residual <i>is</i> √(1−ᾱ<sub>t</sub>)·ε by construction, so the kernel's score is the noise you added, negated and divided by √(1−ᾱ<sub>t</sub>) — one power of the standard deviation, not two. A network trained to <b>predict ε</b> and one trained to <b>predict the score</b> are the same network up to that scalar, which is why DDPM's ε-prediction loss and the score-matching loss are one objective in different clothes.</span></span></li>
+  </ul>
+
+  <div class="sec">Running time backwards</div>
+  <p class="step">Anderson (1982) proved that a diffusion run in reverse is again a diffusion, with one extra term in the drift. Song et al. (2021) observed that the same marginals are also carried by a deterministic flow — with the score coefficient <b>halved</b>. Both facts, for our forward SDE:</p>
+  <div class="mblock math" data-tex="\underbrace{d\mathbf{x}=\Big[-\tfrac12\beta(t)\mathbf{x}-\beta(t)\nabla_{\mathbf{x}}\log p_t(\mathbf{x})\Big]dt+\sqrt{\beta(t)}\,d\bar{\mathbf{W}}}_{\text{reverse-time SDE}}\qquad \underbrace{\frac{d\mathbf{x}}{dt}=-\tfrac12\beta(t)\Big[\mathbf{x}+\nabla_{\mathbf{x}}\log p_t(\mathbf{x})\Big]}_{\text{probability-flow ODE}}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="d\bar{\mathbf{W}}"></span><span class="def">a Wiener increment in <b>reverse time</b>; dt is a negative increment. <span class="n">Concretely, one Euler step from t down to t − Δ is <b>x</b> ← <b>x</b> + Δ[½β<b>x</b> + β∇log p<sub>t</sub>] + √(βΔ)·<b>z</b> with <b>z</b> ∼ 𝒩(0,I). That is literally the loop in the panel below.</span></span></li>
+    <li><span class="sym math" data-tex="\nabla_{\mathbf{x}}\log p_t"></span><span class="def">the <b>only</b> unknown. <span class="n">Everything else — β, the ½, the √β — is your own schedule. Diffusion modelling is the problem of estimating one time-indexed vector field, and nothing else.</span></span></li>
+    <li><span class="sym math" data-tex="-\tfrac12\beta\,\nabla\log p_t"></span><span class="def">the <b>halved</b> score in the ODE. <span class="n">Where the ½ comes from: Fokker–Planck's diffusion term rewrites as ½g²Δp = ∇·(½g²p∇log p), so folding all of it into the drift gives velocity <i>f</i> − ½g²∇log p and turns the equation into a pure continuity equation — deterministic transport with the same p<sub>t</sub>. Using β instead of ½β is the classic error: a perfectly valid ODE with the <i>wrong</i> marginals.</span></span></li>
+  </ul>
+
+  <div class="sec">See it — dissolve, then rebuild</div>
+  <p class="step">Left: 400 seeded points from the toy mixture, pushed to noise level t by the closed-form kernel and coloured by the component they came from. Right: 400 points that started as <b>pure noise at t = 1</b> and were integrated backwards to the current t by the reverse process using the mixture's exact score, coloured by whichever component centre they are nearest. The trail is one particle's path. Drag t from 1 down to 0 and watch the right-hand cloud find three modes it was never shown.</p>
+  <div class="panel">
+    <svg id="p1" viewBox="0 0 680 336" role="img" aria-label="Left, the seeded data cloud noised to level t; right, a cloud generated by integrating the reverse process from pure noise down to level t"></svg>
+    <div class="ctrls">
+      <div class="field" style="min-width:260px"><label>noise level t <b id="t1Out">—</b></label><input type="range" id="t1" min="0.005" max="1" value="0.3" step="0.005" /></div>
+      <div class="field" style="flex:0 0 auto;min-width:0"><label>reverse sampler</label>
+        <span class="seg"><button id="mSDE" class="on">reverse SDE</button><button id="mODE">flow ODE</button></span></div>
+      <div class="field" style="flex:0 0 auto;min-width:0"><label>&nbsp;</label><button class="ghost" id="regen">Generate again</button></div>
+    </div>
+    <div class="tally">
+      <div class="stat"><div class="k">ᾱ<sub>t</sub></div><div class="v a sm" id="s1a">—</div></div><div class="stat"><div class="k">generated shares · true 45/32/23</div><div class="v s sm" id="s1b">—</div></div>
+      <div class="stat"><div class="k">moment gap · generated</div><div class="v sm" id="s1c">—</div></div><div class="stat"><div class="k">moment gap · forward, N=400</div><div class="v sm" id="s1d">—</div></div>
+      <div class="stat"><div class="k">particle 0 · path / net</div><div class="v sm" id="s1e">—</div></div><div class="stat"><div class="k">DSM offset Ĉ<sub>t</sub></div><div class="v g sm" id="s1f">—</div></div>
+    </div>
+    <p class="callout" id="c1"></p>
+  </div>
+
+  <div class="sec">The objective you can compute</div>
+  <p class="step">To learn the score you would like to minimise the distance between your network and the true score of the marginal. You cannot: p<sub>t</sub> is an integral over the whole dataset and ∇log p<sub>t</sub> is unavailable. Vincent (2011) showed you may replace it, <i>exactly</i>, by the distance to the score of the <b>conditional</b> kernel — which the identity above says is just the noise you added:</p>
+  <div class="mblock math" data-tex="\begin{aligned}J_{\mathrm{ESM}}(\theta)&amp;=\mathbb E_{t,\,\mathbf{x}_t\sim p_t}\big\lVert s_\theta(\mathbf{x}_t,t)-\nabla\log p_t(\mathbf{x}_t)\big\rVert^2 &amp;&amp;\text{what you want; intractable}\\[2pt] J_{\mathrm{DSM}}(\theta)&amp;=\mathbb E_{t,\,\mathbf{x}_0,\,\boldsymbol\varepsilon}\Big\lVert s_\theta(\mathbf{x}_t,t)+\tfrac{\boldsymbol\varepsilon}{\sqrt{1-\bar\alpha_t}}\Big\rVert^2 &amp;&amp;\text{what you run; one line of code}\\[2pt] &amp;=J_{\mathrm{ESM}}(\theta)+\mathbb E_t\big[C_t\big],\qquad C_t=\mathbb E\big[\operatorname{tr}\operatorname{Cov}\big(\nabla\log p(\mathbf{x}_t\mid\mathbf{x}_0)\mid\mathbf{x}_t\big)\,\big|\,t\big]\ \ge\ 0\end{aligned}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="C_t"></span><span class="def">a constant <b>containing no θ</b>. <span class="n">So the two objectives have identical gradients in θ, identical minimisers, and identical optimisation trajectories under SGD (Lesson 9). Only their <i>values</i> differ — which is why a diffusion training loss is not comparable across noise levels, and why reported loss numbers are close to meaningless.</span></span></li>
+    <li><span class="sym math" data-tex="\operatorname{tr}\operatorname{Cov}(\cdot\mid\mathbf{x}_t)"></span><span class="def">the leftover: the spread of the conditional score <i>across the different clean points</i> <b>x</b><sub>0</sub> that could have produced this <b>x</b><sub>t</sub>. <span class="n">It is the irreducible ambiguity of denoising, and it blows up like d/(1−ᾱ<sub>t</sub>) as t → 0. The panel above prints an estimate of it live.</span></span></li>
+    <li><span class="sym math" data-tex="s_\theta(\mathbf{x}_t,t)"></span><span class="def">the network being fitted, taking the noisy point and the noise level. <span class="n">In practice one trains a network ε<sub>θ</sub> predicting ε and sets s<sub>θ</sub> = −ε<sub>θ</sub>/√(1−ᾱ<sub>t</sub>); the two parameterisations differ only by a per-t weighting of the loss.</span></span></li>
+  </ul>
+
+  <div class="theorem">
+    <p class="lbl">The precise statement</p>
+    <p>Let p<sub>0</sub> have finite second moment, let β be positive and continuous on [0,1], ᾱ<sub>t</sub> = exp(−∫<sub>0</sub><sup>t</sup>β), and let the perturbation kernel be p(<b>x</b>|<b>x</b><sub>0</sub>) = 𝒩(√ᾱ<sub>t</sub><b>x</b><sub>0</sub>, (1−ᾱ<sub>t</sub>)I), so that for every t &gt; 0 the marginal p<sub>t</sub> = ∫p(·|<b>x</b><sub>0</sub>)dp<sub>0</sub> is smooth and strictly positive. (i) <i>Denoising score matching</i> (Vincent, 2011). Since ∇<sub><b>x</b></sub>p<sub>t</sub>(<b>x</b>) = ∫∇<sub><b>x</b></sub>p(<b>x</b>|<b>x</b><sub>0</sub>)dp<sub>0</sub>, dividing by p<sub>t</sub>(<b>x</b>) gives 𝔼[∇log p(<b>x</b><sub>t</sub>|<b>x</b><sub>0</sub>) | <b>x</b><sub>t</sub>] = ∇log p<sub>t</sub>(<b>x</b><sub>t</sub>). Expanding both squares, the cross terms of J<sub>DSM</sub> and J<sub>ESM</sub> therefore agree for every θ, and at each fixed noise level J<sub>DSM</sub>(θ) = J<sub>ESM</sub>(θ) + C<sub>t</sub> with C<sub>t</sub> = 𝔼‖∇log p(<b>x</b><sub>t</sub>|<b>x</b><sub>0</sub>)‖² − 𝔼‖∇log p<sub>t</sub>(<b>x</b><sub>t</sub>)‖² = 𝔼[tr Cov(∇log p(<b>x</b><sub>t</sub>|<b>x</b><sub>0</sub>)|<b>x</b><sub>t</sub>)] ≥ 0, independent of θ. Hence the two objectives share a gradient in θ and a set of minimisers, and the minimiser over all measurable s is s(<b>x</b>,t) = ∇log p<sub>t</sub>(<b>x</b>).</p>
+    <p>(ii) <i>Time reversal and probability flow</i> (Anderson, 1982; Song et al., 2021). If d<b>x</b> = <i>f</i>dt + <i>g</i>d<b>W</b> has marginals p<sub>t</sub>, the reversed process satisfies d<b>x</b> = [<i>f</i> − <i>g</i>²∇log p<sub>t</sub>]dt + <i>g</i>d<b>W̄</b> with d<b>W̄</b> a reverse-time Wiener increment and dt &lt; 0. Separately, because ½<i>g</i>²Δp = ∇·(½<i>g</i>²p∇log p), the Fokker–Planck equation for the same p<sub>t</sub> is the continuity equation ∂<sub>t</sub>p<sub>t</sub> = −∇·(<b>v</b><sub>t</sub>p<sub>t</sub>) with velocity <b>v</b><sub>t</sub> = <i>f</i> − ½<i>g</i>²∇log p<sub>t</sub>; the deterministic ODE d<b>x</b>/dt = <b>v</b><sub>t</sub>(<b>x</b>) therefore has exactly the marginals p<sub>t</sub> at every t, with the score coefficient <b>half</b> that of the reverse SDE. For <i>f</i> = −½β<b>x</b>, <i>g</i> = √β these are the two equations displayed above.</p>
+    <p>(iii) <i>Tweedie's formula</i> (Robbins, 1956; Tweedie). For the Gaussian kernel above, 𝔼[<b>x</b><sub>0</sub>|<b>x</b><sub>t</sub>] = (<b>x</b><sub>t</sub> + (1−ᾱ<sub>t</sub>)∇log p<sub>t</sub>(<b>x</b><sub>t</sub>))/√ᾱ<sub>t</sub>, exactly and for every t &gt; 0 — no small-noise limit. The minimum-MSE denoiser and the score are the same object under an affine change of variables.</p>
+  </div>
+
+  <div class="sec">The denoiser is the score</div>
+  <p class="step">Statement (iii) deserves its own line, because it is what a practitioner actually feels. Nobody sets out to estimate a log-density gradient; they train a network to clean up a noisy picture. Tweedie says those are the same job, and the relation inverts:</p>
+  <div class="mblock math" data-tex="\mathbb E[\mathbf{x}_0\mid\mathbf{x}_t]=\frac{\mathbf{x}_t+(1-\bar\alpha_t)\nabla\log p_t(\mathbf{x}_t)}{\sqrt{\bar\alpha_t}}\qquad\Longleftrightarrow\qquad \nabla\log p_t(\mathbf{x}_t)=\frac{\sqrt{\bar\alpha_t}\,\mathbb E[\mathbf{x}_0\mid\mathbf{x}_t]-\mathbf{x}_t}{1-\bar\alpha_t}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="\mathbb E[\mathbf{x}_0\mid\mathbf{x}_t]"></span><span class="def">the <b>denoiser</b>, trained by plain mean-squared error against the clean point. <span class="n">Read left to right: a denoiser hands you the score. Read right to left: a score model hands you the optimal denoiser, which is why the same checkpoint does inpainting, super-resolution and unconditional sampling.</span></span></li>
+    <li><span class="sym math" data-tex="1-\bar\alpha_t"></span><span class="def">the conversion factor, and the reason the two views drift apart numerically. <span class="n">At small t the division by 1−ᾱ<sub>t</sub> amplifies any denoiser error enormously, which is exactly the regime where the DSM offset C<sub>t</sub> also blows up; at large t the two are on the same scale.</span></span></li>
+  </ul>
+  <p class="step">For the toy both sides are closed form. The marginal stays a mixture, with every centre shrunk by √ᾱ<sub>t</sub> and every variance inflated:</p>
+  <div class="mblock math" data-tex="p_t(\mathbf{x})=\sum_{k=1}^{3}w_k\,\mathcal N\big(\mathbf{x};\sqrt{\bar\alpha_t}\boldsymbol\mu_k,\,v_tI\big),\quad v_t=\bar\alpha_t\sigma_0^2+1-\bar\alpha_t,\qquad \nabla\log p_t(\mathbf{x})=\sum_{k}r_k(\mathbf{x})\,\frac{\sqrt{\bar\alpha_t}\boldsymbol\mu_k-\mathbf{x}}{v_t}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="v_t"></span><span class="def">the marginal variance per coordinate: shrunk data variance plus injected noise. <span class="n">Runs from σ<sub>0</sub>² = 0.0784 at t = 0 up to 0.99996 at t = 1. Its square root is the yardstick the panel below measures mode separation in.</span></span></li>
+    <li><span class="sym math" data-tex="r_k(\mathbf{x})"></span><span class="def">the <b>responsibility</b>: the posterior probability that <b>x</b> came from component k, r<sub>k</sub> ∝ w<sub>k</sub>𝒩(<b>x</b>; √ᾱ<sub>t</sub><b>μ</b><sub>k</sub>, v<sub>t</sub>I). <span class="n">So the exact score is a responsibility-weighted average of three simple Gaussian scores — Bayes' rule, then a weighted mean. As t grows the r<sub>k</sub> flatten toward the prior weights w<sub>k</sub> and the field forgets which mode is which.</span></span></li>
+  </ul>
+
+  <div class="sec">See it — the score field, and denoising from a point</div>
+  <p class="step">Left: the density p<sub>t</sub> as shading, with ∇log p<sub>t</sub> drawn on an 11×11 grid (arrow length is a <i>saturating</i> function of magnitude so directions stay readable — magnitudes are printed, not drawn to scale). Right: a slice of log p<sub>t</sub> along the horizontal line through the probe, so you can watch three peaks merge into one. The ring is the probe <b>x</b><sub>t</sub>; the cross is Tweedie's 𝔼[<b>x</b><sub>0</sub>|<b>x</b><sub>t</sub>], built from the score alone and checked against an independent Bayes calculation.</p>
+  <div class="panel">
+    <svg id="p2" viewBox="0 0 680 344" role="img" aria-label="Left, the density and score field of the noised mixture with a probe point and its Tweedie denoised estimate; right, a slice of the log density through the probe"></svg>
+    <div class="ctrls">
+      <div class="field"><label>noise level t <b id="t2Out">—</b></label><input type="range" id="t2" min="0.005" max="1" value="0.2" step="0.005" /></div>
+      <div class="field"><label>probe x <b id="pxOut">—</b></label><input type="range" id="px" min="-3" max="3" value="0.9" step="0.1" /></div>
+      <div class="field"><label>probe y <b id="pyOut">—</b></label><input type="range" id="py" min="-3" max="3" value="0.4" step="0.1" /></div>
+    </div>
+    <div class="tally">
+      <div class="stat"><div class="k">ᾱ<sub>t</sub></div><div class="v a sm" id="s2a">—</div></div><div class="stat"><div class="k">marginal std √v<sub>t</sub></div><div class="v sm" id="s2b">—</div></div>
+      <div class="stat"><div class="k">closest centres, in √v<sub>t</sub></div><div class="v s sm" id="s2c">—</div></div><div class="stat"><div class="k">|∇log p| probe / at (2.6, 2.6)</div><div class="v sm" id="s2d">—</div></div>
+      <div class="stat"><div class="k">Tweedie 𝔼[x₀|x<sub>t</sub>]</div><div class="v a sm" id="s2e">—</div></div><div class="stat"><div class="k">vs exact Bayes posterior</div><div class="v g sm" id="s2f">—</div></div>
+      <div class="stat"><div class="k">max departure from OU pull</div><div class="v m sm" id="s2g">—</div></div>
+    </div>
+    <p class="callout" id="c2"></p>
+  </div>
+
+  <div class="sec">Re-applied — the schedule is a term structure</div>
+  <p class="step">Nothing in the forward process is new to a rates desk. Substituting κ(t) = β(t)/2 and σ(t) = √β(t), it <i>is</i> Vasicek with a zero reversion level and a time-varying speed, and the quantities diffusion papers call the "signal rate" and the "noise rate" are the two halves of the standard OU solution:</p>
+  <div class="mblock math" data-tex="\mathbb E[\mathbf{x}_t\mid\mathbf{x}_0]=e^{-\int_0^t\kappa}\,\mathbf{x}_0=\sqrt{\bar\alpha_t}\,\mathbf{x}_0,\qquad \operatorname{Var}(\mathbf{x}_t\mid\mathbf{x}_0)=(1-\bar\alpha_t)I,\qquad \sqrt{\bar\alpha_t}=\tfrac12\ \text{ at }\ t=0.3683" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="e^{-\int_0^t\kappa}"></span><span class="def">the <b>decay of the initial condition</b> — how much of where you started still shows. <span class="n">The half-life solves ∫<sub>0</sub><sup>t</sup>β = 2 ln 2 = 1.3863; on β(t) = 0.1 + 19.9t that is 9.95t² + 0.1t − 1.3863 = 0, i.e. t = 0.36827. Over a third of the schedule is spent losing the first half of the signal.</span></span></li>
+    <li><span class="sym math" data-tex="1-\bar\alpha_t"></span><span class="def">the <b>accumulated variance</b> as a function of horizon — a term structure of variance, in the ordinary sense. <span class="n">Choosing a noise schedule is choosing that curve's shape; cosine and linear schedules differ only in how they front- or back-load it, exactly as two variance term structures differ.</span></span></li>
+  </ul>
+  <p class="step">The genuinely useful transfer is the generative one. If you want to sample scenarios from a fitted joint distribution of returns without committing to a parametric family — no multivariate Gaussian, no fitted copula, no assumed tail — a score model is a legitimate way to do it: it learns the density's <i>gradient field</i> from samples and generates new ones by integrating, and the panels above are a scaled-down version of exactly that. Two honest caveats before anyone builds it. First, this is a research technique, not desk practice: score models earn their keep in the many-samples, high-dimension regime, and a daily returns panel of a few thousand rows on a few hundred names is far from it — the empirical distribution is thin precisely where you most want it, and a generator will happily invent structure there. Second, generative validity is not risk validity: a model that reproduces the historical joint law well is still a model of the past, with no mechanism for a regime it has never seen. Use it to <i>interpolate</i> plausible scenarios between observed ones, and keep stress tests hand-built.</p>
+
+  <div class="twist">
+    <p class="lbl">The twist — the deterministic route is a normalizing flow, and Z was never needed</p>
+    <p>Look again at the probability-flow ODE. It is a deterministic, invertible map from p<sub>1</sub> = 𝒩(0,I) to p<sub>0</sub>, driven by a learned velocity field — which is the definition of a <b>continuous normalizing flow</b>. That identification is not decorative; it hands you three things a stochastic sampler cannot. You get <b>exact likelihoods</b>, via the instantaneous change-of-variables rule d(log p)/dt = −∇·<b>v</b><sub>t</sub>, so that log p<sub>0</sub>(<b>x</b><sub>0</sub>) = log p<sub>1</sub>(<b>x</b><sub>1</sub>) + ∫<sub>0</sub><sup>1</sup>∇·<b>v</b><sub>t</sub>(<b>x</b><sub>t</sub>)dt along the forward ODE trajectory — a real number you can report, which the reverse SDE cannot give you. You get an <b>encoder for free</b>: run the ODE forwards and every sample has a unique latent, which is why latent interpolation between two generated images is coherent rather than a crossfade. And because the map is a smooth function rather than a random walk, it is <b>distillable</b> — a student can be trained to jump along it in one or four steps, which is how modern samplers got from a thousand network calls down to a handful. You met the same trade in Lesson 14: freeze the noise and the path becomes differentiable and reusable; leave it stochastic and it does not.</p>
+    <p>Second barrel, and it is the deeper one. Score matching sidesteps the normalizing constant entirely. Write any model as p(<b>x</b>) = p̃(<b>x</b>)/Z with p̃ unnormalized; then ∇<sub><b>x</b></sub>log p = ∇<sub><b>x</b></sub>log p̃ − ∇<sub><b>x</b></sub>log Z = ∇<sub><b>x</b></sub>log p̃, because Z does not depend on <b>x</b>. The score is <b>invariant to normalization</b>. Maximum likelihood (Lesson 3) and the cross-entropy loss (Lesson 15) cannot say that — they need log Z, and computing it is precisely what strangled the previous generation of explicit-density generative models: autoregressive models bought a tractable Z by imposing an arbitrary ordering, discrete normalizing flows bought it by restricting every layer to have a cheap Jacobian determinant, energy-based models never bought it at all and paid in MCMC. Score matching declines the purchase. That one observation — that you can learn a density's shape without ever learning its scale — is what let architectures be chosen for capacity rather than for tractability, and it is the bridge to the next lesson, where the velocity field is regressed directly and the SDE scaffolding falls away.</p>
+  </div>
+
+  <div class="vol">
+    <p class="lbl">Why this matters · volarixs</p>
+    <p>The exact score in the panels is <code>Σ r_k(x)·(√ᾱμ_k − x)/v_t</code>, and r<sub>k</sub> is a posterior over which regime generated the observation. That is the same Bayes computation as the observation-update half of your <code>regime HMM</code>'s filter: given a Gaussian emission per state, weight the states by w<sub>k</sub>𝒩(x; m<sub>k</sub>, v). The HMM adds what this toy lacks — a transition matrix, so yesterday's posterior becomes today's prior — but the update step is identical, which is why the panel's "closest centres, in √v<sub>t</sub>" reading is exactly the diagnostic that matters for regime identification too: when state means are separated by less than about one emission standard deviation, no filter can tell them apart, and a confident-looking regime label is the prior talking. Lesson 3's EM fit and this lesson's denoiser compute the same responsibilities.</p>
+    <p>Where it does <b>not</b> transfer, said plainly: there is no diffusion model in the Cross-Matrix (Lesson 7), and the mapping of the forward SDE onto Vasicek is a structural analogy, not a pricing result — β(t) is a design choice with no market in it, and calibrating one to anything observable is not a thing that happens. The transferable habit is smaller and real: a <i>noise level</i> is a resolution knob, and asking "what structure survives at √v<sub>t</sub> = x" is the same question as asking which factor structure survives a given estimation error — coarse layout resolves long before detail does, in both cases.</p>
+  </div>
+
+  <div class="sec">Check yourself</div>
+  <div class="q" id="q1"><p class="stem">In a diffusion model, "the score" means:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q2"><p class="stem">Denoising score matching replaces an objective you cannot compute with one you can. What makes the swap legitimate?</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q3"><p class="stem">With x<sub>t</sub> = √ᾱ<sub>t</sub>x₀ + √(1−ᾱ<sub>t</sub>)ε, the score of the perturbation kernel ∇<sub>x<sub>t</sub></sub>log p(x<sub>t</sub>|x₀) equals:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q4"><p class="stem">The probability-flow ODE dx/dt = −½β(t)[x + ∇log p<sub>t</sub>(x)]:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q5"><p class="stem">Tweedie's formula 𝔼[x₀|x<sub>t</sub>] = (x<sub>t</sub> + (1−ᾱ<sub>t</sub>)∇log p<sub>t</sub>(x<sub>t</sub>))/√ᾱ<sub>t</sub> tells you that:</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q6"><p class="stem">Read the forward SDE dx = −½β(t)x dt + √β(t)dW as a rates desk would. It is:</p><div class="opts"></div><p class="fb"></p></div>
+
+  <div class="checkRow">
+    <button class="primary" id="check">Check answers</button>
+    <span class="scoreOut" id="scoreOut"></span>
+    <span class="hint" id="hint">Answer all six first.</span>
+  </div>
+  <div class="done" id="done">Noise reversed. Next in Wing VI: flow matching &amp; continuous normalizing flows.</div>
+</div>
+
+<script>/* storage shim: window.storage (Claude artifacts) or localStorage (web) */
+if(!window.storage){window.storage={async get(k){const v=localStorage.getItem(k);if(v==null)throw new Error('missing');return{key:k,value:v}},async set(k,v){localStorage.setItem(k,v);return{key:k,value:v}},async delete(k){localStorage.removeItem(k);return{key:k,deleted:true}},async list(p){const ks=[];for(let i=0;i<localStorage.length;i++){const kk=localStorage.key(i);if(!p||kk.startsWith(p))ks.push(kk)}return{keys:ks}}};}
+function renderMath(){document.querySelectorAll('.math').forEach(el=>{const tex=el.getAttribute('data-tex');if(!tex||el.dataset.done)return;try{if(window.katex){katex.render(tex,el,{displayMode:el.dataset.display==='1',throwOnError:false});el.dataset.done='1';}else el.textContent=tex;}catch(e){el.textContent=tex;}});}
+const id=x=>document.getElementById(x);
+/* ---------- deterministic randomness (seed 126) ---------- */
+function mulberry32(seed){let a=seed>>>0;return function(){a|=0;a=(a+0x6D2B79F5)|0;let t=Math.imul(a^(a>>>15),1|a);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296;}}
+function randn(rng){let u=0,v=0;while(!u)u=rng();while(!v)v=rng();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+const SEED=126,W=[0.45,0.32,0.23],MU=[[-1.55,-0.85],[1.45,-0.75],[0.10,1.70]];
+const S0=0.28,V0=S0*S0,BMIN=0.1,BMAX=20,NP=400,STEPS=200;
+/* ---------- formatting ---------- */
+const SUP={'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
+const supr=s=>String(s).split('').map(c=>SUP[c]||c).join('');
+function mant(m,e,dp){if(m>=10){m/=10;e++;}if(m<1){m*=10;e--;}if(+m.toFixed(dp)>=10){m/=10;e++;}return m.toFixed(dp)+'×10'+supr(e);}
+function sci(x,dp){if(!(Math.abs(x)>0))return '0';const s=x<0?'−':'',a=Math.abs(x),e=Math.floor(Math.log10(a));return s+mant(a/Math.pow(10,e),e,dp);}
+function nz(x,dp){const s=x.toFixed(dp);return /^-0(\.0*)?$/.test(s)?s.slice(1):s;}
+const fA=a=>a>=1e-3?nz(a,4):sci(a,2);
+const fC=c=>c>=100?Math.round(c).toLocaleString('en-US'):(c>=0.01?nz(c,3):sci(c,2));
+/* ---------- the diffusion, in closed form ---------- */
+const beta=t=>BMIN+t*(BMAX-BMIN);
+const abar=t=>Math.exp(-(BMIN*t+0.5*(BMAX-BMIN)*t*t));
+const vart=ab=>ab*V0+1-ab;
+function resp(x,y,ab){const sa=Math.sqrt(ab),v=vart(ab),lg=[0,0,0],e=[0,0,0];let Z=0;
+  for(let k=0;k<3;k++){const dx=x-sa*MU[k][0],dy=y-sa*MU[k][1];lg[k]=Math.log(W[k])-(dx*dx+dy*dy)/(2*v);}
+  const M=Math.max(lg[0],lg[1],lg[2]);for(let k=0;k<3;k++){e[k]=Math.exp(lg[k]-M);Z+=e[k];}
+  return{r:[e[0]/Z,e[1]/Z,e[2]/Z],logp:M+Math.log(Z)-Math.log(2*Math.PI*v),sa:sa,v:v};}
+function scoreAt(x,y,ab){const R=resp(x,y,ab);let gx=0,gy=0;
+  for(let k=0;k<3;k++){gx+=R.r[k]*(R.sa*MU[k][0]-x)/R.v;gy+=R.r[k]*(R.sa*MU[k][1]-y)/R.v;}return[gx,gy];}
+function postMean(x,y,ab){const R=resp(x,y,ab),om=1-ab,pv=1/(1/V0+ab/om);let mx=0,my=0;
+  for(let k=0;k<3;k++){mx+=R.r[k]*pv*(MU[k][0]/V0+R.sa*x/om);my+=R.r[k]*pv*(MU[k][1]/V0+R.sa*y/om);}return[mx,my];}
+const MBAR=[0,1].map(j=>W[0]*MU[0][j]+W[1]*MU[1][j]+W[2]*MU[2][j]);
+const SCAT=(function(){let a=0,b=0,c=0;for(let k=0;k<3;k++){const dx=MU[k][0]-MBAR[0],dy=MU[k][1]-MBAR[1];a+=W[k]*dx*dx;b+=W[k]*dx*dy;c+=W[k]*dy*dy;}return[a,b,c];})();
+function momentGap(P,ab){const v=vart(ab),sa=Math.sqrt(ab),n=P.length/2;let mx=0,my=0,a=0,b=0,c=0;
+  for(let i=0;i<n;i++){mx+=P[2*i];my+=P[2*i+1];}mx/=n;my/=n;
+  for(let i=0;i<n;i++){const dx=P[2*i]-mx,dy=P[2*i+1]-my;a+=dx*dx;b+=dx*dy;c+=dy*dy;}a/=n;b/=n;c/=n;
+  return Math.sqrt((mx-sa*MBAR[0])**2+(my-sa*MBAR[1])**2+(a-v-ab*SCAT[0])**2+2*(b-ab*SCAT[1])**2+(c-v-ab*SCAT[2])**2);}
+function nearest(x,y,sa){let bk=0,bd=Infinity;
+  for(let k=0;k<3;k++){const d=(x-sa*MU[k][0])**2+(y-sa*MU[k][1])**2;if(d<bd){bd=d;bk=k;}}return bk;}
+const lr100=raw=>{const f=raw.map(Math.floor),ord=[0,1,2].sort((a,b)=>(raw[b]-f[b])-(raw[a]-f[a]));/* largest remainder: the three always sum to 100 */
+  for(let i=0,rem=100-f[0]-f[1]-f[2];i<rem;i++)f[ord[i]]++;return f;};
+const shares=(P,ab)=>{const sa=Math.sqrt(ab),c=[0,0,0],n=P.length/2;for(let i=0;i<n;i++)c[nearest(P[2*i],P[2*i+1],sa)]++;return lr100(c.map(v=>100*v/n));};
+const minSep=ab=>{const sa=Math.sqrt(ab);let d=Infinity;for(let a=0;a<3;a++)for(let b=a+1;b<3;b++)d=Math.min(d,Math.hypot(sa*(MU[a][0]-MU[b][0]),sa*(MU[a][1]-MU[b][1])));return d;};
+
+/* ---------- seeded data cloud, and the reverse runs ---------- */
+const X0=new Float64Array(NP*2),EPS=new Float64Array(NP*2),CMP=new Int8Array(NP);
+(function(){const rng=mulberry32(SEED);
+  for(let i=0;i<NP;i++){const u=rng();let k=0,acc=W[0];while(k<2&&u>acc){k++;acc+=W[k];}
+    CMP[i]=k;X0[2*i]=MU[k][0]+S0*randn(rng);X0[2*i+1]=MU[k][1]+S0*randn(rng);}
+  for(let i=0;i<NP;i++){EPS[2*i]=randn(rng);EPS[2*i+1]=randn(rng);}})();
+let RUN=0,ODE=null,SDE=null,MODE='sde';
+function buildReverse(run){
+  const rng=mulberry32(SEED+1000*run),dt=1/STEPS,mk=()=>{const a=[];for(let s=0;s<=STEPS;s++)a.push(new Float64Array(NP*2));return a;};
+  const o=mk(),d=mk();
+  for(let i=0;i<NP;i++){const a=randn(rng),b=randn(rng);o[0][2*i]=a;o[0][2*i+1]=b;d[0][2*i]=a;d[0][2*i+1]=b;}
+  for(let s=0;s<STEPS;s++){const ab=abar(1-s*dt),b=beta(1-s*dt),cur=o[s],nx=o[s+1];
+    for(let i=0;i<NP;i++){const x=cur[2*i],y=cur[2*i+1],g=scoreAt(x,y,ab);nx[2*i]=x+dt*0.5*b*(x+g[0]);nx[2*i+1]=y+dt*0.5*b*(y+g[1]);}}
+  for(let s=0;s<STEPS;s++){const ab=abar(1-s*dt),b=beta(1-s*dt),sd=Math.sqrt(b*dt),cur=d[s],nx=d[s+1];
+    for(let i=0;i<NP;i++){const x=cur[2*i],y=cur[2*i+1],g=scoreAt(x,y,ab);
+      nx[2*i]=x+dt*(0.5*b*x+b*g[0])+sd*randn(rng);nx[2*i+1]=y+dt*(0.5*b*y+b*g[1])+sd*randn(rng);}}
+  ODE=o;SDE=d;}
+
+/* ---------- panel 1 ---------- */
+const COL=['var(--accent)','var(--series)','var(--ok)'];
+const pane=(x0,y0,sz,lo,hi)=>{const k=sz/(hi-lo);return{X:x=>x0+(x-lo)*k,Y:y=>y0+(hi-y)*k};};
+function draw1(){
+  const t=+id('t1').value,ab=abar(t),sa=Math.sqrt(ab),om=1-ab,s=Math.round((1-t)*STEPS);
+  const A=pane(8,26,300,-3.4,3.4),B=pane(372,26,300,-3.4,3.4);
+  let g='<rect x="8" y="26" width="300" height="300" fill="none" stroke="var(--hair2)"/><rect x="372" y="26" width="300" height="300" fill="none" stroke="var(--hair2)"/>'
+    +'<text x="8" y="18" font-family="var(--mono)" font-size="11" fill="var(--muted)">forward · data noised to t</text>'
+    +'<text x="372" y="18" font-family="var(--mono)" font-size="11" fill="var(--muted)">generated · '+(MODE==='sde'?'reverse SDE':'flow ODE')+' from t = 1</text>';
+  const FWD=new Float64Array(NP*2),TR=MODE==='sde'?SDE:ODE,P=TR[s],dot=(M,x,y,col)=>{if(x<-3.4||x>3.4||y<-3.4||y>3.4)return;
+    g+='<circle cx="'+M.X(x).toFixed(1)+'" cy="'+M.Y(y).toFixed(1)+'" r="2.2" fill="'+col+'" opacity="0.72"/>';};
+  for(let i=0;i<NP;i++){FWD[2*i]=sa*X0[2*i]+Math.sqrt(om)*EPS[2*i];FWD[2*i+1]=sa*X0[2*i+1]+Math.sqrt(om)*EPS[2*i+1];}
+  for(let i=0;i<NP;i++)dot(A,FWD[2*i],FWD[2*i+1],COL[CMP[i]]);
+  for(let i=0;i<NP;i++)dot(B,P[2*i],P[2*i+1],COL[nearest(P[2*i],P[2*i+1],sa)]);
+  let pts='',len=0;
+  for(let q=0;q<=s;q++){pts+=B.X(TR[q][0]).toFixed(1)+','+B.Y(TR[q][1]).toFixed(1)+' ';
+    if(q)len+=Math.hypot(TR[q][0]-TR[q-1][0],TR[q][1]-TR[q-1][1]);}
+  const net=Math.hypot(TR[s][0]-TR[0][0],TR[s][1]-TR[0][1]);
+  if(s>0)g+='<polyline points="'+pts.trim()+'" fill="none" stroke="var(--ink)" stroke-width="1.1" opacity="0.55"/>';
+  g+='<circle cx="'+B.X(TR[s][0]).toFixed(1)+'" cy="'+B.Y(TR[s][1]).toFixed(1)+'" r="4" fill="none" stroke="var(--ink)" stroke-width="1.4"/>'
+    +'<text x="8" y="334" font-family="var(--mono)" font-size="10" fill="var(--faint)">−3.4 … 3.4 in both coordinates</text>';
+  id('p1').innerHTML=g;
+  const shG=shares(P,ab),gapG=momentGap(P,ab),gapF=momentGap(FWD,ab),ratio=+nz(gapG,4)/+nz(gapF,4);let Ea=0,Eb=0;/* ratio from the rounded figures actually printed, so the three agree on screen */
+  for(let i=0;i<NP;i++){Ea+=(EPS[2*i]**2+EPS[2*i+1]**2)/om;const gg=scoreAt(FWD[2*i],FWD[2*i+1],ab);Eb+=gg[0]*gg[0]+gg[1]*gg[1];}
+  const Chat=(Ea-Eb)/NP,sep=minSep(ab)/Math.sqrt(vart(ab)),shT=shG.map(String);
+  id('t1Out').textContent=nz(t,3);id('s1a').textContent=fA(ab);id('s1b').textContent=shT.join(' / ')+' %';id('s1c').textContent=nz(gapG,4);
+  id('s1d').textContent=nz(gapF,4);id('s1e').textContent=nz(len,2)+' / '+nz(net,2);id('s1f').textContent=fC(Chat);
+  let c='At t = '+nz(t,3)+', ᾱ<sub>t</sub> = '+fA(ab)+': the forward kernel keeps √ᾱ<sub>t</sub> = '+nz(sa,3)
+    +' of each data point and adds 1 − ᾱ<sub>t</sub> = '+nz(om,3)+' of variance. ';
+  c+= sep>=2 ? 'The three centres √ᾱ<sub>t</sub>μ<sub>k</sub> are still '+nz(sep,2)+' marginal standard deviations apart, so the modes are individually resolvable and the generated shares '+shT.join('/')+'% are a real comparison against the true 45/32/23. '
+    : sep>=0.8 ? 'The centres are down to '+nz(sep,2)+' marginal standard deviations apart, so the modes are merging: the shares '+shT.join('/')+'% now count three overlapping blobs rather than three modes. '
+    : 'The centres are only '+nz(sep,2)+' marginal standard deviations apart — at this noise level the mixture is indistinguishable from one isotropic Gaussian, and the shares '+shT.join('/')+'% just carve a noise ball into three wedges. ';
+  c+='Moment gap to the exact moments of p<sub>t</sub>: '+nz(gapG,4)+' for the generated cloud against '+nz(gapF,4)
+    +' for a forward sample of the same 400 points, a ratio of '+nz(ratio,2)+'× — '
+    +(ratio<=1?'at or below that finite-sample floor.':ratio<=1.2?'within a fifth of that finite-sample floor.':'the excess is Euler discretisation at '+STEPS+' steps plus sampling noise.')
+    +' The generated cloud never saw the data; it only integrated the score. ';
+  const lenS=nz(len,2),netS=nz(net,2),rc=net>=0.05?', '+nz(+lenS/+netS,1)+'× the distance it actually covered':'';
+  c+= s===0 ? 'The run has not started — particle 0 still sits at its t = 1 Gaussian draw, path length '+lenS+'.'
+    : 'Particle 0 has travelled '+lenS+' of path length over '+s+' steps for a net displacement of '+netS+rc
+      +(MODE==='sde'?': the reverse SDE re-injects noise at every step.':': the flow ODE has no noise term, so this path is a smooth curve.');
+  c+=' Ĉ<sub>t</sub> = '+fC(Chat)+' is the θ-independent offset between the two objectives, estimated on this sample; it grows like 2/(1 − ᾱ<sub>t</sub>) as t falls and never changes which θ wins.';
+  id('c1').innerHTML=c;
+}
+
+/* ---------- panel 2 ---------- */
+function draw2(){
+  const t=+id('t2').value,ab=abar(t),sa=Math.sqrt(ab),v=vart(ab),sv=Math.sqrt(v);
+  const pxv=+id('px').value,pyv=+id('py').value,A=pane(8,24,300,-3,3);
+  let g='<rect x="8" y="24" width="300" height="300" fill="none" stroke="var(--hair2)"/>';
+  const NB=22,st=6/NB,LP=[];let lo=Infinity,hi=-Infinity,dev=0,ref=0;
+  for(let i=0;i<NB;i++)for(let j=0;j<NB;j++){const l=resp(-3+st*(i+0.5),-3+st*(j+0.5),ab).logp;LP.push(l);if(l<lo)lo=l;if(l>hi)hi=l;}
+  for(let i=0,q=0;i<NB;i++)for(let j=0;j<NB;j++,q++){const o=Math.pow((LP[q]-lo)/Math.max(hi-lo,1e-12),2.2);if(o<0.02)continue;
+    g+='<rect x="'+A.X(-3+st*i).toFixed(1)+'" y="'+A.Y(-3+st*(j+1)).toFixed(1)+'" width="'+(300/NB).toFixed(2)+'" height="'+(300/NB).toFixed(2)+'" fill="var(--accent)" opacity="'+(0.62*o).toFixed(3)+'"/>';}
+  for(let i=0;i<11;i++)for(let j=0;j<11;j++){const x=-2.7+5.4*i/10,y=-2.7+5.4*j/10,sc=scoreAt(x,y,ab),m=Math.hypot(sc[0],sc[1]);
+    const ox=-(x-sa*MBAR[0])/v,oy=-(y-sa*MBAR[1])/v;
+    dev=Math.max(dev,Math.hypot(sc[0]-ox,sc[1]-oy));ref=Math.max(ref,Math.hypot(ox,oy));if(m<1e-9)continue;
+    const L=13*m/(m+2.2),ux=sc[0]/m*L,uy=sc[1]/m*L;
+    g+='<line x1="'+A.X(x).toFixed(1)+'" y1="'+A.Y(y).toFixed(1)+'" x2="'+(A.X(x)+ux).toFixed(1)+'" y2="'+(A.Y(y)-uy).toFixed(1)+'" stroke="var(--ink)" stroke-width="1.1" opacity="0.55"/>'
+      +'<circle cx="'+(A.X(x)+ux).toFixed(1)+'" cy="'+(A.Y(y)-uy).toFixed(1)+'" r="1.6" fill="var(--ink)" opacity="0.55"/>';}
+  const OU=100*dev/ref,sp=scoreAt(pxv,pyv,ab),st2=scoreAt(2.6,2.6,ab),pm=postMean(pxv,pyv,ab);
+  const tw=[(pxv+(1-ab)*sp[0])/sa,(pyv+(1-ab)*sp[1])/sa],res=Math.hypot(tw[0]-pm[0],tw[1]-pm[1]);
+  for(let k=0;k<3;k++)g+='<circle cx="'+A.X(sa*MU[k][0]).toFixed(1)+'" cy="'+A.Y(sa*MU[k][1]).toFixed(1)+'" r="3" fill="'+COL[k]+'"/>';
+  if(Math.abs(tw[0])<=3&&Math.abs(tw[1])<=3){
+    g+='<line x1="'+A.X(pxv).toFixed(1)+'" y1="'+A.Y(pyv).toFixed(1)+'" x2="'+A.X(tw[0]).toFixed(1)+'" y2="'+A.Y(tw[1]).toFixed(1)+'" stroke="var(--miss)" stroke-width="1.3" stroke-dasharray="3 3"/>'
+      +'<g stroke="var(--miss)" stroke-width="1.8"><line x1="'+(A.X(tw[0])-5).toFixed(1)+'" y1="'+(A.Y(tw[1])-5).toFixed(1)+'" x2="'+(A.X(tw[0])+5).toFixed(1)+'" y2="'+(A.Y(tw[1])+5).toFixed(1)+'"/><line x1="'+(A.X(tw[0])-5).toFixed(1)+'" y1="'+(A.Y(tw[1])+5).toFixed(1)+'" x2="'+(A.X(tw[0])+5).toFixed(1)+'" y2="'+(A.Y(tw[1])-5).toFixed(1)+'"/></g>';}
+  g+='<circle cx="'+A.X(pxv).toFixed(1)+'" cy="'+A.Y(pyv).toFixed(1)+'" r="5.5" fill="none" stroke="var(--ink)" stroke-width="1.8"/>'
+    +'<text x="8" y="16" font-family="var(--mono)" font-size="11" fill="var(--muted)">p_t shading · ∇log p_t arrows · ring = x_t · cross = E[x₀|x_t]</text>'
+    +'<text x="8" y="338" font-family="var(--mono)" font-size="10" fill="var(--faint)">−3 … 3</text>';
+  const bx=352,by=24,bw=320,bh=300,NS=161,ls=[];let mn=Infinity,mxv=-Infinity;
+  for(let i=0;i<NS;i++){const l=resp(-3+6*i/(NS-1),pyv,ab).logp;ls.push(l);if(l<mn)mn=l;if(l>mxv)mxv=l;}
+  const rg=Math.max(mxv-mn,1e-9),SX=x=>bx+(x+3)*(bw/6),SY=l=>by+bh-10-(l-mn)/rg*(bh-30);
+  g+='<rect x="'+bx+'" y="'+by+'" width="'+bw+'" height="'+bh+'" fill="none" stroke="var(--hair2)"/>'
+    +'<text x="'+bx+'" y="16" font-family="var(--mono)" font-size="11" fill="var(--muted)">log p_t along y = '+nz(pyv,1)+'</text>';
+  for(let k=0;k<3;k++){const cx=SX(sa*MU[k][0]);if(cx>=bx&&cx<=bx+bw)
+    g+='<line x1="'+cx.toFixed(1)+'" y1="'+by+'" x2="'+cx.toFixed(1)+'" y2="'+(by+bh)+'" stroke="'+COL[k]+'" stroke-width="1" opacity="0.5" stroke-dasharray="2 3"/>';}
+  let pl='';for(let i=0;i<NS;i++)pl+=SX(-3+6*i/(NS-1)).toFixed(1)+','+SY(ls[i]).toFixed(1)+' ';
+  g+='<polyline points="'+pl.trim()+'" fill="none" stroke="var(--accent)" stroke-width="1.8"/>'
+    +'<line x1="'+SX(pxv).toFixed(1)+'" y1="'+by+'" x2="'+SX(pxv).toFixed(1)+'" y2="'+(by+bh)+'" stroke="var(--ink)" stroke-width="1" opacity="0.45"/>'
+    +'<circle cx="'+SX(pxv).toFixed(1)+'" cy="'+SY(resp(pxv,pyv,ab).logp).toFixed(1)+'" r="4" fill="var(--ink)"/>'
+    +'<text x="'+(bx+4)+'" y="'+(by+bh+12)+'" font-family="var(--mono)" font-size="10" fill="var(--faint)">x from −3 to 3 · dashed = component centres √ᾱμ_k</text>';
+  id('p2').innerHTML=g;
+  const R=resp(pxv,pyv,ab).r,sep=minSep(ab)/sv,mi=R.indexOf(Math.max(R[0],R[1],R[2])),mr=R[mi],pc=lr100(R.map(r=>100*r)).join('/');
+  const mp=nz(Math.hypot(sp[0],sp[1]),2),mt=nz(Math.hypot(st2[0],st2[1]),2),rs=res>0?sci(res,1):'0';
+  id('t2Out').textContent=nz(t,3);id('pxOut').textContent=nz(pxv,1);id('pyOut').textContent=nz(pyv,1);id('s2a').textContent=fA(ab);
+  id('s2b').textContent=nz(sv,4);id('s2c').textContent=nz(sep,2);id('s2d').textContent=mp+' / '+mt;
+  id('s2e').textContent='('+nz(tw[0],2)+', '+nz(tw[1],2)+')';id('s2f').textContent=rs;id('s2g').textContent=nz(OU,2)+'%';
+  let c='Noise level t = '+nz(t,3)+' (ᾱ<sub>t</sub> = '+fA(ab)+'): the marginal has standard deviation √v<sub>t</sub> = '+nz(sv,3)
+    +' per coordinate, and the closest pair of centres sits '+nz(sep,2)+' of those apart. ';
+  c+='Across the arrow grid the field departs from the pure OU pull −(x − √ᾱ<sub>t</sub>μ̄)/v<sub>t</sub> by at most '+nz(OU,2)+'% of that pull\'s own largest magnitude — '
+    +(OU>25?'structure, not just shrinkage.':OU>3?'mostly shrinkage, with a residual memory of where the modes were.':'shrinkage toward the origin, and essentially nothing else.')+' ';
+  c+='The score has magnitude '+mp+' at the probe against '+mt+' out at (2.6, 2.6): '+(+mp<+mt?'the field is small near a peak, where log p is flat, and large wherever the density falls fast.':+mp>+mt?'here the probe is on the steeper stretch of log p, so its arrow is the longer of the two — the field is small only where the density is flat.':'the two agree to two decimals, so the probe sits about as far down the density\'s flank as that reference corner.')+' ';
+  c+='From the probe, Tweedie reads 𝔼[x₀|x<sub>t</sub>] = ('+nz(tw[0],2)+', '+nz(tw[1],2)+'), built from the score alone; the independent Bayes posterior mean over x₀ agrees to '+rs+'. ';
+  c+= mr>=0.9 ? 'The responsibilities are '+pc+'%, so component '+(mi+1)+' carries '+nz(100*mr,1)+'% of the posterior mass and the denoiser has effectively committed to it.'
+    : 'The responsibilities are '+pc+'%, so the estimate is a responsibility-weighted blend of the component means — '+(sep>=2?'and here that is the probe\'s position, not the noise: the centres are still '+nz(sep,2)+' marginal standard deviations apart, so the modes stay resolvable and it is where this probe sits between them that splits the posterior.':'at this noise level the denoiser resolves the coarse layout and not the detail. That ordering is why diffusion sampling fixes composition first and texture last.');
+  id('c2').innerHTML=c;
+}
+
+/* ---------- wiring ---------- */
+id('t1').addEventListener('input',draw1);id('t2').addEventListener('input',draw2);id('px').addEventListener('input',draw2);id('py').addEventListener('input',draw2);
+id('mSDE').onclick=()=>{MODE='sde';id('mSDE').classList.add('on');id('mODE').classList.remove('on');draw1();};
+id('mODE').onclick=()=>{MODE='ode';id('mODE').classList.add('on');id('mSDE').classList.remove('on');draw1();};
+id('regen').onclick=()=>{RUN++;buildReverse(RUN);draw1();};
+
+/* ---------- retrieval ---------- */
+const QS={
+  q1:{opts:["∇<sub>θ</sub>log p<sub>θ</sub>(x), the gradient of the log-likelihood with respect to the model's parameters","∇<sub>x</sub>log p(x), the gradient of the log density with respect to the input — a vector field unchanged when p is multiplied by any constant, so the normalizing constant Z never appears",
+    "the density value p(x) itself, after normalizing so that it integrates to one","the Hessian ∇²<sub>x</sub>log p(x), whose eigenvalues give the local curvature of the density"],a:1,
+    fb:"The diffusion score is the gradient in <i>x</i> (the Stein score), one arrow per point of space. Option A is the classical statistical score of Lesson 3 — a real object, but the wrong one here; the name collision is unfortunate. The invariance matters: since ∇<sub>x</sub>log(p̃/Z) = ∇<sub>x</sub>log p̃, you can learn the shape of a density without ever computing its normalizing constant."},
+  q2:{opts:["the two objectives are approximately equal, with an error that vanishes as the noise level goes to zero","∇log p(x_t|x₀) is an unbiased estimate of ∇log p_t(x_t) for each fixed x₀",
+    "they differ by a constant C_t that contains no θ, so they have identical gradients in θ and identical minimisers","the intractable objective is an upper bound on the tractable one, so minimising the tractable one is conservative"],a:2,
+    fb:"Vincent's result is an exact identity, not an approximation: J_DSM(θ) = J_ESM(θ) + C_t with C_t = E[tr Cov(∇log p(x_t|x₀)|x_t)] free of θ. A is wrong twice over — the identity holds at every noise level, and C_t in fact <i>diverges</i> as t → 0. B is the near-miss: the unbiasedness is conditional on x_t, E[∇log p(x_t|x₀)|x_t] = ∇log p_t(x_t), not conditional on x₀. D reverses the inequality (C_t ≥ 0 makes the tractable objective the upper one) and would not justify the swap in any case."},
+  q3:{opts:["−ε/√(1−ᾱ_t) — so a network trained to predict the added noise is a score network up to that one scalar factor","−ε, so noise prediction and score prediction coincide exactly",
+    "−ε/(1−ᾱ_t), the residual divided by the variance","−ε√(1−ᾱ_t), the residual scaled by the noise standard deviation"],a:0,
+    fb:"The kernel is 𝒩(√ᾱ_t x₀, (1−ᾱ_t)I), so its score is minus the residual over the variance: −(x_t − √ᾱ_t x₀)/(1−ᾱ_t). The residual is itself √(1−ᾱ_t)·ε, leaving −ε/√(1−ᾱ_t) — one power of the standard deviation, not two. C keeps the variance but forgets the residual already carries a factor √(1−ᾱ_t); D inverts the division; B drops the factor entirely. That factor is exactly what converts DDPM's ε-prediction loss into a score-matching loss."},
+  q4:{opts:["is an approximation to the reverse SDE, accurate only when β(t) is small","traces the same sample paths as the reverse SDE, but has different marginals",
+    "should carry the full coefficient β(t) on the score; the ½ belongs only to the linear drift term","is deterministic, carries exactly half the reverse SDE's score coefficient, and has precisely the same marginals p_t at every t"],a:3,
+    fb:"Fokker–Planck rewrites the diffusion term as ½g²Δp = ∇·(½g²p∇log p), so folding all of it into the drift gives velocity f − ½g²∇log p and turns the equation into a continuity equation — deterministic transport with identical p_t. It is exact, not an approximation (A); its individual paths look nothing like the SDE's, which is the whole point (B); and using β rather than ½β (C) gives a well-defined ODE with the wrong marginals, the classic sign of a mis-transcribed sampler."},
+  q5:{opts:["the denoiser is unbiased only in the low-noise limit ᾱ_t → 1","the score is the residual x_t − x₀, rescaled by √ᾱ_t",
+    "the minimum-MSE denoiser and the score are the same object under an affine change of variables — so a network trained purely to clean up noise has learned the score","recovering 𝔼[x₀|x_t] requires the prior p₀ explicitly, which the score alone cannot supply"],a:2,
+    fb:"Tweedie is an exact identity for every t > 0, with no small-noise limit (ruling out A), and it runs both ways: given ∇log p_t you get the posterior mean, and given the posterior mean you get ∇log p_t. That is precisely why D is wrong — the score already encodes everything about p₀ that the denoiser needs. B misstates the kernel score, which is −(x_t − √ᾱ_t x₀)/(1−ᾱ_t), a residual divided by the variance rather than scaled by √ᾱ_t."},
+  q6:{opts:["a geometric Brownian motion, so x_t is lognormal and the process cannot change sign","an Ornstein–Uhlenbeck (Vasicek) process with reversion level zero and time-varying speed β(t)/2 — ᾱ_t is the squared decay of the initial condition and 1−ᾱ_t the accumulated variance, a term structure",
+    "a martingale, since the noise dominates the drift, so 𝔼[x_t|x₀] = x₀","a mean-reverting process whose stationary distribution is 𝒩(x₀, I) — it keeps a memory of where it started"],a:1,
+    fb:"It is arithmetic, linear-drift OU: the drift −½βx pulls toward zero at speed β/2 and the diffusion √β shakes, giving 𝔼[x_t|x₀] = e^(−∫β/2)x₀ = √ᾱ_t x₀ and Var = (1−ᾱ_t)I. A is wrong because the drift is linear in x with no exponential-of-noise structure, so x_t is Gaussian and freely signed. C is wrong because a mean-reverting drift is exactly what a martingale does not have. D is wrong because the stationary law is 𝒩(0,I): the design goal is that the process <i>forgets</i> x₀, and on this schedule √ᾱ_t is already ½ by t = 0.368."}
+};
+const sel={q1:null,q2:null,q3:null,q4:null,q5:null,q6:null};let revealed=false;
+Object.keys(QS).forEach(qid=>{const holder=document.querySelector('#'+qid+' .opts');QS[qid].opts.forEach((txt,i)=>{const b=document.createElement('button');b.className='opt';b.innerHTML=String.fromCharCode(65+i)+'.&nbsp; '+txt;b.onclick=()=>{if(revealed)return;sel[qid]=i;[...holder.children].forEach((c,ci)=>c.classList.toggle('sel',ci===i));id('hint').style.display='none';};holder.appendChild(b);});});
+id('check').onclick=async()=>{
+  if(revealed)return;if(Object.values(sel).some(v=>v===null)){id('hint').style.display='inline';return;}
+  revealed=true;let score=0;
+  Object.keys(QS).forEach(qid=>{const a=QS[qid].a,holder=document.querySelector('#'+qid+' .opts'),fb=document.querySelector('#'+qid+' .fb');
+    [...holder.children].forEach((c,ci)=>{c.style.cursor='default';c.classList.remove('sel');if(ci===a)c.classList.add('correct');else if(ci===sel[qid])c.classList.add('wrong');});
+    if(sel[qid]===a)score++;fb.innerHTML=QS[qid].fb;fb.classList.add('show');});
+  id('check').style.opacity='0.5';id('check').textContent='Checked';id('scoreOut').textContent=score+' / 6';id('done').classList.add('show');
+  try{await window.storage.set('mfs:lesson26',JSON.stringify({done:true,retrieval:score+'/6',ts:Date.now()}),false);}catch(e){}
+};
+function boot(){renderMath();buildReverse(0);draw1();draw2();}
+if(window.katex)boot();else window.addEventListener('load',boot);
+(async()=>{try{const r=await window.storage.get('mfs:lesson26',false);if(r&&r.value){const v=JSON.parse(r.value);if(v.done){const c=id('chip');c.classList.add('show');c.textContent='completed · '+v.retrieval;}}}catch(e){}})();
+</script>
+</body>
+</html>
