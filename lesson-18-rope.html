@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lesson 18 — Rotary positional encodings (RoPE)</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<style>
+  :root{
+    --paper:#FAFAF6;--ink:#1A1C22;--muted:#63676E;--faint:#9A9EA4;--hair:#E4E3DB;--hair2:#D4D3CA;--panel:#FFFFFF;
+    --accent:#24507A;--accent-bg:#EAF0F6;--series:#B07A2E;--miss:#B23A3A;--ok:#2F6B4F;--ok-bg:#E9F1EC;
+    --vol:#8A5A2B;--vol-bg:#F6EFE6;--serif:Iowan Old Style,Palatino,Georgia,serif;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme:dark){:root{--paper:#15161A;--ink:#E9E8E2;--muted:#A2A6AC;--faint:#71757B;--hair:#2A2C31;--hair2:#3A3C42;--panel:#1B1D22;--accent:#7FB0E0;--accent-bg:#1E2A38;--series:#D9A85E;--miss:#E07A7A;--ok:#7FC49F;--ok-bg:#1C2A22;--vol:#D9A066;--vol-bg:#2A2115;}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.62;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:750px;margin:0 auto;padding:32px 24px 60px}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 6px}
+  h1{font-family:var(--serif);font-weight:600;font-size:27px;line-height:1.22;margin:0 0 6px;letter-spacing:-.01em}
+  .chip{display:none;font-family:var(--mono);font-size:11px;letter-spacing:.05em;color:var(--ok);border:1px solid var(--ok);border-radius:20px;padding:3px 10px;vertical-align:middle;margin-left:10px}
+  .chip.show{display:inline-block}
+  .sub{color:var(--muted);font-size:15px;margin:0 0 18px}
+  .levels{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 26px}
+  .levels .lk{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+  .levels .pill{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-family:var(--mono);color:var(--muted);background:var(--panel);border:1px solid var(--hair2);border-radius:20px;padding:4px 11px}
+  .levels .pill b{color:var(--accent);font-weight:700;letter-spacing:.03em}
+  p.lead{font-size:16px;margin:0 0 22px}
+  p.lead b{font-weight:600}
+  .sec{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:36px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--hair)}
+  .mblock{margin:16px 0;overflow-x:auto}
+  .glo{list-style:none;padding:0;margin:14px 0 0}
+  .glo li{display:flex;gap:14px;padding:9px 0;border-top:1px solid var(--hair);align-items:baseline}
+  .glo li:first-child{border-top:none}
+  .glo .sym{flex:0 0 92px;text-align:right;padding-top:2px}
+  .glo .sym.w{font-family:var(--mono);font-size:12.5px;color:var(--accent)}
+  .glo .def{font-size:14.5px}
+  .glo .def .n{color:var(--muted)}
+  .step{font-size:14.5px;color:var(--muted);margin:10px 0}
+  .panel{background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:20px;margin:14px 0}
+  .figcap{font-family:var(--mono);font-size:12px;color:var(--muted);margin:2px 0 12px}
+  .ctrls{display:flex;flex-wrap:wrap;gap:16px 26px;align-items:flex-end;margin:16px 0 6px}
+  .field{display:flex;flex-direction:column;gap:6px;min-width:180px;flex:1}
+  .field label{font-size:12px;color:var(--muted);font-family:var(--mono);letter-spacing:.03em;display:flex;justify-content:space-between}
+  .field label b{color:var(--ink);font-weight:600}
+  input[type=range]{width:100%;accent-color:var(--accent);height:20px}
+  svg{max-width:100%;height:auto;display:block}
+  .tally{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 2px}
+  .stat{flex:1;min-width:120px;background:var(--paper);border-radius:9px;padding:9px 12px}
+  .stat .k{font-size:11px;font-family:var(--mono);letter-spacing:.04em;color:var(--muted);text-transform:uppercase}
+  .stat .v{font-size:19px;font-weight:600;font-family:var(--mono);margin-top:2px}
+  .stat .v.a{color:var(--accent)}.stat .v.g{color:var(--ok)}
+  .callout{font-size:14px;color:var(--muted);border-left:2px solid var(--accent);padding:2px 0 2px 14px;margin:16px 0 2px;min-height:1.4em}
+  .theorem{background:var(--accent-bg);border-radius:12px;padding:18px 20px;margin:16px 0}
+  .theorem .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
+  .theorem p{font-family:var(--serif);font-size:16px;line-height:1.55;margin:0}
+  .twist{border:1px dashed var(--hair2);border-radius:12px;padding:16px 18px;margin:16px 0;background:var(--panel)}
+  .twist .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+  .twist p{margin:0;font-size:14.6px}
+  .vol{background:var(--vol-bg);border:1px solid var(--vol);border-radius:12px;padding:18px 20px;margin:16px 0}
+  .vol .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:var(--vol);margin:0 0 8px}
+  .vol p{margin:0 0 10px;font-size:14.8px}.vol p:last-child{margin-bottom:0}
+  .vol code{font-family:var(--mono);font-size:13px;background:rgba(138,90,43,.12);padding:1px 5px;border-radius:4px}
+  .q{border:1px solid var(--hair);border-radius:12px;padding:16px 18px;margin:12px 0;background:var(--panel)}
+  .q .stem{font-size:15px;font-weight:500;margin:0 0 12px}
+  .opt{display:block;width:100%;text-align:left;font-size:14px;padding:10px 12px;margin:0 0 8px;border:1px solid var(--hair2);border-radius:8px;background:transparent;color:var(--ink);cursor:pointer;line-height:1.45}
+  .opt:last-child{margin-bottom:0}
+  .opt:hover{border-color:var(--accent)}
+  .opt.sel{border-color:var(--accent);background:var(--accent-bg)}
+  .opt.correct{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+  .opt.wrong{background:#F7ECEC;border-color:var(--miss);color:var(--miss)}
+  @media (prefers-color-scheme:dark){.opt.wrong{background:#2E1E1E}}
+  .fb{font-size:13.5px;color:var(--muted);margin:10px 0 0;line-height:1.5;display:none}
+  .fb.show{display:block}
+  .checkRow{display:flex;align-items:center;gap:14px;margin:18px 0 0;flex-wrap:wrap}
+  .hint{font-size:13px;color:var(--miss);display:none}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-family:var(--sans);font-size:14px;padding:8px 14px;border-radius:8px;border:1px solid var(--accent);cursor:pointer}
+  .scoreOut{font-family:var(--mono);font-size:14px;font-weight:600}
+  .done{display:none;align-items:center;gap:10px;background:var(--ok-bg);color:var(--ok);border-radius:10px;padding:12px 16px;font-size:14px;margin:14px 0 0}
+  .done.show{display:flex}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">Lesson 18 · Wing IV — inside the transformer</p>
+  <h1>Rotary positional encodings (RoPE)<span class="chip" id="chip"></span></h1>
+  <p class="sub">Attention can't see order. Rotate the queries and keys, and relative position falls out of the geometry.</p>
+  <div class="levels">
+    <span class="lk">Level</span>
+    <span class="pill"><b>US</b> Graduate</span>
+    <span class="pill"><b>FR</b> Master 2 (M2)</span>
+  </div>
+
+  <p class="lead">The attention scores of Lesson 17 have a blind spot: a dot product q·k knows <b>what</b> two tokens say, not <b>where</b> they sit — shuffle the sentence and every score survives the shuffle. Position has to be smuggled into the geometry. RoPE's move is the elegant one: don't <b>add</b> a position vector to the embedding — <b>rotate</b> each query and key by an angle proportional to its position. Rotations compose by adding angles, so the score between positions m and n ends up depending only on the gap n − m: relative position emerges from absolute rotations. A returns model wants exactly this invariance — what matters is how many days apart two observations sit (the lag structure), never which calendar dates they carry.</p>
+
+  <div class="sec">The words, before the machinery</div>
+  <ul class="glo">
+    <li><span class="sym w">blind</span><span class="def"><b>permutation-blind</b> — attention's raw scores are dot products of content vectors, so reordering the tokens leaves every score intact. <span class="n">A feature for sets; a bug for language and for time series.</span></span></li>
+    <li><span class="sym w">encoding</span><span class="def"><b>positional encoding</b> — any scheme that stamps position onto the vectors so scores can notice order. <span class="n">The classic choice adds a learned or sinusoidal position vector; RoPE turns the vector instead.</span></span></li>
+    <li><span class="sym w">rotation</span><span class="def"><b>rotation</b> — turning an arrow about the origin by an angle; its length never changes. <span class="n">Rotations are orthogonal maps — QᵀQ = I, the same Q Lesson 6's spectral theorem hands you — and one line finishes the story: ⟨Qx, Qy⟩ = xᵀQᵀQy = xᵀy, so inner products survive a rotation untouched.</span></span></li>
+    <li><span class="sym w">phase</span><span class="def"><b>phase</b> — the angle a rotation has accumulated. Composing rotations adds phases: turn by α, then by β, is turn by α + β. <span class="n">This additivity is the whole trick — subtracting phases will manufacture the gap.</span></span></li>
+    <li><span class="sym w">gap</span><span class="def"><b>relative position</b> — the displacement n − m: five tokens back, three days of lag. <span class="n">The only positional quantity a translation-invariant score is allowed to depend on.</span></span></li>
+    <li><span class="sym w">ladder</span><span class="def"><b>frequency ladder</b> — d/2 rotation planes, each with its own speed θᵢ; fast planes resolve neighbours, slow planes carry long range. <span class="n">The same geometric spread of wavelengths you'd use to phase-encode seasonality in a returns model — one Fourier idea.</span></span></li>
+  </ul>
+
+  <div class="sec">Rotate, don't add</div>
+  <p class="step">Pair the d embedding coordinates into d/2 two-dimensional planes. A token at position m gets plane i turned by the angle m·θᵢ — an <b>absolute</b> rotation, one per plane, frequencies fixed once and for all:</p>
+  <div class="mblock math" data-tex="\theta_i=\text{base}^{-2i/d},\qquad R(m)=\operatorname{diag}\!\big(R_{\theta_0}(m),\dots,R_{\theta_{d/2-1}}(m)\big),\qquad R_{\theta}(m)=\begin{pmatrix}\cos m\theta & -\sin m\theta\\ \sin m\theta & \cos m\theta\end{pmatrix}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="\theta_i"></span><span class="def"><b>frequency of plane i</b>, geometric in i. <span class="n">base = 10,000 by default; i runs 0 … d/2−1, so θ falls from 1 down to base^(−1+2/d).</span></span></li>
+    <li><span class="sym math" data-tex="R(m)"></span><span class="def"><b>the position-m rotation</b> — block-diagonal, one 2×2 rotation per plane. <span class="n">Orthogonal: R(m)ᵀR(m) = I, so ‖R(m)x‖ = ‖x‖ always (Lesson 6).</span></span></li>
+    <li><span class="sym math" data-tex="R_{\theta}(m)"></span><span class="def">the <b>2×2 block</b>: rotate plane coordinates by mθ. <span class="n">In einsum terms (Lesson 11) this is an elementwise map on the (seq × d) query and key arrays, applied just before the score contraction — zero parameters.</span></span></li>
+  </ul>
+  <p class="step">Why not simply add a position vector pₘ to the embedding? Expand the score: (q + pₘ)ᵀ(k + pₙ) = qᵀk + qᵀpₙ + pₘᵀk + pₘᵀpₙ — three leakage terms that each depend on an <b>absolute</b> position. Rotation multiplies instead of adding, and the absolute parts cancel by trigonometry:</p>
+  <div class="mblock math" data-tex="\big\langle R(m)\,q,\;R(n)\,k\big\rangle \;=\; q^{\top}R(m)^{\top}R(n)\,k \;=\; q^{\top}R(n-m)\,k \;=\; \big\langle q,\;R(n-m)\,k\big\rangle" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="q,\;k"></span><span class="def"><b>query and key content</b> at positions m and n. <span class="n">Per head, after the usual projections of Lesson 17.</span></span></li>
+    <li><span class="sym math" data-tex="R(m)^{\top}R(n)"></span><span class="def">the heart of it: <b>R(m)ᵀR(n) = R(n−m)</b>. <span class="n">One-line proof: within each plane, rotations commute and angles subtract — Rθ(m)ᵀRθ(n) = Rθ(n−m); blocks act independently, so the whole product collapses.</span></span></li>
+    <li><span class="sym math" data-tex="n-m"></span><span class="def">the score depends on positions <b>only through the gap</b>. <span class="n">Shift both by s: (m+s, n+s) has the same gap, hence the same score — translation invariance for free.</span></span></li>
+  </ul>
+
+  <div class="sec">See it — one plane, two arrows</div>
+  <p class="step">One plane, frequency θ = 0.2 rad/token, with a seeded query arrow q and key arrow k on the unit circle (dashed: their position-0 originals). Set positions m and n; a third slider shifts <b>both</b>. Watch the two dot products — the actual score ⟨R(m)q, R(n)k⟩ and its relative form ⟨q, R(n−m)k⟩ — agree to machine precision while the arrows spin.</p>
+  <div class="panel">
+    <svg id="circle" viewBox="0 0 220 220" style="max-width:250px;margin:0 auto" role="img" aria-label="Unit circle with rotated query and key arrows"></svg>
+    <div class="ctrls">
+      <div class="field"><label>position m (query) <b id="mOut">3</b></label><input type="range" id="m" min="0" max="64" value="3" step="1" /></div>
+      <div class="field"><label>position n (key) <b id="nOut">11</b></label><input type="range" id="n" min="0" max="64" value="11" step="1" /></div>
+      <div class="field"><label>shift both +s <b id="sOut">0</b></label><input type="range" id="s" min="0" max="64" value="0" step="1" /></div>
+    </div>
+    <div class="tally">
+      <div class="stat"><div class="k">⟨R(m)q, R(n)k⟩</div><div class="v a" id="sc1">—</div></div>
+      <div class="stat"><div class="k">⟨q, R(n−m)k⟩</div><div class="v g" id="sc2">—</div></div>
+      <div class="stat"><div class="k">|Δ|</div><div class="v" id="dEl">—</div></div>
+      <div class="stat"><div class="k">gap n − m</div><div class="v" id="gapEl">—</div></div>
+    </div>
+    <p class="callout" id="c1"></p>
+  </div>
+
+  <div class="sec">The frequency ladder &amp; the long-context knob</div>
+  <p class="step">One plane aliases (hold that thought for the twist). The fix: run d/2 = 32 planes — here d = 64 — at geometrically spaced frequencies, so every plane sees position through its own wavelength:</p>
+  <div class="mblock math" data-tex="\lambda_i=\frac{2\pi}{\theta_i}=2\pi\cdot\text{base}^{2i/d},\qquad \lambda_0=2\pi\approx 6.28\ \text{tokens},\qquad \lambda_{d/2-1}=2\pi\cdot\text{base}^{1-2/d}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="\lambda_i"></span><span class="def"><b>wavelength of plane i</b> — tokens per full revolution. <span class="n">A geometric ladder: at base 10⁴ with d = 64 it runs from 6.28 tokens up to λ₃₁ = 2π·10⁴^(31/32) ≈ 47,117. Mind the off-by-one-plane trap: the tempting "2π·base ≈ 62,832" overshoots, because the top plane is i = d/2 − 1, not i = d/2 — it lands at base^(−2/d) ≈ 75% of that figure, and the shortfall widens as the base grows (65% at base 10⁶).</span></span></li>
+    <li><span class="sym math" data-tex="\text{base}"></span><span class="def"><b>the knob</b>. Scaling base stretches every wavelength — the lever the long-context literature pulls. <span class="n">Fast (low-i) planes resolve near-neighbour order; slow (high-i) planes carry paragraph- and document-scale structure.</span></span></li>
+  </ul>
+  <p class="step">Below, top: the <b>phase heat-strip</b> — each cell is cos(m·θᵢ) across the 32 planes at position m; fast planes cycle, slow planes crawl. Bottom: the <b>pure-geometry decay</b> — a seeded random unit vector in ℝ⁶⁴ serves as both query and key content (k = q, isolating position from content), and we plot the 40-draw mean score between position 0 and position g. It is exactly 1 at g = 0 — unit vectors, zero rotation — and then falls away, oscillating, until it is rattling around the noise floor Lesson 10 set for ℝ⁶⁴, the ±1/√64 = ±0.125 scale at which two unrelated directions overlap: nearby positions correlate, distant ones carry no positional signal worth reading. It does <b>not</b> settle at zero, though. The curve is a finite sum of cosines, so it recurs — at base 10⁴ it climbs back to 0.48 near g ≈ 183,000 — and the twist explains why that is structure rather than a bug.</p>
+  <div class="panel">
+    <svg id="heat" viewBox="0 0 340 46" role="img" aria-label="Phase heat strip across 32 planes"></svg>
+    <p class="figcap">cos(m·θᵢ), plane i = 0 (fast) → 31 (slow), at position m</p>
+    <svg id="decay" viewBox="0 0 340 170" role="img" aria-label="Mean relative score versus gap"></svg>
+    <p class="figcap">mean score ⟨R(0)q, R(g)q⟩ vs gap g · dashed: 0.1 of the g = 0 value</p>
+    <div class="ctrls">
+      <div class="field"><label>position m (heat strip) <b id="m2Out">10</b></label><input type="range" id="m2" min="0" max="256" value="10" step="1" /></div>
+      <div class="field"><label>base <b id="baseOut">10,000</b></label><input type="range" id="baseSel" min="0" max="3" value="1" step="1" /></div>
+    </div>
+    <div class="tally">
+      <div class="stat"><div class="k">shortest λ</div><div class="v" id="lmin">—</div></div>
+      <div class="stat"><div class="k">longest λ</div><div class="v a" id="lmax">—</div></div>
+      <div class="stat"><div class="k">score first &lt; 0.1</div><div class="v g" id="fbEl">—</div></div>
+    </div>
+    <p class="callout" id="c2"></p>
+  </div>
+
+  <div class="sec">Re-applied — lag, not date</div>
+  <p class="step">Point the same machinery at a returns panel and the property RoPE gives away for free is precisely the one you were going to have to assume anyway. A lead–lag score between two series is a claim about <b>displacement</b> — what a five-day lag does — and it must not care whether the window sits in March 2019 or October 2024. That indifference <i>is</i> ⟨R(m)q, R(n)k⟩ = ⟨q, R(n−m)k⟩, with the calendar index playing the token position. Bolt an absolute date vector onto the embedding instead and the additive expansion above leaks qᵀp<sub>date</sub> and p<sub>date</sub>ᵀk into every score: the model can now learn "September" as a level effect, which is the textbook way to overfit a backtest.</p>
+  <p class="step">The ladder re-appears too. No desk looks at one horizon; it looks at 1, 5, 21, 63, 252 days — a roughly geometric spread, chosen for the same reason RoPE spaces θᵢ geometrically. Short horizons resolve microstructure and are blind to regime turns; long horizons carry the regime and cannot see today; a geometric ladder covers the decades of scale in between at constant cost per rung. The heat strip above is that horizon panel, drawn as phase.</p>
+
+  <div class="sec">The precise statement</div>
+  <div class="theorem">
+    <p class="lbl">The precise statement</p>
+    <p>Fix any frequencies θ₀, …, θ_{d/2−1} and let R(m) be the block-diagonal d×d matrix whose i-th 2×2 block is the plane rotation by angle mθᵢ. Then each R(m) is orthogonal, so ‖R(m)x‖ = ‖x‖ for every x, and for all q, k ∈ ℝᵈ and all positions m, n: ⟨R(m)q, R(n)k⟩ = qᵀR(n−m)k. Attention scores computed from rotated queries and keys are therefore functions of the relative displacement n−m alone, invariant under every common shift m → m+s, n → n+s. Proof sketch: rotations of a fixed plane commute and their angles subtract, so each block satisfies Rθ(m)ᵀRθ(n) = Rθ(n−m); the blocks act on disjoint coordinate pairs, hence R(m)ᵀR(n) = R(n−m).</p>
+  </div>
+
+  <div class="twist">
+    <p class="lbl">The twist — scores live on a torus</p>
+    <p>Under RoPE, position enters a score only through the d/2 phases (mθ₀, …, mθ_{d/2−1}) taken mod 2π — the score is a function on a <b>torus</b>, so it is almost-periodic in position. With a single plane the encoding genuinely aliases: positions m and m + 2π/θ are <i>indistinguishable</i>. What rescues it is the geometric ladder — incommensurate frequencies whose phase vectors don't realign for astronomically long stretches, the same trick as a Vernier scale (two mismatched rulers pinpointing a reading no single ruler could) or the Fourier basis reading a lag. And the relative-only property has a classical name: <b>translation equivariance</b>. RoPE hands the transformer the convolution's symmetry — scores depend on displacement, not location — without the convolution's fixed local kernel: attention still looks anywhere it likes, it just measures <i>where</i> in relative coordinates.</p>
+  </div>
+
+  <div class="vol">
+    <p class="lbl">Why this matters · volarixs</p>
+    <p>Every Cross-Matrix cell (Lesson 7) is already keyed the RoPE way. A cell is indexed by <b>(target, driver, regime)</b> — never by calendar date — so its β is asserted to be a property of the relationship, not of when you happened to measure it. That is translation invariance, imposed by construction rather than learned. And <code>sign_stability</code> is the empirical audit of exactly that assumption: the share of subperiods whose β̂ keeps its sign is a test of whether the cell really is shift-invariant. A big β with weak <code>sign_stability</code> is a score that turned out to depend on absolute position after all — the additive-encoding failure mode, caught downstream instead of designed out.</p>
+    <p>The honest boundary: nothing in the platform runs RoPE, and bolting a rotary block onto the Cross-Matrix would be a solution hunting a problem. What transfers is the design discipline — decide which coordinate a score is <i>allowed</i> to depend on, then build that dependence into the parameterization instead of hoping the fit discovers it. RoPE hard-codes "gap only"; a regime-and-driver-indexed cell hard-codes "relationship only". Both make the invariance non-negotiable, which is why neither can be talked out of it by one lucky sample.</p>
+  </div>
+
+  <div class="sec">Check yourself</div>
+  <div class="q" id="q1"><p class="stem">The defining identity ⟨R(m)q, R(n)k⟩ = ⟨q, R(n−m)k⟩ means attention scores under RoPE…</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q2"><p class="stem">Why rotate q and k rather than add a position vector to the embedding?</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q3"><p class="stem">The frequencies θᵢ = base^(−2i/d) form…</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q4"><p class="stem">With a single plane of frequency θ, positions m and m + 2π/θ produce…</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q5"><p class="stem">Scaling base up (say 10⁴ → 10⁶) does what?</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q6"><p class="stem">How does ‖R(m)q‖ compare to ‖q‖?</p><div class="opts"></div><p class="fb"></p></div>
+
+  <div class="checkRow">
+    <button class="primary" id="check">Check answers</button>
+    <span class="scoreOut" id="scoreOut"></span>
+    <span class="hint" id="hint">Answer all six first.</span>
+  </div>
+  <div class="done" id="done">Geometry set. Next in Wing IV: the residual stream, LayerNorm &amp; RMSNorm.</div>
+</div>
+
+<script>
+/* storage shim: window.storage (Claude artifacts) or localStorage (web) */
+if(!window.storage){window.storage={async get(k){const v=localStorage.getItem(k);if(v==null)throw new Error('missing');return{key:k,value:v}},async set(k,v){localStorage.setItem(k,v);return{key:k,value:v}},async delete(k){localStorage.removeItem(k);return{key:k,deleted:true}},async list(p){const ks=[];for(let i=0;i<localStorage.length;i++){const kk=localStorage.key(i);if(!p||kk.startsWith(p))ks.push(kk)}return{keys:ks}}};}
+function renderMath(){document.querySelectorAll('.math').forEach(el=>{const tex=el.getAttribute('data-tex');if(!tex||el.dataset.done)return;try{if(window.katex){katex.render(tex,el,{displayMode:el.dataset.display==='1',throwOnError:false});el.dataset.done='1';}else el.textContent=tex;}catch(e){el.textContent=tex;}});}
+const id=x=>document.getElementById(x);
+
+/* ---------- deterministic randomness (seed 118) ---------- */
+function mulberry32(seed){let a=seed>>>0;return function(){a|=0;a=(a+0x6D2B79F5)|0;let t=Math.imul(a^(a>>>15),1|a);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296;}}
+function randn(rng){let u=0,v=0;while(!u)u=rng();while(!v)v=rng();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+const rng=mulberry32(118);
+/* call order: 2 randn for q, 2 for k, then 40 draws × 64 randn for the decay average */
+const q2r=[randn(rng),randn(rng)],k2r=[randn(rng),randn(rng)];
+const Q2=(n=>q2r.map(x=>x/n))(Math.hypot(q2r[0],q2r[1]));
+const K2=(n=>k2r.map(x=>x/n))(Math.hypot(k2r[0],k2r[1]));
+const D=64,P=32,ND=40,GMAX=256;
+const meanP=new Float64Array(P);
+for(let t=0;t<ND;t++){const v=new Float64Array(D);let s2=0;for(let j=0;j<D;j++){v[j]=randn(rng);s2+=v[j]*v[j];}
+  for(let i=0;i<P;i++)meanP[i]+=(v[2*i]*v[2*i]+v[2*i+1]*v[2*i+1])/s2;}
+for(let i=0;i<P;i++)meanP[i]/=ND;
+
+/* ---------- interactive 1: one plane ---------- */
+const TH=0.2;
+const rot=(v,a)=>[v[0]*Math.cos(a)-v[1]*Math.sin(a),v[0]*Math.sin(a)+v[1]*Math.cos(a)];
+const dot=(a,b)=>a[0]*b[0]+a[1]*b[1];
+function arrow(v,color,lbl,dash){
+  const cx=110,cy=110,r=88,X=cx+r*v[0],Y=cy-r*v[1];
+  let s=`<line x1="${cx}" y1="${cy}" x2="${X.toFixed(1)}" y2="${Y.toFixed(1)}" stroke="${color}" stroke-width="${dash?1.4:2.2}"${dash?' stroke-dasharray="4 4" opacity="0.45"':''}/>`;
+  if(!dash){const t=Math.atan2(Y-cy,X-cx);
+    s+=`<polygon points="${X.toFixed(1)},${Y.toFixed(1)} ${(X-9*Math.cos(t-0.38)).toFixed(1)},${(Y-9*Math.sin(t-0.38)).toFixed(1)} ${(X-9*Math.cos(t+0.38)).toFixed(1)},${(Y-9*Math.sin(t+0.38)).toFixed(1)}" fill="${color}"/>`;
+    s+=`<text x="${(cx+(r+13)*v[0]).toFixed(1)}" y="${(cy-(r+13)*v[1]+4).toFixed(1)}" text-anchor="middle" font-family="var(--mono)" font-size="11" fill="${color}">${lbl}</text>`;}
+  return s;
+}
+function upd1(){
+  const m=+id('m').value,n=+id('n').value,sh=+id('s').value;
+  id('mOut').textContent=m;id('nOut').textContent=n;id('sOut').textContent=sh;
+  const qm=rot(Q2,(m+sh)*TH),kn=rot(K2,(n+sh)*TH);
+  const s1=dot(qm,kn),s2v=dot(Q2,rot(K2,(n-m)*TH)),d=Math.abs(s1-s2v);
+  let s='<circle cx="110" cy="110" r="88" fill="none" stroke="var(--hair2)"/>'
+    +'<line x1="14" y1="110" x2="206" y2="110" stroke="var(--hair)"/><line x1="110" y1="14" x2="110" y2="206" stroke="var(--hair)"/>'
+    +arrow(Q2,'var(--accent)','',1)+arrow(K2,'var(--series)','',1)
+    +arrow(qm,'var(--accent)','R(m)q')+arrow(kn,'var(--series)','R(n)k');
+  id('circle').innerHTML=s;
+  id('sc1').textContent=s1.toFixed(6);id('sc2').textContent=s2v.toFixed(6);
+  id('dEl').textContent=d===0?'0':d.toExponential(1);id('gapEl').textContent=(n-m>=0?'+':'')+(n-m);
+  id('c1').textContent=`Positions (${m+sh}, ${n+sh}), gap ${n-m}: both readings agree at ${s1.toFixed(4)} — |Δ| = ${d.toExponential(1)}. Drag the shift: the arrows spin together and the score is frozen; only the gap is real. (One plane at θ = ${TH} has period 2π/θ = ${(2*Math.PI/TH).toFixed(3)} tokens: m and m + 2π/θ give the identical arrow. No two whole-number positions collide exactly here — 2π/0.2 = 10π is irrational — and that permanent near-miss is what the frequency ladder exploits. Hold it for the twist.)`;
+}
+
+/* ---------- interactive 2: ladder & decay ---------- */
+const BASES=[1000,10000,100000,1000000];
+function thArr(base){const t=new Float64Array(P);for(let i=0;i<P;i++)t[i]=Math.pow(base,-2*i/D);return t;}
+function meanScore(th,g){let s=0;for(let i=0;i<P;i++)s+=meanP[i]*Math.cos(g*th[i]);return s;}
+const curveCache={},fbCache={};
+function getCurve(base){if(!curveCache[base]){const th=thArr(base),c=new Float64Array(GMAX+1);for(let g=0;g<=GMAX;g++)c[g]=meanScore(th,g);curveCache[base]=c;}return curveCache[base];}
+function firstBelow(base){if(fbCache[base]===undefined){const th=thArr(base);let fb=null;for(let g=0;g<=8192;g++)if(meanScore(th,g)<0.1){fb=g;break;}fbCache[base]=fb;}return fbCache[base];}
+function heatColor(v){const t=Math.abs(v),mix=(a,b)=>Math.round(a+(b-a)*t);
+  return v>=0?`rgb(${mix(245,36)},${mix(244,80)},${mix(238,122)})`:`rgb(${mix(245,176)},${mix(244,122)},${mix(238,46)})`;}
+function upd2(){
+  const m=+id('m2').value,base=BASES[+id('baseSel').value],th=thArr(base);
+  id('m2Out').textContent=m;id('baseOut').textContent=base.toLocaleString('en-US');
+  let hs='';for(let i=0;i<P;i++)hs+=`<rect x="${(2+i*10.5).toFixed(1)}" y="2" width="9.6" height="28" rx="1.5" fill="${heatColor(Math.cos(m*th[i]))}"/>`;
+  hs+='<text x="2" y="42" font-family="var(--mono)" font-size="9" fill="var(--faint)">i=0 · fast</text><text x="338" y="42" text-anchor="end" font-family="var(--mono)" font-size="9" fill="var(--faint)">i=31 · slow</text>';
+  id('heat').innerHTML=hs;
+  const c=getCurve(base),W=340,H=170,padL=30,padR=8,padT=10,padB=18,iw=W-padL-padR,ih=H-padT-padB;
+  const yv=v=>padT+(1.05-v)/(1.05-(-0.35))*ih,xv=g=>padL+g/GMAX*iw;
+  let s=`<line x1="${padL}" y1="${yv(0)}" x2="${W-padR}" y2="${yv(0)}" stroke="var(--hair2)"/>`
+    +`<line x1="${padL}" y1="${yv(0.1)}" x2="${W-padR}" y2="${yv(0.1)}" stroke="var(--miss)" stroke-dasharray="4 4" opacity="0.6"/>`;
+  [[1,'1.0'],[0.5,'0.5'],[0.1,'0.1'],[0,'0']].forEach(([v,l])=>{s+=`<text x="${padL-4}" y="${(yv(v)+3).toFixed(1)}" text-anchor="end" font-family="var(--mono)" font-size="9" fill="var(--faint)">${l}</text>`;});
+  [0,64,128,192,256].forEach(g=>{s+=`<text x="${xv(g).toFixed(1)}" y="${H-4}" text-anchor="middle" font-family="var(--mono)" font-size="9" fill="var(--faint)">${g}</text>`;});
+  let pts='';for(let g=0;g<=GMAX;g++)pts+=`${xv(g).toFixed(1)},${yv(c[g]).toFixed(1)} `;
+  s+=`<polyline points="${pts}" fill="none" stroke="var(--accent)" stroke-width="1.6"/>`;
+  const fb=firstBelow(base);
+  if(fb!==null&&fb<=GMAX)s+=`<circle cx="${xv(fb).toFixed(1)}" cy="${yv(c[fb]).toFixed(1)}" r="3.5" fill="var(--miss)"/>`;
+  id('decay').innerHTML=s;
+  const lmax=2*Math.PI*Math.pow(base,(D-2)/D);
+  id('lmin').textContent=(2*Math.PI).toFixed(2)+' tok';
+  id('lmax').textContent=Math.round(lmax).toLocaleString('en-US')+' tok';
+  id('fbEl').textContent=fb===null?'> 8192':'g = '+fb+(fb>GMAX?' (off-plot)':'');
+  id('c2').textContent=`Base ${base.toLocaleString('en-US')}: the ladder spans ${(2*Math.PI).toFixed(2)} → ${Math.round(lmax).toLocaleString('en-US')} tokens, and the mean score first dips under 0.1 of its g = 0 value at gap ${fb===null?'> 8192':fb}${fb!==null&&fb>GMAX?' — beyond the plotted window':''}. Scaling base is the long-context knob: position interpolation, NTK-aware scaling and YaRN are all re-tunings of this ladder — compress or stretch every phase and you trade near-neighbour sharpness for reach.`;
+}
+
+id('m').addEventListener('input',upd1);id('n').addEventListener('input',upd1);id('s').addEventListener('input',upd1);
+id('m2').addEventListener('input',upd2);id('baseSel').addEventListener('input',upd2);
+
+/* ---------- retrieval ---------- */
+const QS={
+  q1:{opts:["grow linearly with the absolute position m","are independent of position entirely","depend on positions only through the gap n − m — shifting both positions by s changes nothing","are symmetric under swapping m and n"],a:2,
+    fb:"The identity says the pair (m, n) scores exactly like (0, n−m): only relative displacement survives, so any common shift m → m+s, n → n+s leaves every score untouched. Position still matters — but only as a gap, which is the invariance a lag-structured model wants."},
+  q2:{opts:["because rotation makes the score a function of the gap alone, whereas (q+pₘ)ᵀ(k+pₙ) leaks absolute-position terms qᵀpₙ, pₘᵀk, pₘᵀpₙ into the score","because rotations are cheaper to compute than vector additions","because additive encodings cannot represent any position beyond the training length","because rotation increases the rank of the attention matrix"],a:0,
+    fb:"Expanding the additive score leaves three cross terms that each depend on an absolute position. Rotation composes multiplicatively and R(m)ᵀR(n) collapses to R(n−m) — the absolute parts cancel by trigonometry. (Rotation is not cheaper than addition, and neither claim about training length or rank is the mechanism.)"},
+  q3:{opts:["an arithmetic ladder — all planes cover the same range","a random ladder, resampled at initialization","a geometric ladder in which the fast, low-i planes carry the long-range structure","a geometric ladder in which the slow, long-wavelength (high-i) planes carry long-range structure while the fast planes resolve near-neighbour order"],a:3,
+    fb:"θᵢ = base^(−2i/d) is geometric: wavelengths 2π·base^(2i/d) stretch from 2π ≈ 6.28 tokens at i = 0 up to 2π·base^(1−2/d) at the top plane i = d/2 − 1 — that is ≈ 47,117 tokens at base 10⁴ with d = 64, which is 75% of the tempting 2π·base, not all of it. Fast planes (small i) alias quickly, so they can only disambiguate neighbours; the slow planes keep a usable phase over tens of thousands of tokens."},
+  q4:{opts:["opposite scores","identical rotations — the two positions are indistinguishable (aliasing with period 2π/θ)","scores that differ by exactly θ","a norm change of 2π"],a:1,
+    fb:"A single plane only sees the phase mθ mod 2π, so m and m + 2π/θ give literally the same rotated vectors. Only the ladder of many incommensurate frequencies — a Vernier scale in disguise — makes positions effectively unique over long ranges."},
+  q5:{opts:["speeds every plane up, sharpening near-neighbour resolution","leaves the wavelengths unchanged but rescales the scores","stretches every wavelength so the ladder covers longer contexts — and compressing existing phases (position interpolation) buys length at the cost of blurring near-neighbour order","makes the score decay exactly exponentially in the gap"],a:2,
+    fb:"base is the ladder's scale knob: bigger base ⇒ slower planes ⇒ coherent scores out to larger gaps (watch the decay curve flatten). Position interpolation, NTK-aware scaling and YaRN are different ways of re-tuning the same ladder, all paying some near-range resolution for reach."},
+  q6:{opts:["equal — R(m) is orthogonal (Lesson 6), so RoPE never changes how much geometry a token carries, only whom it aligns with","‖R(m)q‖ grows with m, encoding position by length","‖R(m)q‖ shrinks with m, damping distant tokens","it depends on the value of base"],a:0,
+    fb:"Every R(m) satisfies R(m)ᵀR(m) = I, so norms are exactly preserved for every position and every base. Position is written entirely into angles, never into magnitudes — RoPE redirects attention, it cannot amplify or mute a token wholesale."}
+};
+const sel={q1:null,q2:null,q3:null,q4:null,q5:null,q6:null};let revealed=false;
+Object.keys(QS).forEach(qid=>{const holder=document.querySelector('#'+qid+' .opts');QS[qid].opts.forEach((txt,i)=>{const b=document.createElement('button');b.className='opt';b.textContent=String.fromCharCode(65+i)+'.  '+txt;b.onclick=()=>{if(revealed)return;sel[qid]=i;[...holder.children].forEach((c,ci)=>c.classList.toggle('sel',ci===i));id('hint').style.display='none';};holder.appendChild(b);});});
+id('check').onclick=async()=>{
+  if(revealed)return;if(Object.values(sel).some(v=>v===null)){id('hint').style.display='inline';return;}
+  revealed=true;let score=0;
+  Object.keys(QS).forEach(qid=>{const a=QS[qid].a,holder=document.querySelector('#'+qid+' .opts'),fb=document.querySelector('#'+qid+' .fb');[...holder.children].forEach((c,ci)=>{c.style.cursor='default';c.classList.remove('sel');if(ci===a)c.classList.add('correct');else if(ci===sel[qid])c.classList.add('wrong');});if(sel[qid]===a)score++;fb.textContent=QS[qid].fb;fb.classList.add('show');});
+  id('check').style.opacity='0.5';id('check').textContent='Checked';
+  id('scoreOut').textContent=score+' / 6';id('done').classList.add('show');
+  try{await window.storage.set('mfs:lesson18',JSON.stringify({done:true,retrieval:score+'/6',ts:Date.now()}),false);}catch(e){}
+};
+function boot(){renderMath();upd1();upd2();}
+if(window.katex)boot();else window.addEventListener('load',boot);
+(async()=>{try{const r=await window.storage.get('mfs:lesson18',false);if(r&&r.value){const v=JSON.parse(r.value);if(v.done){const c=id('chip');c.classList.add('show');c.textContent='completed · '+v.retrieval;}}}catch(e){}})();
+</script>
+</body>
+</html>
