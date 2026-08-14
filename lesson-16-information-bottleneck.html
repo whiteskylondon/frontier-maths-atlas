@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lesson 16 — The information bottleneck</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<style>
+  :root{
+    --paper:#FAFAF6;--ink:#1A1C22;--muted:#63676E;--faint:#9A9EA4;--hair:#E4E3DB;--hair2:#D4D3CA;--panel:#FFFFFF;
+    --accent:#24507A;--accent-bg:#EAF0F6;--series:#B07A2E;--miss:#B23A3A;--ok:#2F6B4F;--ok-bg:#E9F1EC;
+    --vol:#8A5A2B;--vol-bg:#F6EFE6;--serif:Iowan Old Style,Palatino,Georgia,serif;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme:dark){:root{--paper:#15161A;--ink:#E9E8E2;--muted:#A2A6AC;--faint:#71757B;--hair:#2A2C31;--hair2:#3A3C42;--panel:#1B1D22;--accent:#7FB0E0;--accent-bg:#1E2A38;--series:#D9A85E;--miss:#E07A7A;--ok:#7FC49F;--ok-bg:#1C2A22;--vol:#D9A066;--vol-bg:#2A2115;}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.62;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:750px;margin:0 auto;padding:32px 24px 60px}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 6px}
+  h1{font-family:var(--serif);font-weight:600;font-size:27px;line-height:1.22;margin:0 0 6px;letter-spacing:-.01em}
+  .chip{display:none;font-family:var(--mono);font-size:11px;letter-spacing:.05em;color:var(--ok);border:1px solid var(--ok);border-radius:20px;padding:3px 10px;vertical-align:middle;margin-left:10px}.chip.show{display:inline-block}
+  .sub{color:var(--muted);font-size:15px;margin:0 0 18px}
+  .levels{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 26px}
+  .levels .lk{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+  .levels .pill{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-family:var(--mono);color:var(--muted);background:var(--panel);border:1px solid var(--hair2);border-radius:20px;padding:4px 11px}
+  .levels .pill b{color:var(--accent);font-weight:700;letter-spacing:.03em}
+  p.lead{font-size:16px;margin:0 0 22px}p.lead b{font-weight:600}
+  .sec{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:36px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--hair)}
+  .mblock{margin:16px 0;overflow-x:auto}
+  .glo{list-style:none;padding:0;margin:14px 0 0}
+  .glo li{display:flex;gap:14px;padding:9px 0;border-top:1px solid var(--hair);align-items:baseline}
+  .glo li:first-child{border-top:none}.glo .sym{flex:0 0 112px;text-align:right;padding-top:2px}.glo .sym b{font-weight:600}
+  .glo .def{font-size:14.5px}.glo .def .n{color:var(--muted)}
+  .step{font-size:14.5px;color:var(--muted);margin:10px 0}
+  .panel{background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:20px;margin:14px 0}
+  .ctrls{display:flex;flex-wrap:wrap;gap:12px 22px;align-items:flex-end;margin:8px 0 6px}
+  .field{display:flex;flex-direction:column;gap:6px;min-width:230px;flex:1}
+  .field label{font-size:12px;color:var(--muted);font-family:var(--mono);letter-spacing:.03em;display:flex;justify-content:space-between}
+  .field label b{color:var(--ink);font-weight:600}
+  input[type=range]{width:100%;accent-color:var(--accent);height:20px}
+  svg{max-width:100%;height:auto;display:block}
+  .legend{display:flex;flex-wrap:wrap;gap:14px;margin:6px 0 2px;font-size:12px;color:var(--muted);font-family:var(--mono)}
+  .legend span{display:inline-flex;align-items:center;gap:6px}.dotc{width:10px;height:10px;border-radius:3px;display:inline-block}
+  .tally{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 2px}
+  .stat{flex:1;min-width:130px;background:var(--paper);border-radius:9px;padding:9px 12px}
+  .stat .k{font-size:11px;font-family:var(--mono);letter-spacing:.04em;color:var(--muted);text-transform:uppercase}
+  .stat .v{font-size:17px;font-weight:600;font-family:var(--mono);margin-top:2px}
+  .stat .v.a{color:var(--accent)}.stat .v.g{color:var(--ok)}.stat .v.m{color:var(--miss)}.stat .v.s{color:var(--series)}
+  .btnrow{display:flex;gap:8px;margin:12px 0 0;flex-wrap:wrap}
+  button.act{font-family:var(--sans);font-size:13.5px;padding:7px 12px;border-radius:8px;border:1px solid var(--hair2);background:var(--panel);color:var(--ink);cursor:pointer}button.act:hover{border-color:var(--accent);color:var(--accent)}
+  .callout{font-size:14px;color:var(--muted);border-left:2px solid var(--accent);padding:2px 0 2px 14px;margin:16px 0 2px;min-height:1.4em}
+  .theorem{background:var(--accent-bg);border-radius:12px;padding:18px 20px;margin:16px 0}
+  .theorem .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}.theorem p{font-family:var(--serif);font-size:16px;line-height:1.55;margin:0}
+  .twist{border:1px dashed var(--hair2);border-radius:12px;padding:16px 18px;margin:16px 0;background:var(--panel)}
+  .twist .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}.twist code{font-family:var(--mono);font-size:13px}
+  .twist p{margin:0 0 10px;font-size:14.6px}.twist p:last-child{margin-bottom:0}
+  .vol{background:var(--vol-bg);border:1px solid var(--vol);border-radius:12px;padding:18px 20px;margin:16px 0}
+  .vol .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:var(--vol);margin:0 0 8px}
+  .vol p{margin:0 0 10px;font-size:14.8px}.vol p:last-child{margin-bottom:0}
+  .vol code{font-family:var(--mono);font-size:13px;background:rgba(138,90,43,.12);padding:1px 5px;border-radius:4px}
+  .q{border:1px solid var(--hair);border-radius:12px;padding:16px 18px;margin:12px 0;background:var(--panel)}
+  .q .stem{font-size:15px;font-weight:500;margin:0 0 12px}
+  .opt{display:block;width:100%;text-align:left;font-size:14px;padding:10px 12px;margin:0 0 8px;border:1px solid var(--hair2);border-radius:8px;background:transparent;color:var(--ink);cursor:pointer;line-height:1.45}
+  .opt:last-child{margin-bottom:0}.opt:hover{border-color:var(--accent)}.opt.sel{border-color:var(--accent);background:var(--accent-bg)}
+  .opt.correct{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}.opt.wrong{background:#F7ECEC;border-color:var(--miss);color:var(--miss)}
+  @media (prefers-color-scheme:dark){.opt.wrong{background:#2E1E1E}}
+  .fb{font-size:13.5px;color:var(--muted);margin:10px 0 0;line-height:1.5;display:none}.fb.show{display:block}
+  .checkRow{display:flex;align-items:center;gap:14px;margin:18px 0 0;flex-wrap:wrap}
+  .hint{font-size:13px;color:var(--miss);display:none}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-family:var(--sans);font-size:14px;padding:8px 14px;border-radius:8px;border:1px solid var(--accent);cursor:pointer}
+  .scoreOut{font-family:var(--mono);font-size:14px;font-weight:600}.num{font-family:var(--mono);font-size:.94em}
+  .done{display:none;align-items:center;gap:10px;background:var(--ok-bg);color:var(--ok);border-radius:10px;padding:12px 16px;font-size:14px;margin:14px 0 0}.done.show{display:flex}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">Lesson 16 · Wing III — probability &amp; information</p>
+  <h1>The information bottleneck<span class="chip" id="chip"></span></h1>
+  <p class="sub">Keep only the bits of today that matter for tomorrow — and put a price on the ones you keep.</p>
+  <div class="levels">
+    <span class="lk">Level</span>
+    <span class="pill"><b>US</b> Graduate</span>
+    <span class="pill"><b>FR</b> M2 – PhD</span>
+  </div>
+
+  <p class="lead">Every representation is a compression with an agenda. You look at today's market — vol regime, trend, everything — and you write down a summary. The summary is <b>cheaper</b> than the raw state, and that is the point; the question is what you threw away. The information bottleneck makes the trade explicit by scoring any summary <b>T</b> of an input <b>X</b> on exactly two numbers: how much it <i>remembers</i> about X (its cost) and how much it <i>retains</i> about the thing you actually care about, Y (its value). Then it prices one against the other with a single knob β and asks for the best summary at that price. Lesson 15 built the measuring instruments — entropy, KL, and the mutual information <span class="num">I</span> that is a KL in disguise. This lesson points them at one question with a real answer: <b>how many distinct market regimes are worth remembering, if all you care about is whether tomorrow closes up?</b></p>
+
+  <div class="sec">The vocabulary, in plain words</div>
+  <ul class="glo">
+    <li><span class="sym"><b>encoder</b></span><span class="def">the rule that turns a state x into a summary t — allowed to be <i>random</i>: a conditional distribution p(t|x), not a function. <span class="n">Randomness is what makes the problem smooth and solvable; a hard partition is the β → ∞ limit of a soft one.</span></span></li>
+    <li><span class="sym"><b>mutual information</b></span><span class="def">how much knowing one variable cuts your uncertainty about another, in nats. Zero exactly when they are independent. <span class="n">Lesson 15 note: I(A;B) is the KL from the joint to the product of margins — a divergence, not a correlation, so it sees non-linear dependence too.</span></span></li>
+    <li><span class="sym"><b>cost axis</b></span><span class="def">I(X;T) — the bits your summary spends remembering X. <span class="n">Also called the rate: the channel width you need to transmit T given X's statistics.</span></span></li>
+    <li><span class="sym"><b>value axis</b></span><span class="def">I(T;Y) — the bits of Y your summary still predicts. <span class="n">The only thing you are paid for. Everything else T remembers is decoration.</span></span></li>
+    <li><span class="sym"><b>β</b></span><span class="def">the price of prediction in units of memory. Small β: hoard nothing, predict nothing. Large β: pay any storage cost for one more bit of foresight. <span class="n">Physically an inverse temperature — high β freezes the summary into hard clusters, low β melts it into mush.</span></span></li>
+    <li><span class="sym"><b>ceiling</b></span><span class="def">the hard fact that no summary of X can know more about Y than X itself does. Processing never creates information. <span class="n">Its formal name is the data-processing inequality; it is what makes the value axis saturate.</span></span></li>
+    <li><span class="sym"><b>sufficient statistic</b></span><span class="def">a summary that gives up nothing about Y (Lesson 3's sufficiency). <b>Minimal</b> sufficient: the cheapest such summary. <span class="n">The bottleneck's β → ∞ limit is exactly this object, approached from the soft side.</span></span></li>
+    <li><span class="sym"><b>phase transition</b></span><span class="def">a value of β at which the optimal summary suddenly splits one cluster into two. <span class="n">Not a gradual thing: below it the extra cluster is worthless, above it the old solution is no longer even a local optimum.</span></span></li>
+  </ul>
+
+  <div class="sec">The two axes, and the market joint</div>
+  <p class="step">Both axes are the same functional evaluated on different pairs. Written as a divergence, mutual information is the KL from the true joint to the world where the two variables were independent — Lesson 15's KL, applied to a joint:</p>
+  <div class="mblock math" data-tex="I(X;T)=\sum_{x,t}p(x,t)\,\ln\frac{p(x,t)}{p(x)\,p(t)}=D_{\mathrm{KL}}\big(p(x,t)\,\Vert\,p(x)p(t)\big)=H(T)-H(T\mid X)" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="p(x,t)=p(x)p(t\mid x)"></span><span class="def">the joint the encoder induces. <span class="n">p(x) is the market's own state frequency; p(t|x) is the only thing you get to choose in this whole lesson.</span></span></li>
+    <li><span class="sym math" data-tex="D_{\mathrm{KL}}(\cdot\Vert\cdot)"></span><span class="def">Lesson 15's divergence, here from the joint to the independent product. <span class="n">So I ≥ 0 by Gibbs, with equality iff X and T are independent — the trivial encoder.</span></span></li>
+    <li><span class="sym math" data-tex="H(T)-H(T\mid X)"></span><span class="def">the same number as an uncertainty reduction. <span class="n">Symmetric in its arguments: I(X;T) = I(T;X). The conditional entropy H(T|X) is an expectation over x — Lesson 4's tower property doing quiet work.</span></span></li>
+  </ul>
+  <p class="step">The value axis is the identical construction on (T, Y), and the ceiling it must respect is the same construction on (X, Y) — which, expanded through the tower property, is the average over states of how far each state's outlook on tomorrow sits from the unconditional one:</p>
+  <div class="mblock math" data-tex="I(T;Y)=\sum_{t,y}p(t)\,p(y\mid t)\ln\frac{p(y\mid t)}{p(y)},\qquad I(X;Y)=H(Y)-H(Y\mid X)=\mathbb{E}_{x}\Big[D_{\mathrm{KL}}\big(p(y\mid x)\,\Vert\,p(y)\big)\Big]" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="p(y\mid t)"></span><span class="def">the cluster's <b>predictive posture</b>: what does tomorrow look like, given only the summary. <span class="n">This single number per cluster (Y is binary here) is the whole content of T. Everything below is about matching postures.</span></span></li>
+    <li><span class="sym math" data-tex="H(Y\mid X)"></span><span class="def">the uncertainty about tomorrow left after seeing today. <span class="n">By Lesson 4, H(Y|X) = 𝔼ₓ[H(Y|X = x)] — a conditional expectation, hence a projection.</span></span></li>
+    <li><span class="sym math" data-tex="I(X;Y)"></span><span class="def">the <b>predictive information</b> in the market state: the total budget of forecastable bits. <span class="n">Not large. That is not a defect of the method; it is the market.</span></span></li>
+  </ul>
+  <p class="step">The joint used throughout this lesson is built once, seeded, and never redrawn. X is today's state, discretized into <b>8 cells</b>: vol regime (lo / hi) × trend bucket (strong up / up / flat / down). Y is tomorrow's direction (up / down). Each cell carries a frequency p(x) and a conditional up-probability p(y = up | x); the design is deliberately financial — in the <b>hi-vol</b> regime the trend signal is muted, so those four cells huddle near a coin flip, while the <b>lo-vol</b> cells spread out. Unconditionally the market is almost exactly a coin flip: p(up) = <span class="num" id="nPup">—</span>, H(Y) = <span class="num" id="nHY">—</span> nats. Conditioning on the eight-cell read buys back H(Y) − H(Y|X) = <span class="num" id="nHYX2">—</span> nats — that is I(X;Y) = <span class="num" id="nIXY">—</span> nats, or <span class="num" id="nIXYb">—</span> bits, and it is the entire budget any encoder can ever spend. The eight per-cell postures run from <span class="num" id="nLo">—</span> to <span class="num" id="nHi">—</span>, and H(X) = <span class="num" id="nHX">—</span> nats is what it costs to remember which cell you are in exactly.</p>
+
+  <div class="sec">The Lagrangian</div>
+  <p class="step">Now trade the axes off. Minimize cost, maximize value, and let one scalar decide the exchange rate:</p>
+  <div class="mblock math" data-tex="\mathcal{L}\big[p(t\mid x)\big]\;=\;\underbrace{I(X;T)}_{\text{what you pay}}\;-\;\beta\;\underbrace{I(T;Y)}_{\text{what you are paid}}" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="\mathcal{L}"></span><span class="def">a functional of the encoder, minimized over all valid conditional distributions p(t|x). <span class="n">Not over functions x ↦ t: the feasible set is the whole simplex per state, which is why calculus applies at all.</span></span></li>
+    <li><span class="sym math" data-tex="\beta>0"></span><span class="def">the price. <span class="n">Sweeping β traces a frontier of solutions, one per price — the <b>information plane</b> curve you are about to drag along.</span></span></li>
+    <li><span class="sym math" data-tex="\beta\to 0"></span><span class="def">prediction is free to ignore: the minimizer is the trivial encoder, T ⫫ X, both axes zero. <span class="n">And it stays the minimizer for a while — see the one-liner below.</span></span></li>
+  </ul>
+
+  <div class="sec">The ceiling — data processing</div>
+  <p class="step">T is built from X alone: once you know x, the summary t tells you nothing further about tomorrow. That is a Markov chain T — X — Y, and it caps the value axis twice over:</p>
+  <div class="mblock math" data-tex="T\;\text{—}\;X\;\text{—}\;Y\ \text{ Markov}\quad\Longrightarrow\quad I(T;Y)\;\le\;I(X;Y)\qquad\text{and}\qquad I(T;Y)\;\le\;I(X;T)" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="I(T;Y)\le I(X;Y)"></span><span class="def">the <b>DPI ceiling</b>: no processing of today's state can predict tomorrow better than today's state does. <span class="n">Proof in one line: chain-rule I(X,T;Y) two ways. I(X;Y) + I(T;Y|X) = I(T;Y) + I(X;Y|T); the first conditional term is 0 by the Markov property, the second is ≥ 0.</span></span></li>
+    <li><span class="sym math" data-tex="I(T;Y)\le I(X;T)"></span><span class="def">the same argument with the roles of Y and T swapped: you cannot retain more about Y than you remember about X. <span class="n">This is the inequality that kills small β.</span></span></li>
+  </ul>
+  <p class="step">Hence the dead zone, in one line. For any encoder whatsoever, using only I(T;Y) ≤ I(X;T):</p>
+  <div class="mblock math" data-tex="\mathcal{L}=I(X;T)-\beta\,I(T;Y)\;\ge\;I(X;T)-\beta\,I(X;T)=(1-\beta)\,I(X;T)\;\ge\;0\qquad(\beta\le 1)" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="\ge"></span><span class="def">first inequality: replace I(T;Y) by the larger I(X;T), which only lowers 𝓛 — legal because β &gt; 0. <span class="n">Second: (1−β) ≥ 0 and I(X;T) ≥ 0, so the product is non-negative.</span></span></li>
+    <li><span class="sym math" data-tex="\mathcal{L}=0"></span><span class="def">attained by p(t|x) = p(t), which makes both informations exactly zero. <span class="n">A minimum that is achieved is <i>the</i> minimum. Nothing about the joint entered this argument — the dead zone is universal.</span></span></li>
+  </ul>
+  <p class="step">And the trivial encoder p(t|x) = p(t) achieves 𝓛 = 0 exactly. So for every β ≤ 1 the optimum is <i>to remember nothing</i>: prediction priced below one nat-per-nat cannot pay for its own storage. The bound is sufficient, not tight — in this joint the first split waits until β ≈ <span class="num" id="nB1">—</span>, the critical price at which the trivial fixed point stops being stable.</p>
+
+  <div class="sec">The solver — three self-consistent equations</div>
+  <p class="step">Setting the variation of 𝓛 to zero under the normalization constraint (a Lagrange multiplier per state) gives three coupled equations. They are not a formula for the answer; they are a fixed point you iterate, exactly like Blahut–Arimoto or an EM loop:</p>
+  <div class="mblock math" data-tex="p(t\mid x)=\frac{p(t)}{Z(x,\beta)}\exp\!\Big(-\beta\,D_{\mathrm{KL}}\big(p(y\mid x)\,\Vert\,p(y\mid t)\big)\Big),\qquad p(t)=\sum_x p(x)\,p(t\mid x),\qquad p(y\mid t)=\sum_x p(y\mid x)\,p(x\mid t)" data-display="1"></div>
+  <ul class="glo">
+    <li><span class="sym math" data-tex="\exp(-\beta D_{\mathrm{KL}})"></span><span class="def">a Boltzmann weight whose <b>energy is a KL divergence</b>. Plain reading: assign state x to the cluster whose posture about tomorrow matches x's own posture, at inverse temperature β. <span class="n">The distortion measure is not given by hand — it falls out of the variation. That is the elegant part of the whole theory.</span></span></li>
+    <li><span class="sym math" data-tex="Z(x,\beta)"></span><span class="def">the per-state partition function, Σ_t p(t)exp(−βKL). <span class="n">Normalization only; it carries no modelling choice.</span></span></li>
+    <li><span class="sym math" data-tex="p(t)"></span><span class="def">the cluster prior — a rich cluster is easier to join. <span class="n">This factor is what lets clusters die: p(t) → 0 removes t from the competition permanently.</span></span></li>
+    <li><span class="sym math" data-tex="p(y\mid t)=\sum_x p(y\mid x)p(x\mid t)"></span><span class="def">the cluster's posture is the membership-weighted average of its members' postures — Lesson 4's conditional expectation, verbatim. <span class="n">p(x|t) by Bayes from p(t|x)p(x)/p(t). Iterating these three is a descent on 𝓛; it converges to a stationary point, not necessarily the global one, which is why the interactive anneals β upward with warm starts.</span></span></li>
+  </ul>
+
+  <div class="sec">See it — the information plane</div>
+  <p class="step">The fixed point above is solved live in this page, on the seeded 8×2 joint, on a fixed logarithmic grid of 61 prices from β = 0.5 to β = 25: deterministic seeded initialization, β annealed upward, each price warm-started from the previous one. Drag β and watch the achieved (cost, value) point walk up the frontier. Two lines bound the plot: the dashed green DPI ceiling I(X;Y), which the curve approaches and can never cross, and the faint diagonal I(T;Y) = I(X;T), the region above which is unreachable — the inequality that proved the dead zone.</p>
+  <div class="panel">
+    <svg id="plane" viewBox="0 0 680 320" role="img" aria-label="Information plane: achieved I(T;Y) against I(X;T) as beta is swept, with the data-processing ceiling and the diagonal bound"></svg>
+    <div class="legend"><span><i class="dotc" style="background:var(--accent)"></i>IB frontier (traced by β)</span><span><i class="dotc" style="background:var(--series)"></i>phase transition</span><span><i class="dotc" style="background:var(--ok)"></i>DPI ceiling I(X;Y)</span></div>
+    <div class="ctrls">
+      <div class="field"><label>price of prediction β (log grid) <b id="bOut">—</b></label><input type="range" id="bS" min="0" max="60" value="44" step="1" /></div>
+    </div>
+    <div class="tally">
+      <div class="stat"><div class="k">cost I(X;T)</div><div class="v a" id="sIXT">—</div></div>
+      <div class="stat"><div class="k">value I(T;Y)</div><div class="v g" id="sITY">—</div></div>
+      <div class="stat"><div class="k">of I(X;Y) captured</div><div class="v s" id="sFrac">—</div></div>
+      <div class="stat"><div class="k">regimes in use</div><div class="v" id="sK">—</div></div>
+    </div>
+    <div class="tally">
+      <div class="stat"><div class="k">Lagrangian 𝓛 = I(X;T) − β·I(T;Y)</div><div class="v m" id="sL">—</div></div>
+      <div class="stat"><div class="k">memory spent, as a share of H(X)</div><div class="v a" id="sRate">—</div></div>
+    </div>
+    <p class="callout" id="c1"></p>
+  </div>
+
+  <div class="theorem">
+    <p class="lbl">The precise statement</p>
+    <p>Let X, Y have a fixed joint distribution and let T range over encoders p(t|x) with the Markov constraint T — X — Y. For each β &gt; 0, any stationary point of 𝓛 = I(X;T) − β I(T;Y) under per-state normalization satisfies the Tishby–Pereira–Bialek self-consistent equations p(t|x) = p(t)Z(x,β)⁻¹exp(−β D<sub>KL</sub>(p(y|x)‖p(y|t))), p(t) = Σ<sub>x</sub>p(x)p(t|x), p(y|t) = Σ<sub>x</sub>p(y|x)p(x|t); alternating these three is a convergent descent on 𝓛. The attainable region is bounded by I(T;Y) ≤ min{I(X;Y), I(X;T)}, and its upper boundary — the information curve I(T;Y) = F(I(X;T)) — is concave and non-decreasing, with slope 1/β at the solution for price β; concavity makes the frontier's returns diminishing, and slope 1/β ≥ 1 is impossible, recovering the dead zone β ≤ 1. As β → ∞ the encoder hardens into a deterministic partition of X that is a <i>minimal sufficient statistic</i> of X for Y (Lesson 3): it attains I(T;Y) = I(X;Y), the ceiling, at the least possible I(X;T) — a lossless summary of exactly the predictive content, and nothing else.</p>
+  </div>
+
+  <div class="sec">See it — the partition, and what merges with what</div>
+  <p class="step">Same solver, same β, read differently. The eight market cells are sorted by their own posture p(up | x); the bar is that posture, the colour is the cluster the solver hard-assigns them to (argmax<sub>t</sub> p(t|x)), and the hollow ring is the cluster's posture p(up | t) — the value the assignment pulls each member toward. Watch which cells share a colour as you move β: the merges are governed by the KL in the exponent, so cells with similar outlooks fuse even when their <i>features</i> are opposites, and cells in the same trend bucket separate when their outlooks differ.</p>
+  <div class="panel">
+    <svg id="part" viewBox="0 0 680 300" role="img" aria-label="Eight market states sorted by their up-probability, coloured by cluster assignment, with each cluster's own up-probability marked"></svg>
+    <div class="ctrls">
+      <div class="field"><label>price of prediction β (same solver) <b id="bOut2">—</b></label><input type="range" id="bS2" min="0" max="60" value="44" step="1" /></div>
+    </div>
+    <div class="tally">
+      <div class="stat"><div class="k">clusters in use</div><div class="v a" id="pK">—</div></div>
+      <div class="stat"><div class="k">largest within-cluster KL</div><div class="v m" id="pKL">—</div></div>
+      <div class="stat"><div class="k">postures p(up | t)</div><div class="v s" id="pPost">—</div></div>
+    </div>
+    <div class="btnrow">
+      <button class="act" id="bTriv">the dead zone (β ≈ 1)</button>
+      <button class="act" id="bFirst">first split</button>
+      <button class="act" id="bThird">third regime</button>
+      <button class="act" id="bMax">finest (β = 25)</button>
+    </div>
+    <p class="callout" id="c2"></p>
+  </div>
+
+  <div class="twist">
+    <p class="lbl">The twist — the deep-learning claim, and its contested status</p>
+    <p>In 2017 Shwartz-Ziv &amp; Tishby plotted the layers of a training network on exactly the plane you just dragged along — one point per layer per epoch — and reported two phases: a short <b>fitting</b> phase where both I(X;T) and I(T;Y) rise, then a long <b>compression</b> phase where I(T;Y) plateaus while I(X;T) <i>falls</i>. The reading was intoxicating: SGD spends most of its time not learning but forgetting, deliberately squeezing the nuisance bits out of its representations, and <i>that</i> — not the fitting — is where generalization comes from. It made the bottleneck look like the objective deep learning had been secretly optimizing all along.</p>
+    <p>Saxe et al. (2018) took the claim apart. Compression is not universal: swap <code>tanh</code> for <code>ReLU</code> and the compression phase can vanish while generalization is unaffected; where compression does appear it tracks <b>activation saturation</b>, not any information-theoretic imperative; and generalization improves during the fitting phase too. The deeper objection is measurement. In a deterministic network T = f(X) with continuous X, I(X;T) is <i>infinite</i> — every distinct input maps to a distinct activation vector, so the representation remembers everything. Every reported "compression" curve is therefore a curve of some estimator: histogram binning, a noise assumption, or a variational bound, and the phases can be artifacts of the bin width. Tishby's group replied, the exchange continued, and the honest summary today is: the IB objective is beautiful, exactly solvable, and genuinely useful when you <i>build</i> a stochastic bottleneck on purpose (the variational IB, and the reverse-KL machinery of Lesson 28's ELBO) — but whether ordinary trained networks follow an information-plane trajectory remains contested and open. Hold the objective; do not hold the empirical claim.</p>
+  </div>
+
+  <div class="vol">
+    <p class="lbl">Why this matters · volarixs</p>
+    <p>The <code>regime HMM</code> is a fitted bottleneck, whether or not it was built as one. Its filtered state vector compresses the entire price history into a handful of numbers, and it is kept or discarded on exactly one criterion: does it still predict what you need tomorrow. That is the cost axis and the value axis, in production. And the perennially awkward question — <b>how many regimes?</b> — is not a matter of taste: it is "where does the information curve stop paying". This lesson's frontier is concave, so each extra regime buys strictly less prediction per nat of memory than the one before; the honest stopping rule is the price β at which the next split's gain in predictive information no longer covers its cost in state complexity.</p>
+    <p>Two operational reads, conservatively stated. First, the compression axis is already visible daily: the <b>entropy of the filtered regime vector</b> (Lesson 15's confusion meter) is a live proxy for how much the summary is committing to — near zero it has collapsed to one regime, near its ceiling it is refusing to compress. Second, the bottleneck's merge rule is a warning about how regimes should be defined at all: it clusters by <b>predictive posture</b>, not by feature proximity. Two states with opposite trend readings but the same forward outlook belong in one regime, and a regime taxonomy built from feature similarity — vol buckets, trend buckets — will not agree with the one built from what the states forecast. When a <code>sign_stability</code> read differs sharply between two cells you have grouped together, that is the bottleneck telling you the grouping was drawn on the wrong axis.</p>
+  </div>
+
+  <div class="sec">Check yourself</div>
+  <div class="q" id="q1"><p class="stem">In 𝓛 = I(X;T) − β·I(T;Y), what exactly does β price?</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q2"><p class="stem">Why is the trivial encoder (T independent of X) optimal for every β ≤ 1?</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q3"><p class="stem">The horizontal asymptote of the information curve sits at I(X;Y). Which fact puts it there?</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q4"><p class="stem">The assignment rule is p(t|x) ∝ p(t)·exp(−β·KL). Which KL is in that exponent?</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q5"><p class="stem">As β → ∞, what does the bottleneck's solution become?</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q6"><p class="stem">What is the honest status of the claim that deep networks compress in the information plane?</p><div class="opts"></div><p class="fb"></p></div>
+  <div class="q" id="q7"><p class="stem">Your eight market cells collapse to three clusters at one price and four at a higher one. What decides "how many regimes"?</p><div class="opts"></div><p class="fb"></p></div>
+
+  <div class="checkRow">
+    <button class="primary" id="check">Check answers</button>
+    <span class="scoreOut" id="scoreOut"></span>
+    <span class="hint" id="hint">Answer all seven first.</span>
+  </div>
+  <div class="done" id="done">Wing III closed: compression with an agenda. Wing IV opens next: scaled dot-product attention — softmax, Q/K/V.</div>
+</div>
+
+<script>
+/* storage shim: window.storage (Claude artifacts) or localStorage (web) */
+if(!window.storage){window.storage={async get(k){const v=localStorage.getItem(k);if(v==null)throw new Error('missing');return{key:k,value:v}},async set(k,v){localStorage.setItem(k,v);return{key:k,value:v}},async delete(k){localStorage.removeItem(k);return{key:k,deleted:true}},async list(p){const ks=[];for(let i=0;i<localStorage.length;i++){const kk=localStorage.key(i);if(!p||kk.startsWith(p))ks.push(kk)}return{keys:ks}}};}
+function renderMath(){document.querySelectorAll('.math').forEach(el=>{const tex=el.getAttribute('data-tex');if(!tex||el.dataset.done)return;try{if(window.katex){katex.render(tex,el,{displayMode:el.dataset.display==='1',throwOnError:false});el.dataset.done='1';}else el.textContent=tex;}catch(e){el.textContent=tex;}});}
+function mulberry32(seed){let a=seed>>>0;return function(){a|=0;a=(a+0x6D2B79F5)|0;let t=Math.imul(a^(a>>>15),1|a);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296;}}
+function randn(rng){let u=0,v=0;while(!u)u=rng();while(!v)v=rng();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+
+/* ================= the seeded market joint (built once, never redrawn) ================= */
+const NX=8,NT=8,NB=61,BMIN=0.5,BMAX=25,ITER=3000,EPS=2e-5,CTOL=2e-3,LN2=Math.log(2);
+const VOL=['lo','hi'],TRD=['strong up','up','flat','down'],TSC=[1.0,0.35,-0.15,-0.85];
+const PX=[],PYX=[],LAB=[],PERT=[];
+(function(){
+  const rng=mulberry32(116),w=[];
+  for(let i=0;i<NX;i++)w.push(Math.exp(0.45*randn(rng)));
+  const ws=w.reduce((a,b)=>a+b,0);for(let i=0;i<NX;i++)PX.push(w[i]/ws);
+  for(let v=0;v<2;v++)for(let k=0;k<4;k++){const lg=TSC[k]*(v?1.2:3.0)+0.25*randn(rng);PYX.push(1/(1+Math.exp(-lg)));LAB.push(VOL[v]+'-vol / '+TRD[k]);}
+  for(let x=0;x<NX;x++){const r=[];for(let t=0;t<NT;t++)r.push(rng()-0.5);PERT.push(r);}
+})();
+function ent2(p){let h=0;for(const v of [p,1-p])if(v>0)h-=v*Math.log(v);return h;}
+function kl2(a,b){let d=0;const A=[a,1-a],B=[b,1-b];for(let j=0;j<2;j++)if(A[j]>0)d+=A[j]*Math.log(A[j]/B[j]);return d;}
+const PUP=PX.reduce((a,v,i)=>a+v*PYX[i],0);
+const HY=ent2(PUP);
+let HYX=0;for(let x=0;x<NX;x++)HYX+=PX[x]*ent2(PYX[x]);
+const IXY=HY-HYX;
+let HX=0;for(const v of PX)HX-=v*Math.log(v);
+const ORD=PYX.map((v,i)=>i).sort((a,b)=>PYX[a]-PYX[b]);
+
+/* ================= the IB fixed point, annealed on a fixed beta grid ================= */
+function ibStep(ptx,beta){
+  const pt=new Array(NT).fill(0);
+  for(let t=0;t<NT;t++){let s=0;for(let x=0;x<NX;x++)s+=PX[x]*ptx[x][t];pt[t]=s;}
+  const pyt=new Array(NT).fill(PUP);
+  for(let t=0;t<NT;t++){if(pt[t]<=1e-300)continue;let s=0;for(let x=0;x<NX;x++)s+=PX[x]*ptx[x][t]*PYX[x];pyt[t]=s/pt[t];}
+  const out=[];
+  for(let x=0;x<NX;x++){
+    const row=new Array(NT).fill(0);let z=0;
+    for(let t=0;t<NT;t++){const v=pt[t]>0?pt[t]*Math.exp(-beta*kl2(PYX[x],pyt[t])):0;row[t]=v;z+=v;}
+    if(z<=0){for(let t=0;t<NT;t++)row[t]=1/NT;}else{for(let t=0;t<NT;t++)row[t]/=z;}
+    out.push(row);
+  }
+  return {ptx:out,pt:pt,pyt:pyt};
+}
+function infos(ptx,pt,pyt){
+  let IXT=0;for(let x=0;x<NX;x++)for(let t=0;t<NT;t++){const j=PX[x]*ptx[x][t];if(j>0&&pt[t]>0)IXT+=j*Math.log(ptx[x][t]/pt[t]);}
+  let ITY=0;for(let t=0;t<NT;t++){if(pt[t]<=0)continue;const A=[pyt[t],1-pyt[t]],B=[PUP,1-PUP];for(let j=0;j<2;j++)if(A[j]>0)ITY+=pt[t]*A[j]*Math.log(A[j]/B[j]);}
+  return {IXT:IXT,ITY:ITY};
+}
+function groupUp(ptx,pt,pyt){
+  const used=[];for(let t=0;t<NT;t++)if(pt[t]>1e-4)used.push(t);
+  used.sort((a,b)=>pyt[a]-pyt[b]);
+  const gof=new Array(NT).fill(-1),reps=[];
+  for(const t of used){let g=-1;for(let k=0;k<reps.length;k++)if(Math.abs(pyt[t]-reps[k])<CTOL){g=k;break;}if(g<0){reps.push(pyt[t]);g=reps.length-1;}gof[t]=g;}
+  const asg=[];for(let x=0;x<NX;x++){let b=0;for(let t=1;t<NT;t++)if(ptx[x][t]>ptx[x][b])b=t;asg.push(gof[b]<0?0:gof[b]);}
+  const live=[...new Set(asg)].sort((a,b)=>a-b);
+  const post=live.map(g=>{let num=0,den=0;for(let x=0;x<NX;x++)if(asg[x]===g){num+=PX[x]*PYX[x];den+=PX[x];}return den>0?num/den:PUP;});
+  let mkl=0;for(let x=0;x<NX;x++){const d=kl2(PYX[x],post[live.indexOf(asg[x])]);if(d>mkl)mkl=d;}
+  return {asg:asg,live:live,post:post,n:live.length,maxKL:mkl};
+}
+const BET=[],SOL=[];
+(function(){
+  for(let i=0;i<NB;i++)BET.push(BMIN*Math.pow(BMAX/BMIN,i/(NB-1)));
+  let ptx=[];for(let x=0;x<NX;x++){const r=[];for(let t=0;t<NT;t++)r.push(1/NT);ptx.push(r);}
+  for(let bi=0;bi<NB;bi++){
+    for(let x=0;x<NX;x++){let z=0;for(let t=0;t<NT;t++){ptx[x][t]=Math.max(1e-12,ptx[x][t]+EPS*PERT[x][t]);z+=ptx[x][t];}for(let t=0;t<NT;t++)ptx[x][t]/=z;}
+    let st=null;
+    for(let it=0;it<ITER;it++){st=ibStep(ptx,BET[bi]);let d=0;for(let x=0;x<NX;x++)for(let t=0;t<NT;t++){const q=Math.abs(st.ptx[x][t]-ptx[x][t]);if(q>d)d=q;}ptx=st.ptx;if(d<1e-14)break;}
+    const I=infos(ptx,st.pt,st.pyt),G=groupUp(ptx,st.pt,st.pyt);
+    SOL.push({b:BET[bi],IXT:I.IXT,ITY:I.ITY,n:G.n,asg:G.asg,post:G.post,live:G.live,maxKL:G.maxKL});
+  }
+})();
+const TRANS=[];for(let i=1;i<NB;i++)if(SOL[i].n>SOL[i-1].n)TRANS.push(i);
+const IXTMAX=Math.max(...SOL.map(s=>s.IXT)),ITYMAX=Math.max(...SOL.map(s=>s.ITY));
+const CPAL=['#4E7FB0','#C9913F','#4E9A76','#C15C5C','#8B6BB1','#3E93A8','#A97C4E','#7A8A93'];
+const zc=x=>Math.abs(x)<1e-12?0:x;                       /* kill -0.000 display artifacts */
+const f3=x=>zc(x).toFixed(3),f4=x=>zc(x).toFixed(4),pc=x=>zc(x).toFixed(1)+'%';
+let bi=44;
+
+/* ================= Interactive 1 — the information plane ================= */
+function drawPlane(){
+  const W=680,H=320,padL=58,padR=18,padT=18,padB=42,iw=W-padL-padR,ih=H-padT-padB,base=padT+ih;
+  const xmax=1.30,ymax=IXY*1.16;
+  const X=v=>padL+(v/xmax)*iw, Y=v=>base-(v/ymax)*ih;
+  let s=`<line x1="${padL}" y1="${base}" x2="${W-padR}" y2="${base}" stroke="var(--hair2)"/><line x1="${padL}" y1="${padT}" x2="${padL}" y2="${base}" stroke="var(--hair2)"/>`;
+  [0,0.25,0.5,0.75,1.0,1.25].forEach(v=>{const x=X(v);s+=`<line x1="${x.toFixed(1)}" y1="${base}" x2="${x.toFixed(1)}" y2="${base+4}" stroke="var(--hair2)"/><text x="${x.toFixed(1)}" y="${base+16}" text-anchor="middle" font-family="var(--mono)" font-size="9.5" fill="var(--faint)">${v.toFixed(2)}</text>`;});
+  [0,0.05,0.10,0.15].forEach(v=>{if(v>ymax)return;const y=Y(v);s+=`<line x1="${padL-4}" y1="${y.toFixed(1)}" x2="${padL}" y2="${y.toFixed(1)}" stroke="var(--hair2)"/><text x="${padL-7}" y="${(y+3).toFixed(1)}" text-anchor="end" font-family="var(--mono)" font-size="9.5" fill="var(--faint)">${v.toFixed(2)}</text>`;});
+  s+=`<text x="${padL+4}" y="${padT+9}" font-family="var(--mono)" font-size="10" fill="var(--faint)">I(T;Y) — predictive value, nats</text>`;
+  s+=`<text x="${W-padR}" y="${H-6}" text-anchor="end" font-family="var(--mono)" font-size="10" fill="var(--faint)">I(X;T) — memory about today, nats</text>`;
+  /* DPI ceiling */
+  const yc=Y(IXY);
+  s+=`<line x1="${padL}" y1="${yc.toFixed(1)}" x2="${W-padR}" y2="${yc.toFixed(1)}" stroke="var(--ok)" stroke-dasharray="5 4" stroke-width="1.3"/>`;
+  s+=`<text x="${W-padR-4}" y="${(yc-6).toFixed(1)}" text-anchor="end" font-family="var(--mono)" font-size="10" fill="var(--ok)">I(X;Y) = ${f4(IXY)} · DPI ceiling</text>`;
+  /* diagonal bound I(T;Y) = I(X;T) */
+  s+=`<line x1="${X(0)}" y1="${Y(0)}" x2="${X(ymax).toFixed(1)}" y2="${padT}" stroke="var(--faint)" stroke-dasharray="2 3"/>`;
+  s+=`<text x="${(X(ymax)+6).toFixed(1)}" y="${(padT+10)}" font-family="var(--mono)" font-size="9.5" fill="var(--faint)">I(T;Y) ≤ I(X;T)</text>`;
+  /* the traced frontier */
+  let dAll='',dCur='';
+  SOL.forEach((so,i)=>{const seg=(i?'L':'M')+X(so.IXT).toFixed(1)+' '+Y(so.ITY).toFixed(1)+' ';dAll+=seg;if(i<=bi)dCur+=(i?'L':'M')+X(so.IXT).toFixed(1)+' '+Y(so.ITY).toFixed(1)+' ';});
+  s+=`<path d="${dAll}" fill="none" stroke="var(--accent)" stroke-width="1.4" opacity="0.32"/>`;
+  s+=`<path d="${dCur}" fill="none" stroke="var(--accent)" stroke-width="2.4"/>`;
+  TRANS.forEach(i=>{const so=SOL[i];s+=`<circle cx="${X(so.IXT).toFixed(1)}" cy="${Y(so.ITY).toFixed(1)}" r="3.4" fill="var(--series)"/><text x="${(X(so.IXT)+5).toFixed(1)}" y="${(Y(so.ITY)+13).toFixed(1)}" font-family="var(--mono)" font-size="9" fill="var(--series)">k=${so.n}</text>`;});
+  const cur=SOL[bi];
+  s+=`<line x1="${X(cur.IXT).toFixed(1)}" y1="${base}" x2="${X(cur.IXT).toFixed(1)}" y2="${Y(cur.ITY).toFixed(1)}" stroke="var(--accent)" opacity="0.28"/>`;
+  s+=`<circle cx="${X(cur.IXT).toFixed(1)}" cy="${Y(cur.ITY).toFixed(1)}" r="5.6" fill="var(--accent)"/>`;
+  s+=`<text x="${(X(cur.IXT)).toFixed(1)}" y="${(Y(cur.ITY)-11).toFixed(1)}" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--accent)">β = ${cur.b.toFixed(2)}</text>`;
+  document.getElementById('plane').innerHTML=s;
+}
+function narrate1(){
+  const s=SOL[bi],L=s.IXT-s.b*s.ITY;
+  if(s.b<=1) return `β = ${s.b.toFixed(2)} sits inside the provable dead zone. Since I(T;Y) ≤ I(X;T) always, 𝓛 ≥ (1−β)I(X;T) ≥ 0, and the trivial encoder hits 𝓛 = 0 exactly — so the optimum is to remember nothing, and the solver duly returns I(X;T) = ${f3(s.IXT)}, I(T;Y) = ${f3(s.ITY)}. Prediction priced below one nat per nat cannot pay for its own storage.`;
+  if(s.n===1) return `β = ${s.b.toFixed(2)} is past the provable dead zone but the trivial fixed point is still stable: nothing has split, both axes are still ${f3(s.IXT)} and ${f3(s.ITY)}. The β ≤ 1 bound is sufficient, not tight — this joint's own critical price is β ≈ ${SOL[TRANS[0]].b.toFixed(2)}, where the first cluster tears in two.`;
+  const nxt=TRANS.find(i=>i>bi), prv=TRANS.filter(i=>i<=bi).pop();
+  let s2=`β = ${s.b.toFixed(2)} buys k = ${s.n} distinct regime${s.n>1?'s':''}: I(T;Y) = ${f3(s.ITY)} of the ${f4(IXY)} nats of predictive information available (${(100*s.ITY/IXY).toFixed(1)}%), paid for with I(X;T) = ${f3(s.IXT)} nats of memory about today. 𝓛 = ${L.toFixed(3)}. The last phase transition was at β ≈ ${SOL[prv].b.toFixed(2)}`;
+  s2+= nxt? `; the next arrives at β ≈ ${SOL[nxt].b.toFixed(2)}, and it will recruit a ${SOL[nxt].n}th cluster.` : ` and it was the last one on this grid — from here the curve only creeps along, flattening into the DPI ceiling: at β = 25 you are still ${(100*(1-ITYMAX/IXY)).toFixed(1)}% short of I(X;Y) while having spent ${f3(IXTMAX)} nats of memory. Diminishing returns is not a metaphor here; it is the concavity of the frontier.`;
+  return s2;
+}
+function refresh1(){
+  const s=SOL[bi];
+  document.getElementById('bOut').textContent=s.b.toFixed(2);
+  document.getElementById('bOut2').textContent=s.b.toFixed(2);
+  document.getElementById('sIXT').textContent=f3(s.IXT)+' nats';
+  document.getElementById('sITY').textContent=f3(s.ITY)+' nats';
+  document.getElementById('sFrac').textContent=pc(100*s.ITY/IXY);
+  document.getElementById('sK').textContent=s.n+' / 8';
+  document.getElementById('sL').textContent=f3(s.IXT-s.b*s.ITY);
+  document.getElementById('sRate').textContent=pc(100*s.IXT/HX);
+  drawPlane();
+  document.getElementById('c1').textContent=narrate1();
+}
+
+/* ================= Interactive 2 — the partition ================= */
+function drawPart(){
+  const W=680,H=300,padL=150,padR=26,padT=16,padB=34,iw=W-padL-padR,base=H-padB,rh=(base-padT)/NX;
+  const X=v=>padL+v*iw;
+  const s0=SOL[bi];
+  let s='';
+  [0,0.25,0.5,0.75,1].forEach(v=>{const x=X(v);s+=`<line x1="${x.toFixed(1)}" y1="${padT}" x2="${x.toFixed(1)}" y2="${base}" stroke="var(--hair)" stroke-dasharray="${v===0.5?'3 3':'1 4'}"/><text x="${x.toFixed(1)}" y="${base+15}" text-anchor="middle" font-family="var(--mono)" font-size="9.5" fill="var(--faint)">${v}</text>`;});
+  s+=`<text x="${W-padR}" y="${H-3}" text-anchor="end" font-family="var(--mono)" font-size="10" fill="var(--faint)">p(up | ·) — the outlook on tomorrow</text>`;
+  ORD.forEach((x,r)=>{
+    const y=padT+r*rh+rh/2, g=s0.asg[x], col=CPAL[s0.live.indexOf(g)%CPAL.length], post=s0.post[s0.live.indexOf(g)];
+    s+=`<text x="${padL-10}" y="${(y+3.5).toFixed(1)}" text-anchor="end" font-family="var(--mono)" font-size="10.5" fill="var(--muted)">${LAB[x]}</text>`;
+    s+=`<rect x="${padL}" y="${(y-7).toFixed(1)}" width="${(X(PYX[x])-padL).toFixed(1)}" height="14" rx="3" fill="${col}" opacity="0.88"/>`;
+    s+=`<text x="${(X(PYX[x])+6).toFixed(1)}" y="${(y+3.5).toFixed(1)}" font-family="var(--mono)" font-size="9.5" fill="var(--muted)">${PYX[x].toFixed(3)}</text>`;
+    s+=`<circle cx="${X(post).toFixed(1)}" cy="${y.toFixed(1)}" r="4.6" fill="none" stroke="${col}" stroke-width="2"/>`;
+  });
+  document.getElementById('part').innerHTML=s;
+}
+function narrate2(){
+  const s=SOL[bi];
+  if(s.n===1) return `β = ${s.b.toFixed(2)}: one cluster, and it is the whole market. Every cell is assigned to the same summary, whose posture is the unconditional p(up) = ${f3(PUP)} — the rings all sit on one vertical line. The summary is free and worthless: nothing you could read off T narrows tomorrow at all.`;
+  let widest=-1,wspan=-1;
+  s.live.forEach((g,gi)=>{const mem=[];for(let x=0;x<NX;x++)if(s.asg[x]===g)mem.push(PYX[x]);if(mem.length>1){const sp=Math.max(...mem)-Math.min(...mem);if(sp>wspan){wspan=sp;widest=gi;}}});
+  let out=`β = ${s.b.toFixed(2)}: ${s.n} clusters, postures ${s.post.map(f3).join(' · ')}. `;
+  if(widest>=0){
+    const g=s.live[widest],mem=[];for(let x=0;x<NX;x++)if(s.asg[x]===g)mem.push(LAB[x]);
+    out+=`The widest bucket holds ${mem.join(', ')} — outlooks spanning ${wspan.toFixed(3)} in p(up) fused into one posture of ${f3(s.post[widest])}. `;
+  }
+  const split=[];for(let k=0;k<4;k++)if(s.asg[k]!==s.asg[4+k])split.push(TRD[k]);
+  if(split.length) out+=`Meanwhile the ${split.join(' and ')} bucket${split.length>1?'s':''} split across clusters: same trend reading, different vol regime, different forward outlook — so the bottleneck separates them. Feature proximity is not the criterion; the KL between predictive postures is. `;
+  out+=`Largest within-cluster KL: ${f4(s.maxKL)} nats — the residual distortion the price β is willing to tolerate.`;
+  return out;
+}
+function refresh2(){
+  const s=SOL[bi];
+  document.getElementById('pK').textContent=s.n+' of 8 states';
+  document.getElementById('pKL').textContent=f4(s.maxKL)+' nats';
+  document.getElementById('pPost').textContent=s.post.map(f3).join(' · ');
+  drawPart();
+  document.getElementById('c2').textContent=narrate2();
+}
+function setBI(v){bi=Math.max(0,Math.min(NB-1,v|0));document.getElementById('bS').value=bi;document.getElementById('bS2').value=bi;refresh1();refresh2();}
+document.getElementById('bS').addEventListener('input',e=>setBI(+e.target.value));
+document.getElementById('bS2').addEventListener('input',e=>setBI(+e.target.value));
+document.getElementById('bTriv').onclick=()=>setBI(BET.filter(b=>b<=1).length-1);
+document.getElementById('bFirst').onclick=()=>setBI(TRANS[0]);
+document.getElementById('bThird').onclick=()=>setBI(SOL.findIndex(s=>s.n>=3));
+document.getElementById('bMax').onclick=()=>setBI(NB-1);
+
+/* ================= prose numbers, all page-computed ================= */
+function fillProse(){
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  set('nPup',f3(PUP)); set('nHY',f4(HY)); set('nHYX2',f4(HY-HYX)); set('nIXY',f4(IXY));
+  set('nIXYb',(IXY/LN2).toFixed(4)); set('nHX',f4(HX));
+  set('nLo',f3(PYX[ORD[0]])); set('nHi',f3(PYX[ORD[NX-1]]));
+  set('nB1',SOL[TRANS[0]].b.toFixed(2));
+}
+
+/* ================= retrieval ================= */
+const QS={
+  q1:{opts:["the number of clusters allowed in T — larger β, more clusters by construction","the noise level of the encoder, exactly as a temperature in a softmax over features","the exchange rate between memory and prediction: how many nats of I(X;T) you will pay for one nat of I(T;Y)","the prior probability p(t) of each cluster, before any data is seen"],a:2,
+    fb:"β is a price, not a size. It converts predictive value into units of memory cost, and the number of clusters is an output: sweeping β upward, clusters appear one at a time at discrete phase transitions. It does act as an inverse temperature in the assignment rule, but the temperature is on the KL between predictive postures, not on a softmax over features."},
+  q2:{opts:["because I(T;Y) ≤ I(X;T) always, so 𝓛 ≥ (1−β)I(X;T) ≥ 0 — and the trivial encoder attains 𝓛 = 0","because I(X;T) = 0 forces I(T;Y) = 0, which is circular but true","because the fixed-point iteration has no solution when β is small","because the frontier is concave, so its slope at the origin is 1"],a:0,
+    fb:"One line of data processing: T — X — Y Markov gives I(T;Y) ≤ I(X;T), hence 𝓛 = I(X;T) − βI(T;Y) ≥ (1−β)I(X;T) ≥ 0 for β ≤ 1. The trivial encoder p(t|x) = p(t) makes both terms zero, hitting the bound — so it is optimal. The bound is sufficient, not tight: in this lesson's joint the first split waits for β well above 1."},
+  q3:{opts:["the concavity of the information curve, which forces a horizontal asymptote","Gibbs' inequality KL ≥ 0 from Lesson 15","the fact that Y is binary, so I(T;Y) ≤ ln 2","the data-processing inequality: T is a function of X alone, so I(T;Y) ≤ I(X;Y) — processing cannot create information"],a:3,
+    fb:"The Markov chain T — X — Y caps the value axis at I(X;Y). Chain-rule I(X,T;Y) two ways: I(X;Y) + I(T;Y|X) = I(T;Y) + I(X;Y|T); the first conditional term vanishes by the Markov property and the second is non-negative, giving I(T;Y) ≤ I(X;Y). Concavity shapes the approach; the DPI sets the height. And ln 2 is a much weaker bound than I(X;Y) here."},
+  q4:{opts:["KL(p(t|x) ‖ p(t)) — the cost of the assignment itself","KL(p(y|x) ‖ p(y|t)) — between the state's own outlook on Y and the cluster's posture","KL(p(x) ‖ p(x|t)) — how much the cluster distorts the input distribution","KL(p(y|t) ‖ p(y)) — how far the cluster departs from the unconditional forecast"],a:1,
+    fb:"The variational calculation delivers its own distortion measure: the energy in the Boltzmann weight is KL(p(y|x)‖p(y|t)), the mismatch between the state's predictive posture and the cluster's. So states join whichever cluster forecasts Y the way they do — clustering by predictive similarity, which is exactly what the partition view shows when cells with opposite trend readings share a colour. The other three quantities all appear in the theory, but none is the exponent."},
+  q5:{opts:["the trivial encoder again, because the memory cost eventually dominates","a soft assignment with all eight clusters equally weighted, the maximum-entropy encoder","a deterministic partition of X that is a minimal sufficient statistic of X for Y — all of I(X;Y), at the least possible I(X;T)","the identity map T = X, which is the only way to reach the DPI ceiling"],a:2,
+    fb:"As β → ∞ the Boltzmann weights harden to argmax and the encoder becomes a deterministic partition. It attains I(T;Y) = I(X;Y) — the DPI ceiling — with I(X;T) as small as that allows, which is precisely Lesson 3's minimal sufficient statistic of X for Y. T = X also reaches the ceiling but is not minimal: it keeps the cells' identities even when two cells share an outlook, paying memory for nothing."},
+  q6:{opts:["settled: SGD provably performs information-plane compression, which explains generalization","refuted: the information bottleneck is not a valid objective for representation learning","settled the other way: no network has ever shown a compression phase","contested and open: compression is not universal, it tracks activation saturation, and I(X;T) is infinite for a deterministic encoder so measured compression depends on the binning"],a:3,
+    fb:"Shwartz-Ziv & Tishby (2017) reported fitting-then-compression phases and offered them as the explanation of generalization; Saxe et al. (2018) showed compression vanishes with ReLU without hurting generalization, tracks activation saturation where it appears, and — the deeper point — that I(X;T) is infinite in a deterministic continuous network, so every reported curve is an estimator's artifact as much as a fact. The objective itself remains sound and useful when a stochastic bottleneck is built deliberately; the empirical claim about ordinary training is still contested."},
+  q7:{opts:["the price β at which the next split stops paying: the frontier is concave, so each extra regime buys strictly less prediction per nat of memory","the number of underlying features you discretized — here 2 vol levels × 4 trend buckets, so 8","the number of clusters that minimizes I(X;T), which is always 1","whichever count maximizes I(T;Y), which is always the full 8"],a:0,
+    fb:"There is no regime count in the abstract, only a regime count at a price. Because the information curve is concave and non-decreasing, each new cluster returns less predictive information per nat of memory than the last; you stop where the next split's gain no longer covers its cost. Maximizing I(T;Y) alone always says 8 and minimizing I(X;T) alone always says 1 — the whole point of the Lagrangian is that neither axis is the objective on its own."}
+};
+const sel={q1:null,q2:null,q3:null,q4:null,q5:null,q6:null,q7:null};let revealed=false;
+Object.keys(QS).forEach(id=>{const holder=document.querySelector('#'+id+' .opts');QS[id].opts.forEach((txt,i)=>{const b=document.createElement('button');b.className='opt';b.textContent=String.fromCharCode(65+i)+'.  '+txt;b.onclick=()=>{if(revealed)return;sel[id]=i;[...holder.children].forEach((c,ci)=>c.classList.toggle('sel',ci===i));document.getElementById('hint').style.display='none';};holder.appendChild(b);});});
+document.getElementById('check').onclick=async()=>{
+  if(revealed)return;if(Object.values(sel).some(v=>v===null)){document.getElementById('hint').style.display='inline';return;}
+  revealed=true;let score=0;
+  Object.keys(QS).forEach(id=>{const a=QS[id].a,holder=document.querySelector('#'+id+' .opts'),fb=document.querySelector('#'+id+' .fb');[...holder.children].forEach((c,ci)=>{c.style.cursor='default';c.classList.remove('sel');if(ci===a)c.classList.add('correct');else if(ci===sel[id])c.classList.add('wrong');});if(sel[id]===a)score++;fb.textContent=QS[id].fb;fb.classList.add('show');});
+  document.getElementById('check').style.opacity='0.5';document.getElementById('check').textContent='Checked';
+  document.getElementById('scoreOut').textContent=score+' / 7';document.getElementById('done').classList.add('show');
+  try{await window.storage.set('mfs:lesson16',JSON.stringify({done:true,retrieval:score+'/7',ts:Date.now()}),false);}catch(e){}
+};
+function boot(){renderMath();fillProse();refresh1();refresh2();}
+if(window.katex)boot();else window.addEventListener('load',boot);
+(async()=>{try{const r=await window.storage.get('mfs:lesson16',false);if(r&&r.value){const v=JSON.parse(r.value);if(v.done){const c=document.getElementById('chip');c.classList.add('show');c.textContent='completed · '+v.retrieval;}}}catch(e){}})();
+</script>
+</body>
+</html>
